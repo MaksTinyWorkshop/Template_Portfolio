@@ -1,0 +1,157 @@
+services:
+  # ===================================
+  # Next.js Application - Production avec Traefik
+  # ===================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+
+    container_name: portfolio-max
+
+    restart: unless-stopped
+
+    # Pas de ports exposés directement - tout passe par Traefik
+    expose:
+      - "3000"
+
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      # Variables depuis .env ou .env.production
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - AUTH_SECRET=${AUTH_SECRET}
+      - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-https://dinodev.me}
+      - NEXT_PUBLIC_MAILCHIMP_ACTION_URL=${NEXT_PUBLIC_MAILCHIMP_ACTION_URL:-}
+      - NEXT_PUBLIC_MAILCHIMP_USER_ID=${NEXT_PUBLIC_MAILCHIMP_USER_ID:-}
+      - NEXT_PUBLIC_MAILCHIMP_FORM_ID=${NEXT_PUBLIC_MAILCHIMP_FORM_ID:-}
+      # GitHub API pour publication automatique
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_OWNER=${GITHUB_OWNER}
+      - GITHUB_REPO=${GITHUB_REPO}
+      - GITHUB_BRANCH=${GITHUB_BRANCH:-main}
+      - GIT_AUTHOR_NAME=${GIT_AUTHOR_NAME:-Portfolio Admin}
+      - GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL:-admin@portfolio.local}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/portfolio}
+
+    volumes:
+      # Persist uploads (if stored locally)
+      - ./public/images:/app/public/images
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    networks:
+      - traefik
+      - backend
+
+    # Labels Traefik pour routing et SSL
+    labels:
+      # Activer Traefik pour ce container
+      - "traefik.enable=true"
+
+      # Configuration du réseau Docker
+      - "traefik.docker.network=traefik"
+
+      # Configuration HTTP -> HTTPS redirect
+      - "traefik.http.routers.portfolio-http.rule=Host(`dinodev.me`) || Host(`www.dinodev.me`)"
+      - "traefik.http.routers.portfolio-http.entrypoints=web"
+      - "traefik.http.routers.portfolio-http.middlewares=redirect-to-https"
+
+      # Configuration HTTPS
+      - "traefik.http.routers.portfolio.rule=Host(`dinodev.me`) || Host(`www.dinodev.me`)"
+      - "traefik.http.routers.portfolio.entrypoints=websecure"
+      - "traefik.http.routers.portfolio.tls=true"
+      - "traefik.http.routers.portfolio.tls.certresolver=letsencrypt"
+
+      # Configuration du service (port interne)
+      - "traefik.http.services.portfolio.loadbalancer.server.port=3000"
+
+      # Middleware pour redirection HTTPS
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+
+      # Utilisation des middlewares globaux Traefik
+      - "traefik.http.routers.portfolio.middlewares=security-headers"
+
+    # Resource limits (ajuster selon VPS)
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+
+  # ===================================
+  # Database Initializer - Migrations Prisma 7
+  # ===================================
+  db-init:
+    build:
+      context: .
+      dockerfile: Dockerfile.init
+
+    container_name: portfolio-init
+
+    restart: "no"
+
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/portfolio}
+      - DB_HOST=db
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-portfolio}
+
+    networks:
+      - backend
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ===================================
+  # PostgreSQL Database - Production
+  # ===================================
+  db:
+    image: postgres:16
+    container_name: portfolio-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+networks:
+  traefik:
+    external: true
+  backend:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local

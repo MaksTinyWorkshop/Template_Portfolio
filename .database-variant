@@ -1,0 +1,4 @@
+# Database Variant Marker
+This file marks this branch as the PostgreSQL/Docker variant.
+Branch: variante_BDD → database template
+Last sync: $(date +%Y-%m-%d)

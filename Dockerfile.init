@@ -1,0 +1,34 @@
+# Dockerfile pour l'initialisation de la base de données (Prisma 7)
+# Ce container exécute les migrations Prisma, puis se termine
+
+FROM node:22-alpine AS init
+
+WORKDIR /app
+
+# Installer les outils nécessaires
+RUN apk add --no-cache postgresql-client
+
+# Copier les fichiers de dépendances
+COPY package.json package-lock.json ./
+
+# Installer TOUTES les dépendances (nécessaire pour Prisma CLI)
+# Utilise le cache npm pour accélérer les rebuilds
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci && npm cache clean --force
+
+# Copier le schema Prisma, la config Prisma 7 et le seed SQL
+COPY prisma ./prisma
+COPY prisma.config.ts ./prisma.config.ts
+
+# Copier le script de compilation config
+COPY scripts/compile-prisma-config.js ./scripts/compile-prisma-config.js
+
+# Générer le client Prisma et compiler la config
+RUN node scripts/compile-prisma-config.js && \
+    npx prisma generate
+
+# Script d'entrypoint qui gère l'initialisation
+COPY docker-init-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-init-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/docker-init-entrypoint.sh"]

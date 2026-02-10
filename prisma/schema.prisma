@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Status {
+  draft
+  scheduled
+  published
+}
+
+enum MediaKind {
+  image
+  video
+  attachment
+}
+
+enum TagCategory {
+  article
+  project
+  global
+}
+
+enum MediaPurpose {
+  cover
+  gallery
+  testimonial
+}
+
+enum AvailabilityStatus {
+  available
+  soon
+  unavailable
+}
+
+model Article {
+  id          String          @id @default(uuid())
+  slug        String          @unique
+  title       String
+  summary     String?
+  content     String?
+  readingTime Int?
+  status      Status          @default(draft)
+  publishAt   DateTime?
+  featured    Boolean         @default(false)
+  visibility  String?         // values comme "homepage", "grid", etc.
+  mediaId     String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  media   Media?          @relation("ArticleMedia", fields: [mediaId], references: [id])
+  authors ArticlePerson[]
+  tags    ArticleTag[]
+}
+
+model Project {
+  id              String                  @id @default(uuid())
+  slug            String                  @unique
+  title           String
+  summary         String?
+  content         String?
+  status          Status                  @default(draft)
+  link            String?
+  repository      String?
+  publishedAt     DateTime?
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  persons       ProjectPerson[]
+  tags          ProjectTag[]
+  gallery       ProjectImage[]
+}
+
+model Person {
+  id            String    @id @default(uuid())
+  firstName     String?
+  lastName      String?
+  pseudo        String?
+  fullName      String
+  email         String?
+  role          String?
+  bio           String?
+  profileData   Json?
+  siteOwner     Boolean   @default(false)
+  avatarPath    String?
+  avatarMediaId String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  avatarMedia      Media?               @relation("PersonAvatar", fields: [avatarMediaId], references: [id])
+  articles         ArticlePerson[]
+  projects         ProjectPerson[]
+  uploads          Media[]              @relation("PersonUploads")
+  availabilityLogs AvailabilityLog[]
+}
+
+model Tag {
+  id          String      @id @default(uuid())
+  slug        String      @unique
+  name        String
+  category    TagCategory @default(global)
+  description String?
+  color       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  articleTags ArticleTag[]
+  projectTags ProjectTag[]
+}
+
+model Media {
+  id              String       @id @default(uuid())
+  url             String
+  kind            MediaKind
+  storagePath     String?
+  storageProvider String?
+  altText         String?
+  width           Int?
+  height          Int?
+  metadata        Json?
+  uploadedById    String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  uploadedBy Person?      @relation("PersonUploads", fields: [uploadedById], references: [id])
+  article     Article[]   @relation("ArticleMedia")
+  gallery     ProjectImage[]
+  avatars     Person[]    @relation("PersonAvatar")
+}
+
+model ArticlePerson {
+  id        String   @id @default(uuid())
+  articleId String
+  personId  String
+  role      String?
+  order     Int?
+  primary   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  article Article @relation(fields: [articleId], references: [id])
+  person  Person  @relation(fields: [personId], references: [id])
+}
+
+model ProjectPerson {
+  id        String   @id @default(uuid())
+  projectId String
+  personId  String
+  role      String?
+  order     Int?
+  primary   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id])
+  person  Person  @relation(fields: [personId], references: [id])
+}
+
+model ArticleTag {
+  id        String   @id @default(uuid())
+  articleId String
+  tagId     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  article Article @relation(fields: [articleId], references: [id])
+  tag     Tag     @relation(fields: [tagId], references: [id])
+}
+
+model ProjectTag {
+  id        String   @id @default(uuid())
+  projectId String
+  tagId     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id])
+  tag     Tag     @relation(fields: [tagId], references: [id])
+}
+
+model ProjectImage {
+  id        String    @id @default(uuid())
+  projectId String
+  mediaId   String
+  purpose   MediaPurpose @default(gallery)
+  order     Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  media   Media   @relation(fields: [mediaId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+}
+
+model AvailabilityLog {
+  id        String             @id @default(uuid())
+  personId  String
+  status    AvailabilityStatus
+  createdAt DateTime           @default(now())
+
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@index([personId])
+  @@index([createdAt])
+}
+
+model RateLimit {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  count     Int      @default(1)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key, expiresAt])
+}
