@@ -1,0 +1,13 @@
+# Gitleaks Ignore File
+# False positives for template sync workflow
+
+# README documentation examples (not real secrets)
+README.md:*
+
+# Test files (mock credentials for testing)
+tests/**/*
+**/*.spec.ts
+**/*.test.ts
+
+# Setup scripts with placeholder values
+scripts/setup-first-deploy.sh:*
