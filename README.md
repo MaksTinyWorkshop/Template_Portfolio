@@ -1,4 +1,4 @@
-# Portfolio Max
+# Portfolio Pro
 
 Portfolio professionnel moderne construit avec Next.js 16, TypeScript et Once UI. Ce projet est une adaptation personnalisée de [Magic Portfolio](https://github.com/once-ui-system/magic-portfolio) par Once UI, enrichie avec un système d'administration complet et des fonctionnalités avancées.
 
