@@ -1,420 +1,358 @@
-# Gitleaks
+# Portfolio Professionnel Next.js
 
-```
-┌─○───┐
-│ │╲  │
-│ │ ○ │
-│ ○ ░ │
-└─░───┘
-```
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue?logo=postgresql)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](LICENSE)
 
-<p align="left">
-  <p align="left">
-	  <a href="https://github.com/zricethezav/gitleaks/actions/workflows/test.yml">
-		  <img alt="Github Test" src="https://github.com/zricethezav/gitleaks/actions/workflows/test.yml/badge.svg">
-	  </a>
-	  <a href="https://hub.docker.com/r/zricethezav/gitleaks">
-		  <img src="https://img.shields.io/docker/pulls/zricethezav/gitleaks.svg" />
-	  </a>
-	  <a href="https://github.com/zricethezav/gitleaks-action">
-        	<img alt="gitleaks badge" src="https://img.shields.io/badge/protected%20by-gitleaks-blue">
-    	 </a>
-	  <a href="https://twitter.com/intent/follow?screen_name=zricethezav">
-		  <img src="https://img.shields.io/twitter/follow/zricethezav?label=Follow%20zricethezav&style=social&color=blue" alt="Follow @zricethezav" />
-	  </a>
-  </p>
-</p>
+Portfolio professionnel moderne avec système d'administration complet, construit sur Next.js 16, TypeScript, PostgreSQL et Once UI. Template open source prêt à déployer pour créer votre portfolio personnel en quelques minutes.
 
-### Join our Discord! [![Discord](https://img.shields.io/discord/1102689410522284044.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/8Hzbrnkr7E)
+> **Note:** Ceci est la branche `variante_BDD` avec PostgreSQL et Docker. Pour la version statique (fichiers MDX), consultez la branche `main`.
 
-Gitleaks is a SAST tool for **detecting** and **preventing** hardcoded secrets like passwords, api keys, and tokens in git repos. Gitleaks is an **easy-to-use, all-in-one solution** for detecting secrets, past or present, in your code.
+Basé sur [Magic Portfolio](https://github.com/once-ui-system/magic-portfolio) par Once UI, enrichi avec une architecture backend complète et des fonctionnalités professionnelles.
 
-```
-➜  ~/code(master) gitleaks detect --source . -v
+> **📌 Note** : Cette branche `variante_BDD` utilise **PostgreSQL + Prisma** pour la persistance des données. La branche `main` conserve l'architecture file-based originale (MDX + JSON, sans base de données).
 
-    ○
-    │╲
-    │ ○
-    ○ ░
-    ░    gitleaks
+---
 
+## ✨ Fonctionnalités
 
-Finding:     "export BUNDLE_ENTERPRISE__CONTRIBSYS__COM=cafebabe:deadbeef",
-Secret:      cafebabe:deadbeef
-RuleID:      sidekiq-secret
-Entropy:     2.609850
-File:        cmd/generate/config/rules/sidekiq.go
-Line:        23
-Commit:      cd5226711335c68be1e720b318b7bc3135a30eb2
-Author:      John
-Email:       john@users.noreply.github.com
-Date:        2022-08-03T12:31:40Z
-Fingerprint: cd5226711335c68be1e720b318b7bc3135a30eb2:cmd/generate/config/rules/sidekiq.go:sidekiq-secret:23
-```
+### 🌐 Interface Publique
 
-## Getting Started
+- **Portfolio Moderne** : Design élégant avec Hero section, page About/CV interactive, galerie de projets
+- **Blog Intégré** : Publication d'articles avec support MDX (Markdown + React)
+- **Projets Showcase** : Portfolio de projets avec images, tags, filtrage et descriptions détaillées
+- **Performance** : Lighthouse 95+, SSR/SSG hybride, images optimisées (AVIF/WebP)
+- **SEO** : Métadonnées dynamiques, flux RSS, sitemap automatique
+- **Responsive** : Design 100% adaptatif sur tous les appareils
+- **Dark/Light Mode** : Thème avec bascule automatique selon préférences système
 
-Gitleaks can be installed using Homebrew, Docker, or Go. Gitleaks is also available in binary form for many popular platforms and OS types on the [releases page](https://github.com/zricethezav/gitleaks/releases). In addition, Gitleaks can be implemented as a pre-commit hook directly in your repo or as a GitHub action using [Gitleaks-Action](https://github.com/gitleaks/gitleaks-action).
+### 🔐 Administration Complète
 
-### Installing
+- **Dashboard Admin** : Interface d'administration professionnelle avec statistiques
+- **Éditeur WYSIWYG** : Création et édition de posts/projets en Markdown enrichi
+- **Gestion de Médias** : Upload d'images, organisation des fichiers
+- **Publication** : Publication/dépublication en un clic avec prévisualisation
+- **Authentification** : Système sécurisé JWT avec cookies HTTP-only
+- **Gestion des Tags** : Organisation du contenu par catégories
+- **Statut Disponibilité** : Indicateur de disponibilité freelance personnalisable
+
+### 🗄️ Architecture Backend
+
+- **PostgreSQL** : Base de données relationnelle robuste
+- **Prisma ORM** : Migrations automatiques, typage fort, génération de client
+- **API REST** : Endpoints structurés pour CRUD complet
+- **Validation** : Schémas Zod pour sécurité et validation des données
+- **Docker** : Déploiement conteneurisé avec orchestration complète (Docker Compose multi-services)
+- **Rate Limiting** : Protection API intégrée contre les abus
+- **Tests** : Suite de tests unitaires (Vitest) et E2E (Playwright)
+
+---
+
+## 🚀 Installation Rapide
+
+### Option 1 : Installation Automatique (Recommandé)
 
 ```bash
-# MacOS
-brew install gitleaks
+# 1. Cloner le repository
+git clone https://github.com/VOTRE_USERNAME/portfolio.git
+cd portfolio
 
-# Docker (DockerHub)
-docker pull zricethezav/gitleaks:latest
-docker run -v ${path_to_host_folder_to_scan}:/path zricethezav/gitleaks:latest [COMMAND] --source="/path" [OPTIONS]
-
-# Docker (ghcr.io)
-docker pull ghcr.io/gitleaks/gitleaks:latest
-docker run -v ${path_to_host_folder_to_scan}:/path ghcr.io/gitleaks/gitleaks:latest [COMMAND] --source="/path" [OPTIONS]
-
-# From Source
-git clone https://github.com/gitleaks/gitleaks.git
-cd gitleaks
-make build
+# 2. Lancer le script d'installation interactif
+chmod +x scripts/setup-first-deploy.sh
+./scripts/setup-first-deploy.sh
 ```
 
-### GitHub Action
+Le script vous guidera pour :
 
-Check out the official [Gitleaks GitHub Action](https://github.com/gitleaks/gitleaks-action)
+- ✅ Configurer vos informations personnelles
+- ✅ Générer les secrets de sécurité automatiquement
+- ✅ Choisir entre développement local ou production
+- ✅ Configurer GitHub et Mailchimp (optionnel)
+- ✅ Lancer Docker Compose
 
-```
-name: gitleaks
-on: [pull_request, push, workflow_dispatch]
-jobs:
-  scan:
-    name: gitleaks
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE}} # Only required for Organizations, not personal accounts.
-```
+**Accédez ensuite à :**
 
-### Pre-Commit
+- 🌐 Application : `http://localhost:3000`
+- 🔐 Admin : `http://localhost:3000/admin`
 
-1. Install pre-commit from https://pre-commit.com/#install
-2. Create a `.pre-commit-config.yaml` file at the root of your repository with the following content:
+### Option 2 : Installation Manuelle
 
-   ```
-   repos:
-     - repo: https://github.com/gitleaks/gitleaks
-       rev: v8.16.1
-       hooks:
-         - id: gitleaks
-   ```
+Consultez le guide complet : **[docs/installation.md](docs/installation.md)**
 
-   for a [native execution of GitLeaks](https://github.com/zricethezav/gitleaks/releases) or use the [`gitleaks-docker` pre-commit ID](https://github.com/zricethezav/gitleaks/blob/master/.pre-commit-hooks.yaml) for executing GitLeaks using the [official Docker images](#docker)
+---
 
-3. Auto-update the config to the latest repos' versions by executing `pre-commit autoupdate`
-4. Install with `pre-commit install`
-5. Now you're all set!
+## 📚 Documentation
 
-```
-➜ git commit -m "this commit contains a secret"
-Detect hardcoded secrets.................................................Failed
-```
+### Guides Principaux
 
-Note: to disable the gitleaks pre-commit hook you can prepend `SKIP=gitleaks` to the commit command
-and it will skip running gitleaks
+- **[📖 Guide d'Installation](docs/installation.md)** - Installation complète, déploiement VPS, Traefik
+- **[📂 Documentation Technique](docs/)** - Architecture, API, composants
 
-```
-➜ SKIP=gitleaks git commit -m "skip gitleaks check"
-Detect hardcoded secrets................................................Skipped
-```
+### Documentation Technique (dossier `docs/`)
 
-## Usage
+- **[Index](docs/index.md)** - Point d'entrée de la documentation
+- **[Architecture](docs/architecture.md)** - Architecture technique détaillée
+- **[Guide de Développement](docs/development-guide.md)** - Workflow et bonnes pratiques
+- **[Composants UI](docs/ui-components-portfolio.md)** - Inventaire des 33 composants
+- **[API Contracts](docs/api-contracts-portfolio.md)** - Documentation des endpoints
+- **[Structure du Projet](docs/source-tree-analysis.md)** - Organisation du code
 
-```
-Usage:
-  gitleaks [command]
+---
 
-Available Commands:
-  completion  generate the autocompletion script for the specified shell
-  detect      detect secrets in code
-  help        Help about any command
-  protect     protect secrets in code
-  version     display gitleaks version
+## 🏗️ Stack Technologique
 
-Flags:
-  -b, --baseline-path string       path to baseline with issues that can be ignored
-  -c, --config string              config file path
-                                   order of precedence:
-                                   1. --config/-c
-                                   2. env var GITLEAKS_CONFIG
-                                   3. (--source/-s)/.gitleaks.toml
-                                   If none of the three options are used, then gitleaks will use the default config
-      --exit-code int              exit code when leaks have been encountered (default 1)
-  -h, --help                       help for gitleaks
-  -l, --log-level string           log level (trace, debug, info, warn, error, fatal) (default "info")
-      --max-target-megabytes int   files larger than this will be skipped
-      --no-color                   turn off color for verbose output
-      --no-banner                  suppress banner
-      --redact                     redact secrets from logs and stdout
-  -f, --report-format string       output format (json, csv, junit, sarif) (default "json")
-  -r, --report-path string         report file
-  -s, --source string              path to source (default ".")
-  -v, --verbose                    show verbose output from scan
+**Stack complète avec versions** : Voir [docs/project-overview.md - Stack Technologique](docs/project-overview.md#stack-technologique)
 
-Use "gitleaks [command] --help" for more information about a command.
-```
+**Résumé** :
+- **Frontend** : Next.js 16 + React 19.2 + TypeScript 5.8 + Once UI 1.5
+- **Backend** : PostgreSQL 16 + Prisma 7 + API Routes + JWT
+- **Contenu** : MDX 3.1 + next-mdx-remote
+- **DevOps** : Docker + Docker Compose + Traefik
+- **Qualité** : Vitest + Playwright + Biome + TypeScript strict
 
-### Commands
+---
 
-There are two commands you will use to detect secrets; `detect` and `protect`.
+## 🎨 Personnalisation
 
-#### Detect
+### 1. Informations Personnelles
 
-The `detect` command is used to scan repos, directories, and files. This command can be used on developer machines and in CI environments.
+Les informations de base sont configurées via le script `setup-first-deploy.sh` qui modifie automatiquement :
 
-When running `detect` on a git repository, gitleaks will parse the output of a `git log -p` command (you can see how this executed
-[here](https://github.com/zricethezav/gitleaks/blob/7240e16769b92d2a1b137c17d6bf9d55a8562899/git/git.go#L17-L25)).
-[`git log -p` generates patches](https://git-scm.com/docs/git-log#_generating_patch_text_with_p) which gitleaks will use to detect secrets.
-You can configure what commits `git log` will range over by using the `--log-opts` flag. `--log-opts` accepts any option for `git log -p`.
-For example, if you wanted to run gitleaks on a range of commits you could use the following command: `gitleaks detect --source . --log-opts="--all commitA..commitB"`.
-See the `git log` [documentation](https://git-scm.com/docs/git-log) for more information.
+- Le seed SQL (`prisma/seed.sql`) avec vos données
+- Le fichier `.env` avec vos credentials
 
-You can scan files and directories by using the `--no-git` option.
+Pour modifier ultérieurement :
 
-If you want to run only specific rules you can do so by using the `--enable-rule` option (with a rule ID as a parameter), this flag can be used multiple times. For example: `--enable-rule=atlassian-api-token` will only apply that rule. You can find a list of rules [here](config/gitleaks.toml).
+- **Via l'admin** : `/admin` → Modifier votre profil
+- **Via les fichiers** : Éditer `src/app/(web)/resources/content.tsx`
 
-#### Protect
+### 2. Design System
 
-The `protect` command is used to scan uncommitted changes in a git repo. This command should be used on developer machines in accordance with
-[shifting left on security](https://cloud.google.com/architecture/devops/devops-tech-shifting-left-on-security).
-When running `protect` on a git repository, gitleaks will parse the output of a `git diff` command (you can see how this executed
-[here](https://github.com/zricethezav/gitleaks/blob/7240e16769b92d2a1b137c17d6bf9d55a8562899/git/git.go#L48-L49)). You can set the
-`--staged` flag to check for changes in commits that have been `git add`ed. The `--staged` flag should be used when running Gitleaks
-as a pre-commit.
+Personnaliser couleurs, typographie, espacements :
 
-**NOTE**: the `protect` command can only be used on git repos, running `protect` on files or directories will result in an error message.
+- Éditer `src/app/(web)/resources/config/once-ui.config.js`
 
-### Creating a baseline
+### 3. Icônes
 
-When scanning large repositories or repositories with a long history, it can be convenient to use a baseline. When using a baseline,
-gitleaks will ignore any old findings that are present in the baseline. A baseline can be any gitleaks report. To create a gitleaks report, run gitleaks with the `--report-path` parameter.
+Enrichir la bibliothèque d'icônes :
 
-```
-gitleaks detect --report-path gitleaks-report.json # This will save the report in a file called gitleaks-report.json
+- Éditer `src/app/(web)/resources/icons.ts`
+
+---
+
+## 🛠️ Développement
+
+**Guide complet** : Voir [docs/development-guide.md](docs/development-guide.md)
+
+### Installation Rapide (développement local)
+
+```bash
+# 1. Installer les dépendances
+npm install
+
+# 2. Configurer l'environnement
+cp .env.example .env
+cp .env.development.local.example .env.development.local
+
+# 3. Lancer avec Docker (recommandé)
+docker compose -f docker-compose.dev.yml up -d
+
+# 4. Accéder à l'application
+open http://localhost:3000
 ```
 
-Once as baseline is created it can be applied when running the detect command again:
+### Commandes Principales
 
-```
-gitleaks detect --baseline-path gitleaks-report.json --report-path findings.json
-```
+```bash
+# Développement
+npm run dev              # Serveur dev avec Turbopack
+npm run build            # Build pour production
 
-After running the detect command with the --baseline-path parameter, report output (findings.json) will only contain new issues.
+# Tests
+npm run test             # Tests unitaires (Vitest)
+npm run test:e2e         # Tests E2E (Playwright)
 
-### Verify Findings
-
-You can verify a finding found by gitleaks using a `git log` command.
-Example output:
-
-```
-Finding:     aws_secret="AKIAIMNOJVGFDXXXE4OA"
-RuleID:      aws-access-token
-Secret       AKIAIMNOJVGFDXXXE4OA
-Entropy:     3.65
-File:        checks_test.go
-Line:        37
-Commit:      ec2fc9d6cb0954fb3b57201cf6133c48d8ca0d29
-Author:      Zachary Rice
-Email:       z@email.com
-Date:        2018-01-28T17:39:00Z
-Fingerprint: ec2fc9d6cb0954fb3b57201cf6133c48d8ca0d29:checks_test.go:aws-access-token:37
+# Qualité
+npm run lint             # Vérifier avec ESLint
+npm run biome-write      # Formatter avec Biome
 ```
 
-We can use the following format to verify the leak:
+Pour la liste complète des commandes et leur description : [docs/development-guide.md - Commandes](docs/development-guide.md#commandes-de-développement)
 
-```
-git log -L {StartLine,EndLine}:{File} {Commit}
-```
+---
 
-So in this example it would look like:
+## 🧪 Tests
 
-```
-git log -L 37,37:checks_test.go ec2fc9d6cb0954fb3b57201cf6133c48d8ca0d29
-```
+**Documentation complète** : [tests/README.md](tests/README.md) | [docs/development-guide.md - Tests](docs/development-guide.md#tests)
 
-Which gives us:
+```bash
+# Tests unitaires (Vitest)
+npm run test
 
-```
-commit ec2fc9d6cb0954fb3b57201cf6133c48d8ca0d29
-Author: zricethezav <thisispublicanyways@gmail.com>
-Date:   Sun Jan 28 17:39:00 2018 -0500
-
-    [update] entropy check
-
-diff --git a/checks_test.go b/checks_test.go
---- a/checks_test.go
-+++ b/checks_test.go
-@@ -28,0 +37,1 @@
-+               "aws_secret= \"AKIAIMNOJVGFDXXXE4OA\"":          true,
-
+# Tests E2E (Playwright)
+npm run test:e2e
 ```
 
-## Pre-Commit hook
+**Couverture** : Routes API, services, flux publics et admin
 
-You can run Gitleaks as a pre-commit hook by copying the example `pre-commit.py` script into
-your `.git/hooks/` directory.
+---
 
-## Configuration
+## 📦 Déploiement
 
-Gitleaks offers a configuration format you can follow to write your own secret detection rules:
+### Docker (Recommandé)
 
-```toml
-# Title for the gitleaks configuration file.
-title = "Gitleaks title"
+Le projet inclut une configuration Docker complète avec :
 
-# Extend the base (this) configuration. When you extend a configuration
-# the base rules take precedence over the extended rules. I.e., if there are
-# duplicate rules in both the base configuration and the extended configuration
-# the base rules will override the extended rules.
-# Another thing to know with extending configurations is you can chain together
-# multiple configuration files to a depth of 2. Allowlist arrays are appended
-# and can contain duplicates.
-# useDefault and path can NOT be used at the same time. Choose one.
-[extend]
-# useDefault will extend the base configuration with the default gitleaks config:
-# https://github.com/zricethezav/gitleaks/blob/master/config/gitleaks.toml
-useDefault = true
-# or you can supply a path to a configuration. Path is relative to where gitleaks
-# was invoked, not the location of the base config.
-path = "common_config.toml"
+- ✅ Multi-stage build optimisé
+- ✅ Initialisation automatique de la DB (migrations + seed)
+- ✅ Support Traefik pour SSL automatique
+- ✅ Healthchecks intégrés
 
-# An array of tables that contain information that define instructions
-# on how to detect secrets
-[[rules]]
+**Guide complet** : [docs/installation.md](docs/installation.md)
 
-# Unique identifier for this rule
-id = "awesome-rule-1"
+### Déploiement VPS avec Traefik
 
-# Short human readable description of the rule.
-description = "awesome rule 1"
-
-# Golang regular expression used to detect secrets. Note Golang's regex engine
-# does not support lookaheads.
-regex = '''one-go-style-regex-for-this-rule'''
-
-# Golang regular expression used to match paths. This can be used as a standalone rule or it can be used
-# in conjunction with a valid `regex` entry.
-path = '''a-file-path-regex'''
-
-# Array of strings used for metadata and reporting purposes.
-tags = ["tag","another tag"]
-
-# Int used to extract secret from regex match and used as the group that will have
-# its entropy checked if `entropy` is set.
-secretGroup = 3
-
-# Float representing the minimum shannon entropy a regex group must have to be considered a secret.
-entropy = 3.5
-
-# Keywords are used for pre-regex check filtering. Rules that contain
-# keywords will perform a quick string compare check to make sure the
-# keyword(s) are in the content being scanned. Ideally these values should
-# either be part of the idenitifer or unique strings specific to the rule's regex
-# (introduced in v8.6.0)
-keywords = [
-  "auth",
-  "password",
-  "token",
-]
-
-# You can include an allowlist table for a single rule to reduce false positives or ignore commits
-# with known/rotated secrets
-[rules.allowlist]
-description = "ignore commit A"
-commits = [ "commit-A", "commit-B"]
-paths = [
-  '''go\.mod''',
-  '''go\.sum'''
-]
-# note: (rule) regexTarget defaults to check the _Secret_ in the finding.
-# if regexTarget is not specified then _Secret_ will be used.
-# Acceptable values for regexTarget are "match" and "line"
-regexTarget = "match"
-regexes = [
-  '''process''',
-  '''getenv''',
-]
-# note: stopwords targets the extracted secret, not the entire regex match
-# like 'regexes' does. (stopwords introduced in 8.8.0)
-stopwords = [
-  '''client''',
-  '''endpoint''',
-]
-
-
-# This is a global allowlist which has a higher order of precedence than rule-specific allowlists.
-# If a commit listed in the `commits` field below is encountered then that commit will be skipped and no
-# secrets will be detected for said commit. The same logic applies for regexes and paths.
-[allowlist]
-description = "global allow list"
-commits = [ "commit-A", "commit-B", "commit-C"]
-paths = [
-  '''gitleaks\.toml''',
-  '''(.*?)(jpg|gif|doc)'''
-]
-
-# note: (global) regexTarget defaults to check the _Secret_ in the finding.
-# if regexTarget is not specified then _Secret_ will be used.
-# Acceptable values for regexTarget are "match" and "line"
-regexTarget = "match"
-
-regexes = [
-  '''219-09-9999''',
-  '''078-05-1120''',
-  '''(9[0-9]{2}|666)-\d{2}-\d{4}''',
-]
-# note: stopwords targets the extracted secret, not the entire regex match
-# like 'regexes' does. (stopwords introduced in 8.8.0)
-stopwords = [
-  '''client''',
-  '''endpoint''',
-]
-```
-
-Refer to the default [gitleaks config](https://github.com/zricethezav/gitleaks/blob/master/config/gitleaks.toml) for examples or follow the [contributing guidelines](https://github.com/zricethezav/gitleaks/blob/master/README.md) if you would like to contribute to the default configuration. Additionally, you can check out [this gitleaks blog post](https://blog.gitleaks.io/stop-leaking-secrets-configuration-2-3-aeed293b1fbf) which covers advanced configuration setups.
-
-### Additional Configuration
-
-#### gitleaks:allow
-
-If you are knowingly committing a test secret that gitleaks will catch you can add a `gitleaks:allow` comment to that line which will instruct gitleaks
-to ignore that secret. Ex:
+Architecture production :
 
 ```
-class CustomClass:
-    discord_client_secret = '8dyfuiRyq=vVc3RRr_edRk-fK__JItpZ'  #gitleaks:allow
-
+Internet → Traefik (SSL) → Next.js App
+                         → PostgreSQL
 ```
 
-#### .gitleaksignore
+Voir [docs/installation.md - Déploiement VPS](docs/installation.md#déploiement-sur-vps)
 
-You can ignore specific findings by creating a `.gitleaksignore` file at the root of your repo. In release v8.10.0 Gitleaks added a `Fingerprint` value to the Gitleaks report. Each leak, or finding, has a Fingerprint that uniquely identifies a secret. Add this fingerprint to the `.gitleaksignore` file to ignore that specific secret. See Gitleaks' [.gitleaksignore](https://github.com/zricethezav/gitleaks/blob/master/.gitleaksignore) for an example. Note: this feature is experimental and is subject to change in the future.
+### Autres Plateformes
 
-## Sponsorships
+Compatible avec (avec adaptations) :
 
-<p align="left">
-	  <a href="https://www.tines.com/?utm_source=oss&utm_medium=sponsorship&utm_campaign=gitleaks">
-		  <img alt="Tines Sponsorship" src="https://user-images.githubusercontent.com/15034943/146411864-4878f936-b4f7-49a0-b625-f9f40c704bfa.png" width=200>
-	  </a>
-  </p>
+- **Vercel** - Nécessite base de données externe (Neon, Supabase)
+- **Netlify** - Idem
+- **Railway** - Support PostgreSQL intégré
+- **Render** - Support PostgreSQL intégré
 
-## Exit Codes
+⚠️ **Note** : Ce projet utilise PostgreSQL. Les plateformes serverless nécessitent une base de données managée externe.
 
-You can always set the exit code when leaks are encountered with the --exit-code flag. Default exit codes below:
+---
+
+## 🗂️ Structure du Projet
 
 ```
-0 - no leaks present
-1 - leaks or error encountered
-126 - unknown flag
+portfolio/
+├── src/
+│   ├── app/
+│   │   ├── (api)/              # API Routes
+│   │   └── (web)/              # Pages publiques
+│   ├── lib/
+│   │   ├── contracts/          # Types partagés
+│   │   ├── modules/            # Logique métier (articles, projets, etc.)
+│   │   └── utils/              # Utilitaires
+│   └── components/             # Composants React
+├── prisma/
+│   ├── schema.prisma           # Schéma de la base de données
+│   ├── migrations/             # Migrations SQL
+│   └── seed.sql                # Données initiales
+├── docker-compose.yml          # Production (avec Traefik)
+├── docker-compose.dev.yml      # Développement local
+├── Dockerfile                  # Image app Next.js
+├── Dockerfile.init             # Image init DB (migrations)
+├── scripts/
+│   └── setup-first-deploy.sh   # Installation interactive
+├── tests/                      # Tests unitaires et E2E
+├── docs/                       # Documentation technique
+└── public/                     # Assets statiques
 ```
+
+---
+
+## 🎯 Contrats Typés
+
+Les types partagés entre UI et backend sont centralisés dans `src/lib/contracts` :
+
+- `ProjectAdminMetadata`, `ArticleAdminMetadata` - Métadonnées
+- `ContentStatus`, `PROJECT_STATUSES`, `ARTICLE_STATUSES` - Statuts
+- `ApiResponse` - Réponses API standardisées
+
+Réexportés dans `src/app/(web)/types/index.ts` pour import simplifié.
+
+---
+
+## 🎨 Crédits
+
+Ce projet est basé sur [Magic Portfolio](https://github.com/once-ui-system/magic-portfolio) par [Once UI](https://once-ui.com), créé par [Lorant Ambrus](https://www.linkedin.com/in/lorant-one/).
+
+### Améliorations Apportées
+
+- ✅ Architecture backend PostgreSQL + Prisma
+- ✅ Système d'administration complet
+- ✅ Authentification JWT sécurisée
+- ✅ API REST structurée
+- ✅ Configuration Docker production-ready
+- ✅ Script d'installation interactif
+- ✅ Suite de tests complète (unitaires + E2E)
+- ✅ Documentation technique exhaustive
+- ✅ Support Traefik pour SSL automatique
+
+---
+
+## 📄 Licence
+
+Ce projet utilise des composants sous licence **CC BY-NC 4.0** (Magic Portfolio).
+
+**Restrictions :**
+
+- ✅ Usage personnel et non-commercial autorisé
+- ✅ Attribution requise (Once UI)
+- ❌ Usage commercial non autorisé sans licence
+
+**Licence commerciale** : Disponible via [Once UI Pro](https://once-ui.com/pricing)
+
+Voir [LICENSE](LICENSE) pour plus d'informations.
+
+---
+
+## 🤝 Contribution
+
+Les contributions sont les bienvenues !
+
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
+3. Commit vos changements (`git commit -m 'feat: Add AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
+
+**Conventions :**
+
+- Commits selon [Conventional Commits](https://www.conventionalcommits.org/)
+- Tests requis pour nouvelles fonctionnalités
+- Documentation à jour
+
+---
+
+## 📞 Support & Ressources
+
+### Documentation
+
+- **Guide d'installation** : [docs/installation.md](docs/installation.md)
+- **Documentation technique** : [docs/](docs/)
+- **Once UI Docs** : [docs.once-ui.com](https://docs.once-ui.com)
+- **Next.js Docs** : [nextjs.org/docs](https://nextjs.org/docs)
+
+### Communauté
+
+- **Issues** : [GitHub Issues](../../issues)
+- **Discord** : [Design Engineers Club](https://discord.com/invite/5EyAQ4eNdS)
+- **Once UI Hub** : [once-ui.com/hub](https://once-ui.com/hub)
+
+---
+
+## 🌟 Remerciements
+
+- **Once UI** pour le design system et le template de base
+- **Lorant Ambrus** pour Magic Portfolio
+- La communauté Next.js et React
+
+---
+
+**Développé avec ❤️ par Max | DinoDev - Propulsé par Next.js et Once UI**
