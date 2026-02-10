@@ -1,0 +1,17 @@
+@use "./breakpoints.scss" as breakpoints;
+
+// Reserve minimum height to prevent CLS (Cumulative Layout Shift)
+:global(footer) {
+    min-height: 120px;
+}
+
+@media (max-width: breakpoints.$s) {
+    .mobile {
+        text-align: center;
+    }
+
+    // Mobile footer needs more space due to vertical layout
+    :global(footer) {
+        min-height: 180px;
+    }
+}
