@@ -1,0 +1,1 @@
+# Template Portfolio - Database Variant
