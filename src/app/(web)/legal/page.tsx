@@ -86,8 +86,8 @@ export default async function LegalPage() {
           <Column as="ul" gap="8" paddingLeft="24">
             <Text as="li" variant="body-default-m">
               Email :{" "}
-              <SmartLink href="mailto:contact@dinodev.me">
-                contact@dinodev.me
+              <SmartLink href="mailto:your.email@example.com">
+                your.email@example.com
               </SmartLink>
             </Text>
             <Text as="li" variant="body-default-m">
@@ -180,8 +180,8 @@ export default async function LegalPage() {
             Conformément au RGPD, vous disposez d'un droit d'accès, de
             rectification, de suppression et de portabilité de vos données
             personnelles. Pour exercer ces droits, contactez-moi par email :{" "}
-            <SmartLink href="mailto:contact@dinodev.me">
-              contact@dinodev.me
+            <SmartLink href="mailto:your.email@example.com">
+              your.email@example.com
             </SmartLink>
             .
           </Text>

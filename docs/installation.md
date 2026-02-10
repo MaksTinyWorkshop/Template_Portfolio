@@ -138,7 +138,7 @@ POSTGRES_DB=portfolio
 DATABASE_URL=postgresql://postgres:password@db:5432/portfolio
 
 # GitHub (optionnel - pour publication automatique)
-GITHUB_TOKEN=ghp_votre_token
+GITHUB_TOKEN=your_github_token_here
 GITHUB_OWNER=votre_username
 GITHUB_REPO=votre_repo
 GITHUB_BRANCH=main

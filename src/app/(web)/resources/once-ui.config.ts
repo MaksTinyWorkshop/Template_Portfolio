@@ -16,7 +16,7 @@ import localFont from "next/font/local";
 import { social } from "./content";
 
 // IMPORTANT: Replace with your own domain address - it's used for SEO in meta tags and schema
-const baseURL: string = "https://dinodev.me";
+const baseURL: string = "https://your-domain.com";
 
 const routes: RoutesConfig = {
   "/": true,
@@ -228,7 +228,7 @@ const schema: SchemaConfig = {
   name: "Maxime F (Max) - Développeur Full Stack",
   description:
     "Développeur Full Stack freelance spécialisé en solutions métier sur mesure. Java/Spring, Next.js, Astro. Basé à Rennes.",
-  email: "contact@dinodev.me",
+  email: "your.email@example.com",
 };
 
 // social links
