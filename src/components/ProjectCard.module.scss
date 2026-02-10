@@ -1,0 +1,4 @@
+.carouselWrapper :global(img) {
+  object-fit: contain !important;
+  background: var(--neutral-alpha-weak);
+}

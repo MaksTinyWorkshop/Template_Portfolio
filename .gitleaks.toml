@@ -1,0 +1,14 @@
+# Gitleaks Configuration for Template Sync
+# This config excludes false positives from documentation and test files
+
+[allowlist]
+description = "Allowlist for false positives"
+
+# Paths to ignore (documentation, tests, examples)
+paths = [
+    '''README\.md''',
+    '''tests/.*''',
+    '''.*\.spec\.ts''',
+    '''.*\.test\.ts''',
+    '''scripts/setup-first-deploy\.sh''',
+]
