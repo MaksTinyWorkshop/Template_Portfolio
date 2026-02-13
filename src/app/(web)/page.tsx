@@ -57,6 +57,8 @@ export default async function Home() {
               paddingTop="16"
               paddingBottom="32"
               paddingLeft="12"
+              revealedByDefault
+              speed={0}
             >
               <Badge
                 background="brand-alpha-weak"
@@ -76,6 +78,8 @@ export default async function Home() {
             fillWidth
             horizontal="center"
             paddingBottom="16"
+            revealedByDefault
+            speed={0}
           >
             <Heading wrap="balance" variant="display-strong-l">
               {home.headline}
@@ -86,12 +90,10 @@ export default async function Home() {
             fillWidth
             horizontal="center"
             paddingBottom="32"
+            revealedByDefault
+            speed={0}
           >
-            <Text
-              wrap="balance"
-              onBackground="neutral-weak"
-              variant="heading-default-xl"
-            >
+            <Text wrap="balance" onBackground="neutral-weak" variant="heading-default-xl">
               {home.subline}
             </Text>
           </RevealFx>
@@ -100,6 +102,8 @@ export default async function Home() {
             delay={0.4}
             horizontal="center"
             paddingLeft="12"
+            revealedByDefault
+            speed={0}
           >
             <Button
               id="about"
@@ -126,12 +130,12 @@ export default async function Home() {
         </Column>
       </Column>
       <Column fillWidth gap="24" marginBottom="l">
-        <RevealFx translateY="16" delay={0.6}>
+        <RevealFx translateY="16" delay={0.6} revealedByDefault>
           <Row fillWidth horizontal="center">
             <Line maxWidth={120} style={{ height: 4 }} />
           </Row>
         </RevealFx>
-        <RevealFx translateY="16" delay={0.7}>
+        <RevealFx translateY="16" delay={0.7} revealedByDefault>
           <Row fillWidth gap="24" marginTop="40" s={{ direction: "column" }}>
             <Row flex={1} paddingLeft="l" paddingTop="24">
               <Heading as="h2" variant="display-strong-xs" wrap="balance">

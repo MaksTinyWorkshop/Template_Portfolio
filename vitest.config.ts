@@ -31,7 +31,10 @@ export default defineConfig({
     alias: [
       { find: /^@\/public\/(.*)$/, replacement: path.resolve(__dirname, "public") + "/$1" },
       { find: /^@\/web\/(.*)$/, replacement: path.resolve(__dirname, "src/app/(web)") + "/$1" },
-      { find: /^@\/modules\/(.*)$/, replacement: path.resolve(__dirname, "src/lib/modules") + "/$1" },
+      {
+        find: /^@\/modules\/(.*)$/,
+        replacement: path.resolve(__dirname, "src/lib/modules") + "/$1",
+      },
       { find: /^@\/lib\/(.*)$/, replacement: path.resolve(__dirname, "src/lib") + "/$1" },
       { find: /^@\/app\/(.*)$/, replacement: path.resolve(__dirname, "src/app") + "/$1" },
       { find: /^@\/(.*)$/, replacement: path.resolve(__dirname, "src") + "/$1" },

@@ -1,22 +1,7 @@
 import { TOKEN_MAX_AGE_MS } from "@/lib/utils/auth-constants";
+import { timingSafeEqual } from "@/lib/utils/timing-safe-equal";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-
-/**
- * Comparaison de strings à temps constant pour éviter les timing attacks
- */
-function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) {
-    return false;
-  }
-
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-
-  return result === 0;
-}
 
 /**
  * Vérifie un token HMAC avec Web Crypto API (compatible Edge Runtime)
@@ -52,15 +37,9 @@ async function verifyTokenEdge(token: string): Promise<boolean> {
     );
 
     // Calculer la signature
-    const signatureBuffer = await crypto.subtle.sign(
-      "HMAC",
-      cryptoKey,
-      messageData,
-    );
+    const signatureBuffer = await crypto.subtle.sign("HMAC", cryptoKey, messageData);
     const signatureArray = Array.from(new Uint8Array(signatureBuffer));
-    const expectedSignature = signatureArray
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
+    const expectedSignature = signatureArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 
     // Comparaison à temps constant pour éviter timing attacks
     if (!timingSafeEqual(receivedSignature, expectedSignature)) return false;
@@ -69,20 +48,14 @@ async function verifyTokenEdge(token: string): Promise<boolean> {
     const tokenTimestamp = Number.parseInt(timestamp, 10);
     const now = Date.now();
 
-    if (
-      Number.isNaN(tokenTimestamp) ||
-      now - tokenTimestamp > TOKEN_MAX_AGE_MS
-    ) {
+    if (Number.isNaN(tokenTimestamp) || now - tokenTimestamp > TOKEN_MAX_AGE_MS) {
       return false;
     }
 
     return true;
   } catch (error) {
     if (process.env.NODE_ENV !== "production") {
-      console.error(
-        "❌ Erreur lors de la vérification du token dans le middleware:",
-        error,
-      );
+      console.error("❌ Erreur lors de la vérification du token dans le middleware:", error);
     }
     return false;
   }

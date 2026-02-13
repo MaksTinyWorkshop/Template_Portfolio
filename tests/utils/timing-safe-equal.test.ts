@@ -29,8 +29,7 @@ describe("timingSafeEqual() - Timing-Safe String Comparison", () => {
     });
 
     it("retourne true pour signatures HMAC identiques", () => {
-      const signature =
-        "a3f8b2c9d1e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0";
+      const signature = "a3f8b2c9d1e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0";
       expect(timingSafeEqual(signature, signature)).toBe(true);
     });
 
@@ -51,10 +50,8 @@ describe("timingSafeEqual() - Timing-Safe String Comparison", () => {
     });
 
     it("retourne false pour signatures différentes (même longueur)", () => {
-      const sig1 =
-        "a3f8b2c9d1e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0";
-      const sig2 =
-        "a3f8b2c9d1e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a1"; // dernier char différent
+      const sig1 = "a3f8b2c9d1e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0";
+      const sig2 = "a3f8b2c9d1e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a1"; // dernier char différent
 
       expect(timingSafeEqual(sig1, sig2)).toBe(false);
     });
@@ -136,12 +133,9 @@ describe("timingSafeEqual() - Timing-Safe String Comparison", () => {
 
   describe("Compatibilité avec signatures JWT/HMAC", () => {
     it("fonctionne avec signatures hex 64 chars (SHA-256)", () => {
-      const validSig =
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-      const copySig =
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-      const invalidSig =
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b856"; // dernier char différent
+      const validSig = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+      const copySig = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+      const invalidSig = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b856"; // dernier char différent
 
       expect(timingSafeEqual(validSig, copySig)).toBe(true);
       expect(timingSafeEqual(validSig, invalidSig)).toBe(false);

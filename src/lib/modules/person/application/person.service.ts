@@ -1,22 +1,10 @@
 import type { Prisma } from "@prisma/client";
+import { ensureMediaRecord } from "@/lib/utils/content-normalizers";
 import { createPerson, findPersonByFullNameTx, updatePerson } from "../infrastructure/person.repo";
 import type { PersonPayload } from "../domain/person";
 
-const ensureAvatarMedia = async (tx: Prisma.TransactionClient, avatar?: string | null) => {
-  if (!avatar) return null;
-  const normalized = avatar.trim();
-  if (!normalized) return null;
-  const existing = await tx.media.findFirst({ where: { url: normalized } });
-  if (existing) return existing;
-  return tx.media.create({
-    data: {
-      url: normalized,
-      kind: "image",
-      storagePath: normalized,
-      storageProvider: "local",
-    },
-  });
-};
+const ensureAvatarMedia = (tx: Prisma.TransactionClient, avatar?: string | null) =>
+  ensureMediaRecord(tx, avatar, { kind: "image", storageProvider: "local" });
 
 export const ensurePerson = async (tx: Prisma.TransactionClient, person: PersonPayload) => {
   const fullName = person.fullName.trim();
@@ -50,7 +38,9 @@ export const ensurePerson = async (tx: Prisma.TransactionClient, person: PersonP
     role: { set: person.role ?? null },
     bio: { set: person.bio ?? null },
     email: { set: person.email ?? null },
-    profileData: { set: person.profileData ? (person.profileData as Prisma.InputJsonValue) : undefined },
+    profileData: {
+      set: person.profileData ? (person.profileData as Prisma.InputJsonValue) : undefined,
+    },
     siteOwner: { set: person.siteOwner ?? false },
     ...(avatarMedia
       ? {

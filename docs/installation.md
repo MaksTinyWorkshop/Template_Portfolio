@@ -130,6 +130,7 @@ NEXT_PUBLIC_SITE_URL=https://votre-domaine.com
 # Authentification (IMPORTANT : Changez ces valeurs)
 ADMIN_PASSWORD=votre_mot_de_passe_securise
 AUTH_SECRET=generer_avec_openssl_rand_base64_32
+CRON_SECRET=generer_avec_openssl_rand_hex_32
 
 # Base de données
 POSTGRES_USER=postgres
@@ -207,7 +208,7 @@ docker compose ps
 
 ### Architecture Docker
 
-Le projet utilise **3 services Docker** orchestrés :
+Le projet utilise **4 services Docker** orchestrés :
 
 ```
 ┌─────────────────────┐
@@ -223,19 +224,25 @@ Le projet utilise **3 services Docker** orchestrés :
 ┌─────────────────────┐
 │  app (Next.js)      │  ← Application web
 └─────────────────────┘
+           │
+           ↓
+┌─────────────────────┐
+│ publish-cron        │  ← Publication différée (cron interne)
+└─────────────────────┘
 ```
 
 **Flux de démarrage :**
 1. **db** démarre et devient healthy
 2. **db-init** exécute migrations Prisma + seed SQL (puis se termine)
 3. **app** démarre avec une base de données prête
+4. **publish-cron** exécute chaque jour la publication différée (prod) et synchronise les statuts en base
 
 ### Structure des environnements
 
 | Fichier | Usage | Ports | Services |
 |---------|-------|-------|----------|
-| `docker-compose.dev.yml` | Développement local | 3000, 5432 | app, db, db-init |
-| `docker-compose.yml` | Production avec Traefik | Traefik gère | app, db |
+| `docker-compose.dev.yml` | Développement local | 3000, 5432 | app, db, db-init, publish-cron |
+| `docker-compose.yml` | Production avec Traefik | Traefik gère | app, db, db-init, publish-cron |
 
 ### Variables d'environnement importantes
 
@@ -245,8 +252,19 @@ Le projet utilise **3 services Docker** orchestrés :
 | `AUTH_SECRET` | Secret pour sessions | ✅ |
 | `DATABASE_URL` | URL PostgreSQL | ✅ |
 | `NEXT_PUBLIC_SITE_URL` | URL publique du site | ✅ |
+| `CRON_SECRET` | Secret du cron (publication différée) | ✅ |
 | `GITHUB_TOKEN` | Token GitHub API | ❌ |
 | `MAILCHIMP_*` | Config newsletter | ❌ |
+
+### Publication différée (cron)
+
+En production, la publication automatique des contenus planifiés est gérée par :
+
+- Un endpoint interne `POST /api/admin/publish-due` (protégé par `CRON_SECRET`)
+- Un service Docker `publish-cron` qui l’appelle **tous les jours à 12:00 (Europe/Paris)** via `http://app:3000/...` (réseau Docker)
+
+Pré-requis :
+- Définir `CRON_SECRET` dans le `.env` (ex: `openssl rand -hex 32`)
 
 ### Configuration Traefik (Production)
 

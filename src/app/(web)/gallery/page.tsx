@@ -5,7 +5,7 @@ import { getSitePersonData } from "@/lib/modules/person/services/person-site.ser
 import type { PersonSiteData } from "@/lib/modules/person/domain/person.utils";
 
 // Force dynamic rendering - disable static generation during build
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   return Meta.generate({

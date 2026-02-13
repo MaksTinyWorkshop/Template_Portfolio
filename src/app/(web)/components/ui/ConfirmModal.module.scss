@@ -1,0 +1,95 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+  background:
+    radial-gradient(1200px 800px at 30% 10%, rgba(56, 189, 248, 0.15), transparent 60%),
+    radial-gradient(900px 700px at 80% 30%, rgba(248, 113, 113, 0.12), transparent 60%),
+    rgba(2, 6, 23, 0.68);
+  backdrop-filter: blur(6px);
+  animation: backdropIn 140ms ease-out;
+}
+
+.dialog {
+  position: relative;
+  inset: auto;
+  display: block;
+  border: none;
+  padding: 0;
+  background: transparent;
+  width: min(560px, 100%);
+  max-width: 560px;
+  box-sizing: border-box;
+  margin: auto;
+}
+
+.modalCard {
+  width: min(560px, 100%);
+  border-radius: 14px;
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.25),
+    0 10px 20px rgba(0, 0, 0, 0.12);
+  position: relative;
+  overflow: hidden;
+  animation: modalIn 160ms ease-out;
+  opacity: 1;
+}
+
+.modalCard:hover {
+  opacity: 1;
+}
+
+.modalCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(56, 189, 248, 0.8);
+}
+
+.modalCard[data-variant="danger"]::before {
+  background: rgba(248, 113, 113, 0.9);
+}
+
+.closeButton {
+  margin-left: auto;
+}
+
+@media (max-width: 480px) {
+  .backdrop {
+    padding: 20px;
+  }
+
+  .modalCard {
+    border-radius: 12px;
+  }
+}
+
+@keyframes backdropIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

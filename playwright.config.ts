@@ -93,13 +93,7 @@ export default defineConfig({
 
   reporter: [
     ["list"],
-    [
-      "html",
-      { open: "never", outputFolder: "test-results/playwright/reports" },
-    ],
-    [
-      "junit",
-      { outputFile: "test-results/playwright/reports/junit-results.xml" },
-    ],
+    ["html", { open: "never", outputFolder: "test-results/playwright/reports" }],
+    ["junit", { outputFile: "test-results/playwright/reports/junit-results.xml" }],
   ],
 });

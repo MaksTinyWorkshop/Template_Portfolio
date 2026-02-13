@@ -2,8 +2,9 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import * as cookie from "cookie";
 import { verifyAuthToken } from "@/lib/utils/auth";
+import { withApiErrorHandling } from "@/lib/http/with-api-error";
 
-export async function GET(request: NextRequest) {
+export const GET = withApiErrorHandling(async (request: NextRequest) => {
   const cookieHeader = request.headers.get("cookie") || "";
   const cookies = cookie.parse(cookieHeader);
 
@@ -15,4 +16,4 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.json({ authenticated: false }, { status: 401 });
-}
+});

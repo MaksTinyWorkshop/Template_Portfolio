@@ -1,10 +1,11 @@
 "use client";
 
-import { Button, Card, Flex, Text } from "@once-ui-system/core";
+import { ConfirmModal } from "@/web/components/ui/ConfirmModal";
+import { useToastService } from "@/web/components/utils/ToastService";
+import { Button, Card, Flex, Icon, Text } from "@once-ui-system/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useToastService } from "@/web/components/utils/ToastService";
 
 // Types de base pour le contenu
 export interface BaseContentItem {
@@ -44,6 +45,13 @@ export function ContentList<T extends BaseContentItem>({
   const [items, setItems] = useState<T[]>(initialItems);
   const [loading, setLoading] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [confirmState, setConfirmState] = useState<{
+    title: string;
+    message: string;
+    confirmLabel: string;
+    confirmVariant?: "primary" | "danger";
+    onConfirm: () => Promise<void>;
+  } | null>(null);
   const router = useRouter();
 
   // Fermer le dropdown si on clique en dehors
@@ -64,11 +72,7 @@ export function ContentList<T extends BaseContentItem>({
     };
   }, []);
 
-  const handleDelete = async (slug: string) => {
-    if (!confirm(config.deleteConfirmMessage(slug))) {
-      return;
-    }
-
+  const performDelete = async (slug: string) => {
     setLoading(slug);
 
     try {
@@ -79,7 +83,7 @@ export function ContentList<T extends BaseContentItem>({
       const data = await response.json();
 
       if (data.success) {
-        setItems(items.filter((item) => item.slug !== slug));
+        setItems((previous) => previous.filter((item) => item.slug !== slug));
         notify({
           message: config.deleteSuccessMessage,
           variant: "success",
@@ -102,13 +106,9 @@ export function ContentList<T extends BaseContentItem>({
     }
   };
 
-  const handlePublish = async (slug: string) => {
+  const performPublish = async (slug: string) => {
     const item = items.find((i) => i.slug === slug);
     if (!item) return;
-
-    if (!confirm(config.publishConfirmMessage(item.title))) {
-      return;
-    }
 
     setLoading(slug);
 
@@ -125,7 +125,9 @@ export function ContentList<T extends BaseContentItem>({
       const data = await response.json();
 
       if (data.success) {
-        setItems(items.map((i) => (i.slug === slug ? ({ ...i, status: "published" } as T) : i)));
+        setItems((previous) =>
+          previous.map((i) => (i.slug === slug ? ({ ...i, status: "published" } as T) : i)),
+        );
         notify({
           message: config.publishSuccessMessage,
           variant: "success",
@@ -146,6 +148,32 @@ export function ContentList<T extends BaseContentItem>({
     } finally {
       setLoading(null);
     }
+  };
+
+  const requestDelete = (slug: string) => {
+    setConfirmState({
+      title: "Supprimer",
+      message: config.deleteConfirmMessage(slug),
+      confirmLabel: "Supprimer",
+      confirmVariant: "danger",
+      onConfirm: async () => {
+        await performDelete(slug);
+      },
+    });
+  };
+
+  const requestPublish = (slug: string) => {
+    const item = items.find((i) => i.slug === slug);
+    if (!item) return;
+    setConfirmState({
+      title: "Publier",
+      message: config.publishConfirmMessage(item.title),
+      confirmLabel: "Publier",
+      confirmVariant: "primary",
+      onConfirm: async () => {
+        await performPublish(slug);
+      },
+    });
   };
 
   const getStatusBadge = (status: BaseContentItem["status"]) => {
@@ -212,6 +240,21 @@ export function ContentList<T extends BaseContentItem>({
 
   return (
     <Flex direction="column" gap="32" fillWidth>
+      <ConfirmModal
+        open={confirmState !== null}
+        title={confirmState?.title ?? ""}
+        message={confirmState?.message}
+        confirmLabel={confirmState?.confirmLabel}
+        confirmVariant={confirmState?.confirmVariant}
+        busy={loading !== null}
+        onClose={() => setConfirmState(null)}
+        onConfirm={async () => {
+          if (!confirmState) return;
+          const action = confirmState.onConfirm;
+          setConfirmState(null);
+          await action();
+        }}
+      />
       {items.map((item) => (
         <Card
           key={item.slug}
@@ -240,6 +283,8 @@ export function ContentList<T extends BaseContentItem>({
                     <Button
                       variant="secondary"
                       size="s"
+                      aria-label={`Actions pour ${item.title}`}
+                      aria-expanded={openDropdown === item.slug}
                       onClick={() => setOpenDropdown(openDropdown === item.slug ? null : item.slug)}
                       disabled={loading === item.slug}
                       style={{
@@ -249,7 +294,7 @@ export function ContentList<T extends BaseContentItem>({
                         cursor: "pointer",
                       }}
                     >
-                      ⋮
+                      <Icon name="more" />
                     </Button>
 
                     {openDropdown === item.slug && (
@@ -296,7 +341,7 @@ export function ContentList<T extends BaseContentItem>({
                             type="button"
                             onClick={() => {
                               setOpenDropdown(null);
-                              handlePublish(item.slug);
+                              requestPublish(item.slug);
                             }}
                             disabled={loading === item.slug}
                             style={{
@@ -328,7 +373,7 @@ export function ContentList<T extends BaseContentItem>({
                           type="button"
                           onClick={() => {
                             setOpenDropdown(null);
-                            handleDelete(item.slug);
+                            requestDelete(item.slug);
                           }}
                           disabled={loading === item.slug}
                           style={{

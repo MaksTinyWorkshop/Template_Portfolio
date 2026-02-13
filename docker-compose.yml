@@ -35,6 +35,8 @@ services:
       - GIT_AUTHOR_NAME=${GIT_AUTHOR_NAME:-Portfolio Admin}
       - GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL:-admin@portfolio.local}
       - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/portfolio}
+      # Cron secret for internal scheduled publishing
+      - CRON_SECRET=${CRON_SECRET:-}
 
     volumes:
       # Persist uploads (if stored locally)
@@ -100,6 +102,29 @@ services:
         condition: service_completed_successfully
 
   # ===================================
+  # Scheduled Publishing - Cron Runner
+  # ===================================
+  publish-cron:
+    image: alpine:3.20
+    container_name: portfolio-publish-cron
+    restart: unless-stopped
+    environment:
+      - CRON_SECRET=${CRON_SECRET}
+      - NODE_ENV=production
+      - TZ=Europe/Paris
+    command:
+      [
+        "sh",
+        "-lc",
+        "apk add --no-cache curl tzdata >/dev/null 2>&1 && echo \"0 12 * * * curl -fsS -X POST http://app:3000/api/admin/publish-due -H 'Authorization: Bearer ${CRON_SECRET}' -o /dev/null\" > /etc/crontabs/root && crond -f -l 8",
+      ]
+    networks:
+      - backend
+    depends_on:
+      app:
+        condition: service_healthy
+
+  # ===================================
   # Database Initializer - Migrations Prisma 7
   # ===================================
   db-init:
@@ -138,6 +163,8 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
       interval: 10s

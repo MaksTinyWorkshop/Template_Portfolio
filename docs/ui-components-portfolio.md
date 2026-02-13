@@ -56,9 +56,9 @@ Ce document catalogue tous les composants UI du portfolio, organisés par catég
 
 #### `Post.tsx`
 **Catégorie** : Display
-**Description** : Affichage d'un post de blog individuel
-**Props** : `{ post: Post }`
-**Dépendances** : MDX, HeadingLink
+**Description** : Affichage d'un post de blog individuel (card)
+**Props** : `{ article: ArticleSummary, thumbnail: boolean, direction?: "row" | "column", sitePerson: PersonSiteData }`
+**Dépendances** : Tag, Once UI components
 
 #### `ShareSection.tsx`
 **Catégorie** : Interactive
@@ -70,41 +70,36 @@ Ce document catalogue tous les composants UI du portfolio, organisés par catég
 
 #### `Projects.tsx`
 **Catégorie** : Display
-**Description** : Grille de tous les projets
-**Props** : `{ projects: Project[] }`
+**Description** : Liste serveur des projets avec tri, exclusion, filtre tags et pagination par plage
+**Props** : `{ range?: [number, number?], exclude?: string[], filterTags?: string[], initialProjects?: ProjectSummary[] }`
 **Dépendances** : ProjectCard
 
 #### `ClientProjects.tsx`
 **Catégorie** : Interactive
 **Description** : Version client-side de la liste de projets
 **Client Component** : Oui
-**Props** : `{ projects: Project[] }`
+**Props** : `{ projects: ProjectSummary[] }`
 
 #### `FilterableProjects.tsx`
 **Catégorie** : Interactive
 **Description** : Projets avec filtrage par tags
 **Client Component** : Oui
-**Props** : `{ projects: Project[], tags: string[] }`
-**Dépendances** : ProjectFilter, ProjectCard
+**Props** : `{ allTags: Tag[], projects: ProjectSummary[] }`
+**Dépendances** : FilterByTags, ClientProjects
 
-#### `ProjectFilter.tsx`
-**Catégorie** : Form/Interactive
-**Description** : Contrôles de filtrage pour les projets
+#### `FilterablePosts.tsx`
+**Catégorie** : Interactive
+**Description** : Posts de blog avec filtrage par tags
 **Client Component** : Oui
-**Props** : `{ tags: string[], activeFilters: string[], onFilterChange: Function }`
+**Props** : `{ allTags: Tag[], articles: ArticleSummary[], sitePerson: PersonSiteData }`
+**Dépendances** : FilterByTags, Post
 
 #### `ProjectCard.tsx`
 **Catégorie** : Display
 **Description** : Carte d'aperçu d'un projet
 **Réutilisable** : Oui
 **Props** : `{ project: Project }`
-**Dépendances** : ProjectTag
-
-#### `ProjectTag.tsx`
-**Catégorie** : Display
-**Description** : Badge/tag pour catégoriser les projets
-**Réutilisable** : Oui
-**Props** : `{ tag: string }`
+**Dépendances** : Tag
 
 ### About
 
@@ -163,6 +158,43 @@ Ce document catalogue tous les composants UI du portfolio, organisés par catég
 **Client Component** : Oui
 **Props** : `{ items: ContentItem[], type: 'post'|'project' }`
 
+#### `TagsList.tsx`
+**Catégorie** : Admin - Display
+**Description** : Liste des tags avec actions d'édition/suppression
+**Client Component** : Oui
+**Props** : N/A
+
+#### `TagForm.tsx`
+**Catégorie** : Admin - Form
+**Description** : Formulaire création/édition de tag (nom, slug, couleur, catégorie)
+**Client Component** : Oui
+**Props** : `{ initialTag?: Tag }`
+
+#### `PersonsList.tsx`
+**Catégorie** : Admin - Display
+**Description** : Liste des personnes avec actions CRUD et garde-fous site owner
+**Client Component** : Oui
+**Props** : N/A
+
+#### `PersonForm.tsx`
+**Catégorie** : Admin - Form
+**Description** : Formulaire personne avec avatar et réseaux sociaux whitelistés
+**Client Component** : Oui
+**Props** : `{ person?: Person }`
+
+#### `KnownTeamMemberField.tsx`
+**Catégorie** : Admin - Form
+**Description** : Champ helper de sélection de membre d'équipe connu
+**Client Component** : Oui
+**Props** : Dépend du formulaire parent
+
+#### `AssetsManager.tsx`
+**Catégorie** : Admin - File Management
+**Description** : Explorateur `/public/images` (navigation, création dossier, upload, rename, delete)
+**Client Component** : Oui
+**Props** : N/A
+**Dépendances** : API `/api/admin/assets`
+
 #### `PostForm.tsx`
 **Catégorie** : Admin - Form
 **Description** : Formulaire d'édition de post de blog
@@ -185,10 +217,10 @@ Ce document catalogue tous les composants UI du portfolio, organisés par catég
 
 #### `ImageUpload.tsx`
 **Catégorie** : Admin - Form
-**Description** : Upload d'images pour le contenu
+**Description** : Upload d'images (transformation) + sélection d'assets existants
 **Client Component** : Oui
 **Props** : `{ onUpload: Function }`
-**Dépendances** : API `/api/admin/upload`
+**Dépendances** : API `/api/admin/upload`, API `/api/admin/assets`
 
 #### `DashboardStats.tsx`
 **Catégorie** : Admin - Display
@@ -215,6 +247,22 @@ Ce document catalogue tous les composants UI du portfolio, organisés par catég
 **Description** : Badge affichant le statut de disponibilité
 **Props** : `{ available: boolean }`
 **Réutilisable** : Oui
+
+#### `Tag.tsx`
+**Catégorie** : Display
+**Description** : Badge/tag coloré pour catégoriser projets et articles (source: BDD)
+**Client Component** : Oui
+**Props** : `{ name: string, color?: string | null }`
+**Réutilisable** : Oui (utilisé pour projects ET articles)
+**Note** : Les couleurs sont dynamiques depuis la table Tag en base de données (format hexadécimal)
+
+#### `FilterByTags.tsx`
+**Catégorie** : Form/Interactive
+**Description** : Composant réutilisable de filtrage par tags avec sélection multiple
+**Client Component** : Oui
+**Props** : `{ allTags: TagData[], onFilterChange: (selectedTags: string[]) => void, label?: string, resetLabel?: string }`
+**Réutilisable** : Oui (utilisé pour blog ET projets)
+**Fonctionnalités** : Sélection multiple, reset, opacité visuelle sur tags non sélectionnés
 
 ---
 
@@ -267,7 +315,8 @@ Ce document catalogue tous les composants UI du portfolio, organisés par catég
 - **Client Components** : Forms, Interactive features, State management
 
 ### Réutilisabilité
-- **Hautement réutilisables** : ProjectCard, ProjectTag, HeadingLink, ShareSection
+- **Hautement réutilisables** : ProjectCard, Tag, FilterByTags, HeadingLink, ShareSection
+- **Partagés blog + projets** : Tag, FilterByTags, FilterablePosts, FilterableProjects
 - **Spécifiques au contexte** : Admin components, Page-specific components
 
 ### État et Props
@@ -279,8 +328,8 @@ Ce document catalogue tous les composants UI du portfolio, organisés par catég
 
 ## Statistiques
 
-- **Total composants** : 33
-- **Client Components** : 15
-- **Server Components** : 18
-- **Composants admin** : 13
+- **Total composants** : 42
+- **Client Components** : 37
+- **Server Components** : 5
+- **Composants admin** : 17
 - **Composants réutilisables** : 8

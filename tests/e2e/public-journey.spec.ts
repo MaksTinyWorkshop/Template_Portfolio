@@ -45,15 +45,15 @@ test.describe("Parcours public complet", () => {
 
     await expect(page).toHaveURL(/\/blog/);
     await expect(page.getByRole("heading", { name: /Blog Tech & Développement/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Posts récents/i })).toBeVisible();
+    await expect(page.locator('a[href^="/blog/"]').first()).toBeVisible();
   });
 
   test("les liens externes s’ouvrent dans un nouvel onglet", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/legal");
 
     const footerLink = page.getByRole("link", { name: /Once UI/i });
     await expect(footerLink).toHaveAttribute("href", "https://once-ui.com/");
     await expect(footerLink).toHaveAttribute("target", "_blank");
-    await expect(footerLink).toHaveAttribute("rel", "noreferrer");
+    await expect(footerLink).toHaveAttribute("rel", /noopener noreferrer/);
   });
 });

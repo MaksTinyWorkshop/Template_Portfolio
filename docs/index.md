@@ -26,8 +26,8 @@
 | **Architecture**   | Component-Based, File-system routing         |
 | **Contenu**        | PostgreSQL/Prisma (seed MDX → BDD persisted) |
 | **Auth**           | JWT + HTTP-only cookies                      |
-| **Composants**     | 33 composants React (15 Client, 18 Server)   |
-| **API Routes**     | 11 endpoints REST                            |
+| **Composants**     | 42 composants React (37 Client, 5 Server)    |
+| **API Routes**     | 24 endpoints REST                            |
 
 ---
 
@@ -49,16 +49,14 @@
    - Authentification et sécurité
    - Optimisations et déploiement
 
-3. **[API Contracts](./api-contracts-portfolio.md)**
-   - Documentation de tous les endpoints API
-   - Routes d'authentification
-   - Routes admin (CRUD posts/projets)
-   - Routes publiques (RSS, OG, disponibilité)
-   - Schémas de requête/réponse
-   - Patterns de sécurité
+3. **API Docs (OpenAPI/Swagger)**
+   - Interface Swagger admin : `/admin/api-docs`
+   - Source de vérité JSON : `/api/admin/openapi`
+   - Documentation générée automatiquement depuis les routes Next.js
+   - Segmentation par domaines (`auth`, `admin/*`, `public/*`)
 
 4. **[Inventaire des Composants UI](./ui-components-portfolio.md)**
-   - Catalogue complet des 33 composants
+   - Catalogue complet des 42 composants
    - Catégorisation (Layout, Navigation, Forms, Admin, etc.)
    - Props et dépendances
    - Server vs Client Components
@@ -92,6 +90,7 @@
 8. **[Publication via la base de données (variante_BDD)](./github-api-setup.md)**
    - Explique pourquoi la branche `variante_BDD` n'utilise plus GitHub API
    - Décrit `/api/admin/publish`, les statuts Prisma et les variables d'environnement
+   - Décrit la publication différée via cron (`/api/admin/publish-due`, `publish-cron`)
    - Fournit des diagnostics et étapes de seed/BDD
 
 9. **[Rate Limiting](./rate-limiting.md)** ⭐ NOUVEAU
@@ -161,7 +160,7 @@ portfolio/
 ├── src/
 │   ├── app/
 │   │   ├── (web)/         # Pages publiques + interface admin
-│   │   └── (api)/api/     # API routes (auth, admin, availability, rss, og, analytics, contact, projects)
+│   │   └── (api)/api/     # API routes (auth, admin, availability, rss, og, contact, projects, person, health)
 │   ├── lib/               # Services Prisma, repositories, helpers HTTP
 │   └── proxy.ts           # Protection /admin (Edge middleware)
 ├── data/
@@ -211,7 +210,7 @@ Les fichiers MDX dans `data/posts/` et `data/projects/` servent d’import initi
 Système d'auth simple pour un seul admin :
 
 - JWT stocké en cookies HTTP-only
-- Protection via middleware
+- Protection via `proxy.ts` + `checkAuthAPI` sur `/api/admin/*`
 - Refresh token pour sessions longues
 
 **En savoir plus** : [architecture.md#authentification-et-sécurité](./architecture.md)
@@ -239,21 +238,41 @@ Once UI fournit :
 | `/api/og/fetch`     | GET     | Récupère métadonnées OG d'une URL |
 | `/api/og/proxy`     | GET     | Proxy pour images OG              |
 | `/api/availability` | GET     | Statut de disponibilité           |
+| `/api/health`       | GET     | Health check application          |
+| `/api/person`       | GET     | Données site owner pour la vitrine |
+| `/api/projects`     | GET     | Liste projets publics             |
+| `/api/projects/[slug]` | GET | Détail projet |
+| `/api/contact`      | POST    | Soumission formulaire contact (rate-limited) |
+
+UI admin dédiée: `/admin/api-docs`
+
+### Routes d'Authentification
+
+| Endpoint             | Méthode     | Description                           |
+| -------------------- | ----------- | ------------------------------------- |
+| `/api/authenticate`  | POST/DELETE | Login admin / Logout                  |
+| `/api/check-auth`    | GET         | Vérifier authentification             |
+| `/api/refresh-token` | POST        | Rafraîchir JWT                        |
 
 ### Routes Admin (Protected)
 
 | Endpoint              | Méthode  | Description               |
 | --------------------- | -------- | ------------------------- |
-| `/api/authenticate`   | POST     | Login admin               |
-| `/api/check-auth`     | GET      | Vérifier authentification |
-| `/api/refresh-token`  | POST     | Rafraîchir JWT            |
-| `/api/admin/posts`    | GET/POST | CRUD posts                |
-| `/api/admin/projects` | GET/POST | CRUD projets              |
+| `/api/admin/posts`    | GET/POST/PUT/DELETE | CRUD posts |
+| `/api/admin/projects` | GET/POST/PUT/DELETE | CRUD projets |
+| `/api/admin/projects/tags` | GET | Tags liés aux projets |
+| `/api/admin/tags`     | GET/POST | CRUD tags (création/liste) |
+| `/api/admin/tags/[slug]` | GET/PUT/DELETE | CRUD tag ciblé |
+| `/api/admin/persons`  | GET/POST | CRUD personnes (liste/création) |
+| `/api/admin/persons/[id]` | GET/PUT/DELETE | CRUD personne ciblée |
+| `/api/admin/assets`   | GET/POST/PUT/DELETE | Gestion assets `/public/images` |
 | `/api/admin/publish`  | POST     | Toggle publication        |
-| `/api/admin/upload`   | POST     | Upload d'images           |
-| `/api/availability`   | POST     | Mise à jour disponibilité |
+| `/api/admin/upload`   | POST | Upload image transformée |
+| `/api/availability`   | POST     | Mise à jour disponibilité (admin) |
+| `/api/admin/openapi`    | GET      | Spécification OpenAPI (auth admin) |
+| `/api/admin/openapi/ui` | GET      | Swagger UI (auth admin) |
 
-**Détails complets** : [api-contracts-portfolio.md](./api-contracts-portfolio.md)
+**Détails complets** : `/admin/api-docs` (UI) et `/api/admin/openapi` (JSON)
 
 👉 Détails complémentaires de la variante BDD de publication : [Publication via la base de données (variante_BDD)](./github-api-setup.md)
 
@@ -265,13 +284,14 @@ Once UI fournit :
 
 - **Layout** : Header, Footer, AdminLayout
 - **Navigation** : ThemeToggle, TableOfContents, ScrollToHash
-- **Blog** : Posts, Post, ShareSection
-- **Work** : Projects, ProjectCard, ProjectFilter, ProjectTag
+- **Blog** : FilterablePosts, Post, ShareSection
+- **Work** : FilterableProjects, ProjectCard, ClientProjects
+- **Partagés** : Tag, FilterByTags (utilisés pour blog ET projets)
 - **Gallery** : GalleryView
 - **Admin** : LoginPage, PostForm, ProjectForm, ImageUpload, DashboardStats, etc.
 - **Utilitaires** : RouteGuard, Providers, mdx, HeadingLink
 
-**Total** : 33 composants (15 Client, 18 Server)
+**Total** : 42 composants (37 Client, 5 Server)
 
 **Inventaire complet** : [ui-components-portfolio.md](./ui-components-portfolio.md)
 
@@ -307,10 +327,10 @@ npm run export           # Exporter en statique pur
 ### Code
 
 - **Lignes de code** : ~10,000+ LOC (estimé)
-- **Composants React** : 33
-- **API Routes** : 11
+- **Composants React** : 42
+- **API Routes** : 24
 - **Pages publiques** : 6 (Home, About, Blog, Work, Gallery, Legal)
-- **Pages admin** : 3+ (Dashboard, Posts, Projects)
+- **Pages admin** : 14 (Dashboard + CRUD blog/projects/tags/persons/assets)
 - **Fichiers TypeScript** : 100+
 
 ### Performance (Lighthouse)
@@ -388,11 +408,13 @@ curl http://localhost:3000/api/health
 
 ```env
 # REQUIS
-ADMIN_PASSWORD_HASH=<bcrypt_hash>
+DATABASE_URL=postgresql://postgres:password@db:5432/portfolio
+ADMIN_PASSWORD=votre_mot_de_passe
+AUTH_SECRET=votre_secret_hmac
+CRON_SECRET=votre_cron_secret
 
 # OPTIONNEL
 NEXT_PUBLIC_SITE_URL=https://votresite.com
-JWT_SECRET=<secret_aleatoire>
 NEXT_PUBLIC_MAILCHIMP_*=<si_newsletter>
 ```
 
@@ -466,7 +488,7 @@ npm run build:analyze
 Cette documentation est optimisée pour être utilisée par des assistants AI lors du développement :
 
 1. **Architecture complète** : [architecture.md](./architecture.md) contient toutes les décisions techniques
-2. **Contrats API** : [api-contracts-portfolio.md](./api-contracts-portfolio.md) documente précisément chaque endpoint
+2. **Contrats API** : `/api/admin/openapi` documente les endpoints (source générée)
 3. **Composants** : [ui-components-portfolio.md](./ui-components-portfolio.md) liste tous les composants avec leurs props
 4. **Structure** : [source-tree-analysis.md](./source-tree-analysis.md) explique l'organisation du code
 
@@ -475,7 +497,7 @@ Cette documentation est optimisée pour être utilisée par des assistants AI lo
 Lors de la création d'un PRD brownfield avec BMAD, référencer :
 
 - **Pour features UI** : [ui-components-portfolio.md](./ui-components-portfolio.md) + [architecture.md](./architecture.md)
-- **Pour features API** : [api-contracts-portfolio.md](./api-contracts-portfolio.md) + [architecture.md](./architecture.md)
+- **Pour features API** : `/api/admin/openapi` + [architecture.md](./architecture.md)
 - **Pour features full-stack** : Tous les documents ci-dessus
 
 ---
@@ -510,7 +532,6 @@ Lors de la création d'un PRD brownfield avec BMAD, référencer :
 
 - [x] project-overview.md
 - [x] architecture.md
-- [x] api-contracts-portfolio.md
 - [x] ui-components-portfolio.md
 - [x] source-tree-analysis.md
 - [x] development-guide.md

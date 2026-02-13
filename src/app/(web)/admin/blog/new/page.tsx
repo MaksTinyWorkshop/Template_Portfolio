@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 // Charger le formulaire côté client uniquement pour éviter les erreurs SSR
 const PostForm = dynamic(
   () => import("@/web/components/admin/PostForm").then((mod) => ({ default: mod.PostForm })),
-  { ssr: false, loading: () => <div>Chargement du formulaire...</div> }
+  { ssr: false, loading: () => <div>Chargement du formulaire...</div> },
 );
 
 /**

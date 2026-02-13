@@ -1,13 +1,4 @@
-import type {
-  About,
-  Blog,
-  Gallery,
-  Home,
-  Newsletter,
-  Person,
-  Social,
-  Work,
-} from "@/web/types";
+import type { About, Blog, Gallery, Home, Newsletter, Person, Social, Work } from "@/web/types";
 import { Line, Row, Text } from "@once-ui-system/core";
 
 const person: Person = {
@@ -88,13 +79,11 @@ const home: Home = {
       I craft thoughtful web experiences that solve real problems.
       <br />
       <br />
-      With a focus on clean code, user experience, and maintainability, I help
-      businesses and individuals bring their ideas to life through modern web
-      technologies.
+      With a focus on clean code, user experience, and maintainability, I help businesses and
+      individuals bring their ideas to life through modern web technologies.
       <br />
       <br />
-      From concept to deployment, I build solutions that are both elegant and
-      practical.
+      From concept to deployment, I build solutions that are both elegant and practical.
     </>
   ),
   keywords: [
@@ -130,17 +119,15 @@ const about: About = {
     title: "Introduction",
     description: (
       <>
-        I'm a full stack developer passionate about creating web applications
-        that combine beautiful design with robust functionality.
+        I'm a full stack developer passionate about creating web applications that combine beautiful
+        design with robust functionality.
         <br />
         <br />
-        My approach is simple: understand the problem deeply, design
-        thoughtfully, and build with precision. I believe great software is
-        invisible—it just works.
+        My approach is simple: understand the problem deeply, design thoughtfully, and build with
+        precision. I believe great software is invisible—it just works.
         <br />
-        <br />
-        I specialize in modern JavaScript frameworks, scalable architectures,
-        and creating solutions that teams can maintain and evolve over time.
+        <br />I specialize in modern JavaScript frameworks, scalable architectures, and creating
+        solutions that teams can maintain and evolve over time.
       </>
     ),
   },
@@ -154,12 +141,12 @@ const about: About = {
         role: "Full Stack Developer",
         achievements: [
           <>
-            <strong>Web Applications:</strong> Building custom solutions for
-            clients using modern frameworks and best practices.
+            <strong>Web Applications:</strong> Building custom solutions for clients using modern
+            frameworks and best practices.
           </>,
           <>
-            <strong>Technical Consulting:</strong> Helping teams improve their
-            development processes and code quality.
+            <strong>Technical Consulting:</strong> Helping teams improve their development processes
+            and code quality.
           </>,
         ],
         images: [],
@@ -170,23 +157,20 @@ const about: About = {
         role: "Quality & Impact",
         achievements: [
           <>
-            <strong>User-Focused:</strong> Every technical decision starts with
-            the end user. I build interfaces that feel natural and workflows
-            that save time.
+            <strong>User-Focused:</strong> Every technical decision starts with the end user. I
+            build interfaces that feel natural and workflows that save time.
           </>,
           <>
-            <strong>Built to Last:</strong> Clean architecture, thoughtful
-            dependencies, and comprehensive documentation ensure your project
-            stays maintainable for years.
+            <strong>Built to Last:</strong> Clean architecture, thoughtful dependencies, and
+            comprehensive documentation ensure your project stays maintainable for years.
           </>,
           <>
-            <strong>Transparent Process:</strong> Regular updates, clear
-            communication, and knowledge transfer so your team stays in control.
+            <strong>Transparent Process:</strong> Regular updates, clear communication, and
+            knowledge transfer so your team stays in control.
           </>,
           <>
-            <strong>Quality First:</strong> Automated testing, version control
-            best practices, and performance optimization are standard, not
-            extras.
+            <strong>Quality First:</strong> Automated testing, version control best practices, and
+            performance optimization are standard, not extras.
           </>,
         ],
         images: [],
@@ -201,9 +185,8 @@ const about: About = {
         name: "Software Development",
         description: (
           <>
-            Self-taught developer with years of experience building production
-            applications. Continuously learning and adapting to new
-            technologies.
+            Self-taught developer with years of experience building production applications.
+            Continuously learning and adapting to new technologies.
           </>
         ),
       },
@@ -211,9 +194,8 @@ const about: About = {
         name: "Specialization",
         description: (
           <>
-            Expert in full stack JavaScript/TypeScript development, with
-            experience in React, Next.js, Node.js, and modern deployment
-            practices.
+            Expert in full stack JavaScript/TypeScript development, with experience in React,
+            Next.js, Node.js, and modern deployment practices.
           </>
         ),
       },
@@ -227,9 +209,8 @@ const about: About = {
         title: "Frontend Development",
         description: (
           <>
-            Building responsive, accessible, and performant user interfaces with
-            modern frameworks. From landing pages to complex web applications, I
-            create experiences users love.
+            Building responsive, accessible, and performant user interfaces with modern frameworks.
+            From landing pages to complex web applications, I create experiences users love.
           </>
         ),
         tags: [
@@ -256,9 +237,8 @@ const about: About = {
         title: "Backend Development",
         description: (
           <>
-            Creating robust APIs and server-side applications. I build scalable
-            backends that handle real-world traffic and evolve with your
-            business needs.
+            Creating robust APIs and server-side applications. I build scalable backends that handle
+            real-world traffic and evolve with your business needs.
           </>
         ),
         tags: [
@@ -285,9 +265,8 @@ const about: About = {
         title: "DevOps & Tools",
         description: (
           <>
-            Streamlining development workflows and deployment processes. From
-            local development to production, I ensure smooth and reliable
-            delivery.
+            Streamlining development workflows and deployment processes. From local development to
+            production, I ensure smooth and reliable delivery.
           </>
         ),
         tags: [

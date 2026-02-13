@@ -1,15 +1,20 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Flex, Button, Text } from "@once-ui-system/core";
+import { Button, Flex, Text } from "@once-ui-system/core";
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import {
+  getAssetDirectoryFromType,
+  IMAGE_ASSET_EXTENSIONS,
+  UPLOAD_IMAGE_MIME_TYPES,
+} from "@/lib/modules/assets/constants";
 
 const formatBytes = (bytes: number) => {
   if (bytes === 0) return "0 o";
   const k = 1024;
   const sizes = ["o", "Ko", "Mo"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
+  return `${(bytes / k ** i).toFixed(1)} ${sizes[i]}`;
 };
 
 interface ImageUploadProps {
@@ -18,6 +23,24 @@ interface ImageUploadProps {
   currentUrl?: string;
   label?: string;
 }
+
+interface AssetListItem {
+  path: string;
+  name: string;
+  kind: "file" | "directory";
+  extension: string | null;
+}
+
+interface AssetListResult {
+  directory: string;
+  parentDirectory: string | null;
+  items: AssetListItem[];
+}
+
+const IMAGE_EXTENSIONS: Set<string> = new Set(IMAGE_ASSET_EXTENSIONS);
+
+const isImageAsset = (asset: AssetListItem) =>
+  asset.kind === "file" && Boolean(asset.extension && IMAGE_EXTENSIONS.has(asset.extension));
 
 export function ImageUpload({ type, onUploadComplete, currentUrl, label }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
@@ -34,24 +57,70 @@ export function ImageUpload({ type, onUploadComplete, currentUrl, label }: Image
   } | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
-  const [uploadedFilename, setUploadedFilename] = useState<string | null>(null);
+  const [showAssetsPicker, setShowAssetsPicker] = useState(false);
+  const [assetsLoading, setAssetsLoading] = useState(false);
+  const [assetsError, setAssetsError] = useState<string | null>(null);
+  const [assetData, setAssetData] = useState<AssetListResult | null>(null);
   const previewControllerRef = useRef<AbortController | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const acceptValue = UPLOAD_IMAGE_MIME_TYPES.join(",");
+
+  const loadAssets = async (directory?: string) => {
+    setAssetsLoading(true);
+    setAssetsError(null);
+    try {
+      const targetDirectory = directory ?? assetData?.directory ?? getAssetDirectoryFromType(type);
+      const response = await fetch(
+        `/api/admin/assets?directory=${encodeURIComponent(targetDirectory)}`,
+        {
+          credentials: "include",
+        },
+      );
+      const result = (await response.json()) as {
+        success: boolean;
+        error?: string;
+        data?: AssetListResult;
+      };
+      if (!response.ok || !result.success || !result.data) {
+        throw new Error(result.error || "Impossible de charger les assets");
+      }
+      setAssetData(result.data);
+    } catch (err) {
+      setAssetsError(err instanceof Error ? err.message : "Impossible de charger les assets");
+    } finally {
+      setAssetsLoading(false);
+    }
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     // Vérification côté client
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
-    if (!allowedTypes.includes(file.type)) {
+    if (!UPLOAD_IMAGE_MIME_TYPES.includes(file.type as (typeof UPLOAD_IMAGE_MIME_TYPES)[number])) {
       setError("Format non supporté. Utilisez JPG, PNG, WebP ou GIF.");
+      setSelectedFile(null);
+      setShowNameInput(false);
+      setUploadStats(null);
+      setPreviewError(null);
+      setPreviewUrl(currentUrl || null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       return;
     }
 
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       setError("Fichier trop volumineux. Maximum 5MB.");
+      setSelectedFile(null);
+      setShowNameInput(false);
+      setUploadStats(null);
+      setPreviewError(null);
+      setPreviewUrl(currentUrl || null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       return;
     }
 
@@ -130,25 +199,11 @@ export function ImageUpload({ type, onUploadComplete, currentUrl, label }: Image
     };
   }, [selectedFile, includeTimestamp, quality, type]);
 
-  const deleteUploadedFile = async () => {
-    if (!uploadedFilename) return;
-
-    try {
-      await fetch(
-        `/api/admin/upload?filename=${encodeURIComponent(uploadedFilename)}&type=${encodeURIComponent(
-          type,
-        )}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        },
-      );
-    } catch (deleteError) {
-      console.error("Erreur suppression image uploadée:", deleteError);
-    } finally {
-      setUploadedFilename(null);
+  useEffect(() => {
+    if (!selectedFile) {
+      setPreviewUrl(currentUrl || null);
     }
-  };
+  }, [currentUrl, selectedFile]);
 
   const handleUpload = async () => {
     if (!selectedFile) return;
@@ -190,7 +245,6 @@ export function ImageUpload({ type, onUploadComplete, currentUrl, label }: Image
         originalSize: result.data.size,
         outputSize: result.data.transformedSize,
       });
-      setUploadedFilename(result.data.filename);
     } catch (err) {
       console.error("Erreur upload:", err);
       setError(err instanceof Error ? err.message : "Erreur inconnue");
@@ -204,8 +258,31 @@ export function ImageUpload({ type, onUploadComplete, currentUrl, label }: Image
     fileInputRef.current?.click();
   };
 
+  const handlePickExistingAsset = (assetPath: string) => {
+    const resolvedUrl = `/api/assets/${assetPath}`;
+    setPreviewUrl(resolvedUrl);
+    onUploadComplete(resolvedUrl);
+    setShowAssetsPicker(false);
+    setShowNameInput(false);
+    setSelectedFile(null);
+    setError(null);
+    setUploadStats(null);
+    setPreviewError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const toggleAssetsPicker = async () => {
+    const nextState = !showAssetsPicker;
+    setShowAssetsPicker(nextState);
+    if (nextState) {
+      await loadAssets(getAssetDirectoryFromType(type));
+    }
+  };
+
   const handleRemove = async () => {
-    await deleteUploadedFile();
+    // Detach only. Asset lifecycle is managed in /admin/assets.
     setPreviewUrl(null);
     onUploadComplete("");
     setShowNameInput(false);
@@ -240,7 +317,7 @@ export function ImageUpload({ type, onUploadComplete, currentUrl, label }: Image
         ref={fileInputRef}
         id={`file-input-${type}`}
         type="file"
-        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+        accept={acceptValue}
         onChange={handleFileSelect}
         style={{ display: "none" }}
         aria-label="Sélectionner une image à uploader"
@@ -262,7 +339,7 @@ export function ImageUpload({ type, onUploadComplete, currentUrl, label }: Image
           >
             <Image
               src={previewUrl}
-              alt={`Prévisualisation de l'image ${type === 'project' ? 'du projet' : type === 'post' ? 'de l\'article' : 'de l\'avatar'}`}
+              alt={`Prévisualisation de l'image ${type === "project" ? "du projet" : type === "post" ? "de l'article" : "de l'avatar"}`}
               fill
               style={{ objectFit: "cover" }}
               unoptimized={previewUrl.startsWith("data:")}
@@ -304,7 +381,7 @@ export function ImageUpload({ type, onUploadComplete, currentUrl, label }: Image
               </Flex>
               <Flex direction="column" gap="4">
                 <label htmlFor={`${type}-quality`} style={{ fontSize: "13px", fontWeight: 500 }}>
-                  Qualité de compression AVIF : {quality}%
+                  Qualité de compression WebP : {quality}%
                 </label>
                 <input
                   id={`${type}-quality`}
@@ -331,11 +408,16 @@ export function ImageUpload({ type, onUploadComplete, currentUrl, label }: Image
               )}
               {previewLoading && (
                 <Text variant="body-default-xs" onBackground="neutral-weak">
-                  Calcul de l'estimation AVIF...
+                  Calcul de l'estimation WebP...
                 </Text>
               )}
               {previewError && (
-                <Text variant="body-default-xs" onBackground="danger-weak" role="alert" aria-live="polite">
+                <Text
+                  variant="body-default-xs"
+                  onBackground="danger-weak"
+                  role="alert"
+                  aria-live="polite"
+                >
                   ⚠️ {previewError}
                 </Text>
               )}
@@ -392,28 +474,134 @@ export function ImageUpload({ type, onUploadComplete, currentUrl, label }: Image
 
       {!previewUrl && (
         <>
-          <Button
-            type="button"
-            variant="secondary"
-            size="m"
-            onClick={handleButtonClick}
-            disabled={uploading}
-            aria-describedby={`file-formats-${type}`}
-          >
-            {uploading ? "⏳ Upload en cours..." : "📤 Choisir une image"}
-          </Button>
-          <Text
-            id={`file-formats-${type}`}
-            variant="body-default-xs"
-            onBackground="neutral-weak"
-          >
+          <Flex gap="8" wrap>
+            <Button
+              type="button"
+              variant="secondary"
+              size="m"
+              onClick={handleButtonClick}
+              disabled={uploading}
+              aria-describedby={`file-formats-${type}`}
+            >
+              {uploading ? "⏳ Upload en cours..." : "📤 Choisir une image"}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="m"
+              onClick={() => void toggleAssetsPicker()}
+              disabled={uploading}
+            >
+              🗂️ Asset existant
+            </Button>
+          </Flex>
+          <Text id={`file-formats-${type}`} variant="body-default-xs" onBackground="neutral-weak">
             Formats acceptés : JPEG, PNG, WebP, GIF. Taille maximum : 5MB.
           </Text>
         </>
       )}
 
+      {previewUrl && !showNameInput && (
+        <Button
+          type="button"
+          variant="secondary"
+          size="s"
+          onClick={() => void toggleAssetsPicker()}
+          disabled={uploading}
+        >
+          {showAssetsPicker ? "📁 Fermer les assets" : "🗂️ Choisir un asset existant"}
+        </Button>
+      )}
+
+      {showAssetsPicker && (
+        <Flex
+          direction="column"
+          gap="8"
+          style={{
+            border: "1px solid var(--neutral-border-medium)",
+            borderRadius: "8px",
+            padding: "10px",
+            maxHeight: "280px",
+            overflow: "auto",
+          }}
+        >
+          <Flex gap="8" wrap>
+            <Button
+              type="button"
+              variant="secondary"
+              size="s"
+              onClick={() => void loadAssets("")}
+              disabled={assetsLoading}
+            >
+              images
+            </Button>
+            {assetData?.parentDirectory && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="s"
+                onClick={() => void loadAssets(assetData.parentDirectory ?? "")}
+                disabled={assetsLoading}
+              >
+                ⬆️ Parent
+              </Button>
+            )}
+            <Text variant="body-default-xs" onBackground="neutral-weak">
+              {assetData?.directory ? `/api/assets/${assetData.directory}` : "/api/assets"}
+            </Text>
+          </Flex>
+
+          {assetsLoading && (
+            <Text variant="body-default-xs" onBackground="neutral-weak">
+              Chargement des assets...
+            </Text>
+          )}
+
+          {assetsError && (
+            <Text variant="body-default-xs" onBackground="danger-weak">
+              ⚠️ {assetsError}
+            </Text>
+          )}
+
+          {!assetsLoading && !assetsError && (
+            <Flex direction="column" gap="8">
+              {(assetData?.items ?? []).map((item) =>
+                item.kind === "directory" ? (
+                  <Button
+                    key={item.path}
+                    type="button"
+                    variant="secondary"
+                    size="s"
+                    onClick={() => void loadAssets(item.path)}
+                    style={{ justifyContent: "flex-start" }}
+                  >
+                    📁 {item.name}
+                  </Button>
+                ) : isImageAsset(item) ? (
+                  <Button
+                    key={item.path}
+                    type="button"
+                    variant="secondary"
+                    size="s"
+                    onClick={() => handlePickExistingAsset(item.path)}
+                    style={{ justifyContent: "flex-start" }}
+                  >
+                    🖼️ {item.name}
+                  </Button>
+                ) : null,
+              )}
+            </Flex>
+          )}
+        </Flex>
+      )}
+
       {error && (
-        <Text variant="body-default-s" onBackground="danger-weak" role="alert" aria-live="assertive">
+        <Text
+          variant="body-default-s"
+          onBackground="danger-weak"
+          role="alert"
+          aria-live="assertive"
+        >
           ⚠️ {error}
         </Text>
       )}
@@ -426,7 +614,7 @@ export function ImageUpload({ type, onUploadComplete, currentUrl, label }: Image
 
       {uploadStats && (
         <Text variant="body-default-xs" onBackground="neutral-weak">
-          Taille originale : {formatBytes(uploadStats.originalSize)} • Sortie AVIF :{" "}
+          Taille originale : {formatBytes(uploadStats.originalSize)} • Sortie WebP :{" "}
           {formatBytes(uploadStats.outputSize)}
         </Text>
       )}

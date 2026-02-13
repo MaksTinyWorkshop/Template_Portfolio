@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import type { PostMetadata } from "@/web/types";
 
 // Désactiver le prerendering pour cette page admin
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface EditPostPageProps {
   params: Promise<{ slug: string }>;

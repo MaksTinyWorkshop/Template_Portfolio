@@ -65,7 +65,7 @@ PortFolio professionnel est une application web moderne conçue pour présenter 
 - SSR (Server-Side Rendering) pour contenu dynamique
 - CSR (Client-Side Rendering) pour interface admin
 
-**Data** : File-based (MDX + JSON), pas de base de données
+**Data** : PostgreSQL/Prisma (MDX + JSON utilisés comme source de seed)
 
 ---
 
@@ -82,7 +82,7 @@ portfolio/
 │   ├── hooks/              # Custom React hooks
 │   ├── lib/                # Bibliothèques helpers
 │   ├── config/             # Configuration app
-│   └── middleware.ts       # Middleware Next.js
+│   └── proxy.ts            # Protection pages /admin (Edge)
 ├── public/                 # Assets statiques
 ├── data/                   # Données JSON
 ├── docs/                   # Documentation générée
@@ -90,9 +90,9 @@ portfolio/
 ```
 
 **Nombre de lignes de code** : ~10,000+ LOC (estimé)
-**Composants** : 33 composants React
-**Routes API** : 11 endpoints
-**Pages** : 9 routes publiques + 3+ routes admin
+**Composants** : 42 composants React
+**Routes API** : 24 endpoints
+**Pages** : 9 routes publiques + 14 routes admin
 
 ---
 
@@ -135,9 +135,9 @@ npm run biome-write      # Formatter le code
 
 **Backend** :
 
-- `src/app/(api)/api/` : Routes API (auth, admin CRUD, availability, rss, og, analytics)
+- `src/app/(api)/api/` : Routes API (auth, admin CRUD, admin openapi, availability, rss, og, contact, person, projects, health)
 - `src/lib/` : Services Prisma, repositories et helpers HTTP (`errors.ts`, `response.ts`, `with-api-error.ts`)
-- `src/middleware.ts` : Protection des routes `/admin` et `/api/admin`
+- `src/proxy.ts` : Protection des pages `/admin`
 
 ---
 
@@ -203,7 +203,10 @@ Once UI fournit un système de design complet avec :
 **Variables d'environnement** :
 
 ```env
-ADMIN_PASSWORD_HASH=<bcrypt_hash>
+DATABASE_URL=postgresql://postgres:password@db:5432/portfolio
+ADMIN_PASSWORD=votre_mot_de_passe
+AUTH_SECRET=votre_secret_hmac
+CRON_SECRET=votre_cron_secret
 NEXT_PUBLIC_SITE_URL=https://votresite.com
 ```
 
@@ -222,7 +225,7 @@ npm run build
 ### Documentation Technique
 
 - **[Architecture](./architecture.md)** : Architecture complète du système
-- **[API Contracts](./api-contracts-portfolio.md)** : Endpoints API documentés
+- **API Docs (OpenAPI/Swagger)** : `/admin/api-docs` (UI) et `/api/admin/openapi` (JSON)
 - **[UI Components](./ui-components-portfolio.md)** : Inventaire des composants
 - **[Source Tree](./source-tree-analysis.md)** : Structure de fichiers annotée
 - **[Development Guide](./development-guide.md)** : Guide du développeur

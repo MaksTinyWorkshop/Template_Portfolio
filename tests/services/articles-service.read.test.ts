@@ -10,7 +10,7 @@ const baseArticle = (overrides?: Record<string, unknown>) => ({
   publishAt: new Date("2025-01-01T00:00:00Z"),
   status: "published",
   media: null,
-  tags: [{ tag: { name: "Tech" } }],
+  tags: [{ tag: { slug: "tech", name: "Tech", color: null } }],
   content: null,
   ...overrides,
 });
@@ -41,7 +41,37 @@ describe("articles service - read/list", () => {
     expect(rows[0]).toMatchObject({
       slug: "alpha",
       publishedAt: "2025-01-01T00:00:00.000Z",
-      tags: ["Tech"],
+      tags: [{ slug: "tech", name: "Tech", color: null }],
+    });
+  });
+
+  it("listArticles mappe publishedAt/image a null quand absents", async () => {
+    const repo = {
+      listArticles: vi.fn().mockResolvedValue([
+        baseArticle({
+          publishAt: null,
+          media: null,
+          summary: null,
+          content: null,
+        }),
+      ]),
+      findArticleBySlug: vi.fn(),
+      findArticleBySlugTx: vi.fn(),
+      runArticleTransaction: vi.fn(),
+      articleSlugExists: vi.fn(),
+      clearArticleTags: vi.fn(),
+      createArticle: vi.fn(),
+      updateArticle: vi.fn(),
+      deleteArticleTx: vi.fn(),
+    };
+    vi.doMock("@/lib/modules/articles/infrastructure/articles.repo", () => repo);
+
+    const { listArticles } = await import("@/lib/modules/articles/application/articles.service");
+    const rows = await listArticles();
+    expect(rows[0]).toMatchObject({
+      publishedAt: null,
+      image: null,
+      content: null,
     });
   });
 
@@ -72,7 +102,11 @@ describe("articles service - read/list", () => {
           summary: "Resume",
           media: { url: "https://example.com/a.png" },
           content: "Contenu",
-          tags: [{ tag: { name: "Tech" } }, { tag: { name: "Tech" } }, { tag: { name: " " } }],
+          tags: [
+            { tag: { slug: "tech", name: "Tech", color: null } },
+            { tag: { slug: "tech", name: "Tech", color: null } },
+            { tag: { slug: "blank", name: " ", color: null } },
+          ],
         }),
       ),
       findArticleBySlugTx: vi.fn(),
@@ -85,14 +119,20 @@ describe("articles service - read/list", () => {
     };
     vi.doMock("@/lib/modules/articles/infrastructure/articles.repo", () => repo);
 
-    const { getArticleBySlug } = await import("@/lib/modules/articles/application/articles.service");
+    const { getArticleBySlug } = await import(
+      "@/lib/modules/articles/application/articles.service"
+    );
     const result = await getArticleBySlug("alpha");
     expect(result).toMatchObject({
       slug: "alpha",
       summary: "Resume",
       image: "https://example.com/a.png",
       content: "Contenu",
-      tags: ["Tech", "Tech", " "],
+      tags: [
+        { slug: "tech", name: "Tech", color: null },
+        { slug: "tech", name: "Tech", color: null },
+        { slug: "blank", name: " ", color: null },
+      ],
     });
   });
 
@@ -110,7 +150,9 @@ describe("articles service - read/list", () => {
     };
     vi.doMock("@/lib/modules/articles/infrastructure/articles.repo", () => repo);
 
-    const { getArticleBySlug } = await import("@/lib/modules/articles/application/articles.service");
+    const { getArticleBySlug } = await import(
+      "@/lib/modules/articles/application/articles.service"
+    );
     const { ArticleNotFoundError } = await import("@/lib/modules/articles/domain/article.errors");
     await expect(getArticleBySlug("missing")).rejects.toBeInstanceOf(ArticleNotFoundError);
   });
@@ -129,7 +171,9 @@ describe("articles service - read/list", () => {
     };
     vi.doMock("@/lib/modules/articles/infrastructure/articles.repo", () => repo);
 
-    const { listArticleSlugs } = await import("@/lib/modules/articles/application/articles.service");
+    const { listArticleSlugs } = await import(
+      "@/lib/modules/articles/application/articles.service"
+    );
     const slugs = await listArticleSlugs();
     expect(repo.listArticles).toHaveBeenCalledWith({ onlyPublished: true });
     expect(slugs).toEqual(["alpha", "beta"]);
@@ -142,7 +186,7 @@ describe("articles service - read/list", () => {
           status: "draft",
           publishAt: null,
           summary: null,
-          tags: [{ tag: { name: "Tech" } }],
+          tags: [{ tag: { slug: "tech", name: "Tech", color: null } }],
         }),
       ]),
       findArticleBySlug: vi.fn(),
@@ -156,7 +200,9 @@ describe("articles service - read/list", () => {
     };
     vi.doMock("@/lib/modules/articles/infrastructure/articles.repo", () => repo);
 
-    const { listArticlesAdmin } = await import("@/lib/modules/articles/application/articles.service");
+    const { listArticlesAdmin } = await import(
+      "@/lib/modules/articles/application/articles.service"
+    );
     const rows = await listArticlesAdmin();
     expect(repo.listArticles).toHaveBeenCalledTimes(1);
     expect(repo.listArticles.mock.calls[0]).toEqual([]);
@@ -176,7 +222,7 @@ describe("articles service - read/list", () => {
           status: "draft",
           publishAt: null,
           media: null,
-          tags: [{ tag: { name: "Tech" } }],
+          tags: [{ tag: { slug: "tech", name: "Tech", color: null } }],
           content: null,
         }),
       ),
@@ -190,7 +236,9 @@ describe("articles service - read/list", () => {
     };
     vi.doMock("@/lib/modules/articles/infrastructure/articles.repo", () => repo);
 
-    const { getArticleForAdmin } = await import("@/lib/modules/articles/application/articles.service");
+    const { getArticleForAdmin } = await import(
+      "@/lib/modules/articles/application/articles.service"
+    );
     const detail = await getArticleForAdmin("alpha");
     expect(detail).toMatchObject({
       slug: "alpha",
@@ -216,8 +264,32 @@ describe("articles service - read/list", () => {
     };
     vi.doMock("@/lib/modules/articles/infrastructure/articles.repo", () => repo);
 
-    const { getArticleForAdmin } = await import("@/lib/modules/articles/application/articles.service");
+    const { getArticleForAdmin } = await import(
+      "@/lib/modules/articles/application/articles.service"
+    );
     const { ArticleNotFoundError } = await import("@/lib/modules/articles/domain/article.errors");
     await expect(getArticleForAdmin("missing")).rejects.toBeInstanceOf(ArticleNotFoundError);
+  });
+
+  it("listArticleTagNames renvoie les noms de tags", async () => {
+    const repo = {
+      listArticles: vi.fn(),
+      findArticleBySlug: vi.fn(),
+      findArticleBySlugTx: vi.fn(),
+      runArticleTransaction: vi.fn(),
+      articleSlugExists: vi.fn(),
+      clearArticleTags: vi.fn(),
+      createArticle: vi.fn(),
+      updateArticle: vi.fn(),
+      deleteArticleTx: vi.fn(),
+      listArticleTags: vi.fn().mockResolvedValue([{ name: "Tech" }, { name: "UX" }]),
+    };
+    vi.doMock("@/lib/modules/articles/infrastructure/articles.repo", () => repo);
+
+    const { listArticleTagNames } = await import(
+      "@/lib/modules/articles/application/articles.service"
+    );
+    const names = await listArticleTagNames();
+    expect(names).toEqual(["Tech", "UX"]);
   });
 });

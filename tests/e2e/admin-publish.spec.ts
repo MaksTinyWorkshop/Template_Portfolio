@@ -48,27 +48,30 @@ async function loginAsAdmin(page: Page, ip: string) {
   await page.getByLabel("Mot de passe").fill(ADMIN_PASSWORD);
   await page.getByRole("button", { name: /Se connecter/i }).click();
 
-  await expect(page.getByRole("heading", { name: /Bienvenue/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Dashboard|Ton Dashboard/i })).toBeVisible();
 }
 
 /**
  * Helper: Créer un projet de test
  */
 async function createTestProject(page: Page): Promise<{ title: string; slug: string }> {
-  const title = `E2E Test Project ${Date.now()}`;
+  const uniqueSuffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const title = `E2E Test Project ${uniqueSuffix}`;
 
   const response = await page.request.post("/api/admin/projects", {
     data: {
-      title,
-      summary: "Projet de test E2E pour workflow publication.",
-      publishedAt: new Date().toISOString(),
-      status: "draft",
-      typeProjectTag: ["Web"],
-      featuredImage: undefined,
-      images: [],
-      team: [],
-      link: "https://example.com/test-project",
-      repository: "https://github.com/test/test-project",
+      metadata: {
+        title,
+        summary: "Projet de test E2E pour workflow publication.",
+        publishedAt: new Date().toISOString(),
+        status: "draft",
+        typeProjectTag: ["Web"],
+        featuredImage: "",
+        images: [],
+        team: [],
+        link: "https://example.com/test-project",
+        repository: "https://github.com/test/test-project",
+      },
       content: "Contenu du projet de test.",
     },
   });
@@ -87,16 +90,19 @@ async function createTestProject(page: Page): Promise<{ title: string; slug: str
  * Helper: Créer un article de test
  */
 async function createTestArticle(page: Page): Promise<{ title: string; slug: string }> {
-  const title = `E2E Test Article ${Date.now()}`;
+  const uniqueSuffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const title = `E2E Test Article ${uniqueSuffix}`;
 
   const response = await page.request.post("/api/admin/posts", {
     data: {
-      title,
-      summary: "Article de test E2E pour workflow publication.",
-      publishedAt: new Date().toISOString(),
-      status: "draft",
-      tags: ["Tech"],
-      image: undefined,
+      metadata: {
+        title,
+        summary: "Article de test E2E pour workflow publication.",
+        publishedAt: new Date().toISOString(),
+        status: "draft",
+        tags: ["Tech"],
+        image: "",
+      },
       content: "Contenu de l'article de test.",
     },
   });
@@ -132,12 +138,15 @@ async function waitForAdminStatus(
   expectedStatus: string,
 ) {
   for (let i = 0; i < 10; i++) {
-    const status = await page.evaluate(async ({ k, s }: { k: string; s: string }) => {
-      const res = await fetch(`/api/admin/${k}`, { credentials: "include" });
-      const json = await res.json();
-      const found = json?.data?.find((row: { slug?: string }) => row.slug === s);
-      return found?.status ?? "";
-    }, { k: kind, s: slug });
+    const status = await page.evaluate(
+      async ({ k, s }: { k: string; s: string }) => {
+        const res = await fetch(`/api/admin/${k}`, { credentials: "include" });
+        const json = await res.json();
+        const found = json?.data?.find((row: { slug?: string }) => row.slug === s);
+        return found?.status ?? "";
+      },
+      { k: kind, s: slug },
+    );
 
     if (status === expectedStatus) return;
     await page.waitForTimeout(500);
@@ -337,10 +346,7 @@ test.describe("Workflow Publication Admin @p0 @admin @publish", () => {
     expect(responseNoSlug.status).toBe(400);
     expect(responseNoSlug.data.success).toBe(false);
     expect(responseNoSlug.data.error).toContain("Données invalides");
-    expect(Array.isArray(responseNoSlug.data.details)).toBe(true);
-    expect(
-      responseNoSlug.data.details.some((detail: { path?: unknown[] }) => detail.path?.[0] === "slug"),
-    ).toBe(true);
+    expect(responseNoSlug.data).not.toHaveProperty("details");
 
     console.log("✅ API valide la présence du slug (400)");
 
@@ -363,10 +369,7 @@ test.describe("Workflow Publication Admin @p0 @admin @publish", () => {
     expect(responseNoType.status).toBe(400);
     expect(responseNoType.data.success).toBe(false);
     expect(responseNoType.data.error).toContain("Données invalides");
-    expect(Array.isArray(responseNoType.data.details)).toBe(true);
-    expect(
-      responseNoType.data.details.some((detail: { path?: unknown[] }) => detail.path?.[0] === "type"),
-    ).toBe(true);
+    expect(responseNoType.data).not.toHaveProperty("details");
 
     console.log("✅ API valide la présence du type (400)");
   });
@@ -396,7 +399,7 @@ test.describe("Publish Workflow - Additional Tests @p1 @admin", () => {
     await page.waitForLoadState("domcontentloaded");
 
     // Vérifier le badge "Publié" (si implémenté dans l'UI)
-    const publishedBadge = page.locator('text=/publié/i').first();
+    const publishedBadge = page.locator("text=/publié/i").first();
     const isPublished = await publishedBadge.isVisible().catch(() => false);
 
     if (isPublished) {

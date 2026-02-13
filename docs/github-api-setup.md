@@ -9,6 +9,7 @@ La branche `main` documente la publication automatique via l’API GitHub, en g�
 - **Sources de vérité** : les modèles Prisma `Article` et `Project` (statuts `draft`, `scheduled`, `published`) stockent le contenu, les métadonnées et les relations.
 - **Interface admin** : `ContentList.tsx` déclenche un POST vers `/api/admin/publish` lorsque l’utilisateur clique sur « Publier ».
 - **Route backend** : `src/app/(api)/api/admin/publish/route.ts` vérifie l’authentification (`checkAuthAPI`), valide la charge utile `{ slug, type }`, appelle `setProjectStatus` ou `setArticleStatus` puis réactive les pages concernées (`revalidatePath("/work")`, etc.).
+- **Publication différée (cron)** : `src/app/(api)/api/admin/publish-due/route.ts` publie en base tous les contenus `scheduled` dont la date est dépassée, et le service Docker `publish-cron` l’exécute quotidiennement.
 - **Pas de Git ou d’API GitHub** : aucun fichier `git.ts`/`git-github.ts` n’est consommé, et la publication ne génère plus de commits dans le repository. Les variables `GITHUB_*` peuvent être retirées si elles restent inutilisées.
 
 ## 3. Prérequis et variables d’environnement
@@ -29,6 +30,7 @@ Copiez `.env.example` vers `.env` et remplissez au minimum :
 | `SHADOW_DATABASE_URL` | (Optionnel) utilisé par Prisma pour les migrations |
 | `ADMIN_PASSWORD` | Mot de passe maître de `/admin` |
 | `AUTH_SECRET` | Clé HMAC pour signer les tokens (par défaut : `ADMIN_PASSWORD`) |
+| `CRON_SECRET` | Secret utilisé par le cron pour appeler `/api/admin/publish-due` |
 | `CONTACT_EMAIL_RECIPIENT` | Destinataire des formulaires de contact |
 | `CONTACT_EMAIL_SENDER` | Expéditeur logiquement identifiable |
 | `CONTACT_WEBHOOK_URL` | (Optionnel) webhook à notifier sur envoi de contact |
@@ -77,10 +79,15 @@ Les constantes de `src/lib/utils/auth-constants.ts` définissent les durées : t
 | Statut | Signification | Comportement |
 |--------|---------------|-------------|
 | `draft` | Brouillon privé | contenu non listé dans `/work` ou `/blog` |
-| `scheduled` | Publication programmée | peut être utilisé pour futurs updates (prévu pour le module d’ordonnancement) |
+| `scheduled` | Publication programmée | publié automatiquement via cron (voir ci-dessous) |
 | `published` | Visible publiquement | figure dans les listes et RSS |
 
 Chaque changement de statut déclenche `revalidatePath` pour forcer Next.js à regénérer les pages à la prochaine requête.
+
+## 6.1 Publication différée (cron)
+
+- Endpoint : `POST /api/admin/publish-due` (protégé par `CRON_SECRET` avec `Authorization: Bearer ...`)
+- Docker (prod) : le service `publish-cron` exécute la publication **tous les jours à 12:00 (Europe/Paris)** en appelant `http://app:3000/api/admin/publish-due` sur le réseau Docker.
 
 ## 7. Authentification et sécurité admin
 

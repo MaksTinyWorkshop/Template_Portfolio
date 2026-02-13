@@ -2,8 +2,9 @@
 
 import type { ArticleSummary } from "@/lib/modules/articles";
 import { formatBlogDate } from "@/lib/utils/formatDate";
-import { Avatar, Card, Column, Media, Row, Text } from "@once-ui-system/core";
+import { Avatar, Card, Column, Flex, Media, Row, Text } from "@once-ui-system/core";
 import type { PersonSiteData } from "@/lib/modules/person/domain/person.utils";
+import { Tag } from "@/web/components/ui/Tag";
 
 interface PostProps {
   article: ArticleSummary;
@@ -55,9 +56,11 @@ export default function Post({ article, thumbnail, direction, sitePerson }: Post
             {article.title}
           </Text>
           {article.tags.length > 0 && (
-            <Text variant="label-strong-s" onBackground="neutral-weak">
-              {article.tags.join(", ")}
-            </Text>
+            <Flex gap="8" wrap>
+              {article.tags.map((tag) => (
+                <Tag key={tag.slug} name={tag.name} color={tag.color} />
+              ))}
+            </Flex>
           )}
         </Column>
       </Row>

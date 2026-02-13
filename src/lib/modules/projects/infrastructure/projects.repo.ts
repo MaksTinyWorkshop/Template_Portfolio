@@ -1,5 +1,5 @@
-import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 const includeRelations = {
   gallery: {
@@ -73,7 +73,7 @@ export const deleteProject = (slug: string) => prisma.project.delete({ where: { 
 
 export const listProjectTags = () =>
   prisma.tag.findMany({
-    where: { category: "project" },
+    where: { category: { in: ["project", "global"] } },
     orderBy: { name: "asc" },
     select: { name: true },
   });

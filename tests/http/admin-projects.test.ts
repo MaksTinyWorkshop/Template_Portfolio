@@ -67,7 +67,9 @@ describe("API admin/projects route", () => {
     const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(true);
     const projects = await import("@/lib/modules/projects");
-    (projects.listProjectsAdmin as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("db down"));
+    (projects.listProjectsAdmin as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error("db down"),
+    );
 
     const { GET } = await import("@/app/(api)/api/admin/projects/route");
     const response = await GET(buildRequest("GET"));
@@ -90,7 +92,7 @@ describe("API admin/projects route", () => {
     const { POST } = await import("@/app/(api)/api/admin/projects/route");
     const response = await POST(
       buildRequest("POST", {
-        ...metadata,
+        metadata,
         content: "ok",
       }),
     );
@@ -106,7 +108,7 @@ describe("API admin/projects route", () => {
     const { POST } = await import("@/app/(api)/api/admin/projects/route");
     const response = await POST(
       buildRequest("POST", {
-        ...metadata,
+        metadata,
         content: "ok",
       }),
     );
@@ -130,7 +132,7 @@ describe("API admin/projects route", () => {
     const { POST } = await import("@/app/(api)/api/admin/projects/route");
     const response = await POST(
       buildRequest("POST", {
-        ...metadata,
+        metadata,
         content: "ok",
       }),
     );
@@ -145,7 +147,7 @@ describe("API admin/projects route", () => {
     const response = await PUT(
       buildRequest("PUT", {
         slug: "alpha",
-        ...metadata,
+        metadata,
         content: "contenu",
       }),
     );
@@ -174,7 +176,7 @@ describe("API admin/projects route", () => {
     const response = await PUT(
       buildRequest("PUT", {
         slug: "alpha",
-        ...metadata,
+        metadata,
         content: "modifié",
       }),
     );
@@ -197,7 +199,7 @@ describe("API admin/projects route", () => {
       buildRequest("PUT", {
         slug: "beta",
         oldSlug: "alpha",
-        ...metadata,
+        metadata,
         content: "modifié",
       }),
     );
@@ -223,7 +225,7 @@ describe("API admin/projects route", () => {
     const response = await PUT(
       buildRequest("PUT", {
         slug: "alpha",
-        ...metadata,
+        metadata,
         content: "modifié",
       }),
     );

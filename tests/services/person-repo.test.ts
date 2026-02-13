@@ -18,7 +18,9 @@ describe("person repo - prisma wrappers", () => {
 
     const { listPersons } = await import("@/lib/modules/person/infrastructure/person.repo");
     await listPersons();
-    expect(findMany).toHaveBeenCalledWith(expect.objectContaining({ include: { avatarMedia: true } }));
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ include: { avatarMedia: true } }),
+    );
   });
 
   it("findPersonByFullName et findSiteOwner filtrent correctement", async () => {
@@ -33,14 +35,10 @@ describe("person repo - prisma wrappers", () => {
       "@/lib/modules/person/infrastructure/person.repo"
     );
     await findPersonByFullName("Max");
-    expect(findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { fullName: "Max" } })
-    );
+    expect(findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: { fullName: "Max" } }));
 
     await findSiteOwner();
-    expect(findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { siteOwner: true } })
-    );
+    expect(findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: { siteOwner: true } }));
   });
 
   it("findPersonById appelle findUnique", async () => {
@@ -56,6 +54,42 @@ describe("person repo - prisma wrappers", () => {
     expect(findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "p-1" } }));
   });
 
+  it("listPersonsForAdmin et findPersonByIdForAdmin incluent les relations admin", async () => {
+    const findMany = vi.fn().mockResolvedValue([]);
+    const findUnique = vi.fn().mockResolvedValue(null);
+    vi.doMock("@/lib/prisma", () => ({
+      prisma: {
+        person: { findMany, findUnique },
+      },
+    }));
+
+    const { listPersonsForAdmin, findPersonByIdForAdmin } = await import(
+      "@/lib/modules/person/infrastructure/person.repo"
+    );
+
+    await listPersonsForAdmin();
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        include: expect.objectContaining({
+          avatarMedia: true,
+          _count: expect.any(Object),
+        }),
+        orderBy: [{ siteOwner: "desc" }, { fullName: "asc" }],
+      }),
+    );
+
+    await findPersonByIdForAdmin("p-1");
+    expect(findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "p-1" },
+        include: expect.objectContaining({
+          avatarMedia: true,
+          _count: expect.any(Object),
+        }),
+      }),
+    );
+  });
+
   it("tx helpers (findSiteOwnerTx/create/update/delete) appellent les methodes du tx", async () => {
     const tx = {
       person: {
@@ -65,23 +99,24 @@ describe("person repo - prisma wrappers", () => {
         delete: vi.fn().mockResolvedValue(undefined),
       },
     };
-    const {
-      findSiteOwnerTx,
-      createPerson,
-      updatePerson,
-      deletePersonById,
-    } = await import("@/lib/modules/person/infrastructure/person.repo");
+    const { findSiteOwnerTx, createPerson, updatePerson, deletePersonById } = await import(
+      "@/lib/modules/person/infrastructure/person.repo"
+    );
 
     await findSiteOwnerTx(tx as any);
     expect(tx.person.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { siteOwner: true } })
+      expect.objectContaining({ where: { siteOwner: true } }),
     );
 
     await createPerson(tx as any, { data: { fullName: "Max" } } as any);
-    expect(tx.person.create).toHaveBeenCalledWith(expect.objectContaining({ include: { avatarMedia: true } }));
+    expect(tx.person.create).toHaveBeenCalledWith(
+      expect.objectContaining({ include: { avatarMedia: true } }),
+    );
 
     await updatePerson(tx as any, { where: { id: "p-1" }, data: {} } as any);
-    expect(tx.person.update).toHaveBeenCalledWith(expect.objectContaining({ include: { avatarMedia: true } }));
+    expect(tx.person.update).toHaveBeenCalledWith(
+      expect.objectContaining({ include: { avatarMedia: true } }),
+    );
 
     await deletePersonById(tx as any, "p-1");
     expect(tx.person.delete).toHaveBeenCalledWith({ where: { id: "p-1" } });
@@ -94,10 +129,87 @@ describe("person repo - prisma wrappers", () => {
       },
     };
 
-    const { findPersonByFullNameTx } = await import("@/lib/modules/person/infrastructure/person.repo");
+    const { findPersonByFullNameTx } = await import(
+      "@/lib/modules/person/infrastructure/person.repo"
+    );
     await findPersonByFullNameTx(tx as any, "Max");
     expect(tx.person.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({ where: { fullName: "Max" } }),
     );
+  });
+
+  it("createPersonForAdmin et updatePersonForAdmin appellent prisma.person.* avec include admin", async () => {
+    const create = vi.fn().mockResolvedValue({ id: "p-1" });
+    const update = vi.fn().mockResolvedValue({ id: "p-1" });
+    vi.doMock("@/lib/prisma", () => ({
+      prisma: {
+        person: { create, update },
+      },
+    }));
+
+    const { createPersonForAdmin, updatePersonForAdmin } = await import(
+      "@/lib/modules/person/infrastructure/person.repo"
+    );
+
+    await createPersonForAdmin({ fullName: "Max" } as any);
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ fullName: "Max" }),
+        include: expect.objectContaining({
+          avatarMedia: true,
+          _count: expect.any(Object),
+        }),
+      }),
+    );
+
+    await updatePersonForAdmin("p-1", { fullName: "New Max" } as any);
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "p-1" },
+        data: expect.objectContaining({ fullName: "New Max" }),
+        include: expect.objectContaining({
+          avatarMedia: true,
+          _count: expect.any(Object),
+        }),
+      }),
+    );
+  });
+
+  it("deletePersonForAdmin supprime les relations avant la personne dans une transaction", async () => {
+    const deleteManyArticlePerson = vi.fn().mockResolvedValue({ count: 0 });
+    const deleteManyProjectPerson = vi.fn().mockResolvedValue({ count: 0 });
+    const updateManyMedia = vi.fn().mockResolvedValue({ count: 0 });
+    const deleteManyAvailabilityLog = vi.fn().mockResolvedValue({ count: 0 });
+    const deletePerson = vi.fn().mockResolvedValue({ id: "p-1" });
+
+    const tx = {
+      articlePerson: { deleteMany: deleteManyArticlePerson },
+      projectPerson: { deleteMany: deleteManyProjectPerson },
+      media: { updateMany: updateManyMedia },
+      availabilityLog: { deleteMany: deleteManyAvailabilityLog },
+      person: { delete: deletePerson },
+    };
+
+    const transaction = vi.fn(async (cb: (txArg: typeof tx) => Promise<void>) => cb(tx));
+    vi.doMock("@/lib/prisma", () => ({
+      prisma: {
+        $transaction: transaction,
+      },
+    }));
+
+    const { deletePersonForAdmin } = await import(
+      "@/lib/modules/person/infrastructure/person.repo"
+    );
+    await deletePersonForAdmin("p-1");
+
+    expect(transaction).toHaveBeenCalledTimes(1);
+    expect(deleteManyArticlePerson).toHaveBeenCalledWith({ where: { personId: "p-1" } });
+    expect(deleteManyProjectPerson).toHaveBeenCalledWith({ where: { personId: "p-1" } });
+    expect(updateManyMedia).toHaveBeenCalledWith({
+      where: { uploadedById: "p-1" },
+      data: { uploadedById: null },
+    });
+    expect(deleteManyAvailabilityLog).toHaveBeenCalledWith({ where: { personId: "p-1" } });
+    expect(deletePerson).toHaveBeenCalledWith({ where: { id: "p-1" } });
   });
 });

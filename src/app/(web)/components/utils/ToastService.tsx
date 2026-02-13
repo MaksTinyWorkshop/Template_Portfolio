@@ -22,9 +22,7 @@ export function ToastServiceProvider({ children }: { children: React.ReactNode }
 
   const notify = useCallback(
     (payload: ToastPayload) => {
-      const message = payload.title
-        ? `${payload.title} — ${payload.message}`
-        : payload.message;
+      const message = payload.title ? `${payload.title} — ${payload.message}` : payload.message;
       addToast({
         message,
         variant: payload.variant ?? "success",

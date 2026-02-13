@@ -145,8 +145,8 @@ Layout (Server)
 
 2. **Server-Side Rendering (SSR)**
    - Pages dynamiques : Blog posts, Project pages
-   - Rendu à la demande avec cache
-   - Contenu MDX compilé à la volée
+   - Rendu à la demande
+   - La page projet (`/work/[slug]`) est forcée en dynamique (`force-dynamic`) pour éviter les accès DB au build Docker
 
 3. **Client-Side Rendering (CSR)**
    - Interface admin complète
@@ -304,13 +304,16 @@ function Posts({ posts }) {
 }
 ```
 
-#### 2. Compound Components
+#### 2. Composants avec filtrage
 
 ```typescript
-<FilterableProjects projects={projects}>
-  <ProjectFilter />
-  <ProjectGrid />
+<FilterableProjects allTags={allTags} projects={projects}>
+  {/* Utilise FilterByTags et ClientProjects en interne */}
 </FilterableProjects>
+
+<FilterablePosts allTags={allTags} articles={articles} sitePerson={sitePerson}>
+  {/* Utilise FilterByTags et Post en interne */}
+</FilterablePosts>
 ```
 
 #### 3. Render Props / Children
@@ -338,7 +341,7 @@ function Posts({ posts }) {
 **Exemples** :
 
 - ✅ Server : `Header`, `Footer`, `Post` (display)
-- ✅ Client : `ThemeToggle`, `ProjectFilter`, `LoginPage`
+- ✅ Client : `ThemeToggle`, `FilterByTags`, `FilterablePosts`, `FilterableProjects`, `LoginPage`
 
 ---
 
@@ -354,7 +357,7 @@ Les fichiers sont organisés dans `src/app/(web)` pour les pages publiques et l�
 /blog                   # Liste posts (SSG)
 /blog/posts/[slug]      # Post détail (SSR)
 /work                   # Liste projets (SSG)
-/work/projects/[slug]   # Projet détail (SSR)
+/work/[slug]            # Projet détail (SSR dynamique)
 /gallery                # Galerie (SSG)
 /legal                  # Mentions légales (SSR, noindex)
 /admin                  # Dashboard admin (CSR, protected)
@@ -512,9 +515,11 @@ npm run build
 
 **Requises en production** :
 
-- `ADMIN_PASSWORD_HASH`
+- `DATABASE_URL`
+- `ADMIN_PASSWORD`
+- `AUTH_SECRET`
+- `CRON_SECRET` (si publication différée activée)
 - `NEXT_PUBLIC_SITE_URL`
-- `JWT_SECRET` (auto-généré si absent)
 
 **Configuration Vercel/Netlify** :
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { routes, protectedRoutes } from "@/web/resources";
 import { Flex, Spinner } from "@once-ui-system/core";
@@ -9,6 +9,8 @@ import { LoginPage } from "../admin/LoginPage";
 import { AdminLayout } from "../admin/AdminLayout";
 import { useTokenRefresh } from "@/web/hooks/useTokenRefresh";
 
+const AUTH_HINT_KEY = "portfolio_admin_auth_hint";
+
 interface RouteGuardProps {
   children: React.ReactNode;
 }
@@ -16,81 +18,129 @@ interface RouteGuardProps {
 const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
   const pathname = usePathname();
   const router = useRouter();
-  const [isRouteEnabled, setIsRouteEnabled] = useState(false);
-  const [isPasswordRequired, setIsPasswordRequired] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const isAdminRoute = pathname?.startsWith("/admin");
+  const [authChecked, setAuthChecked] = useState(false);
+  const [hasAuthHint, setHasAuthHint] = useState(false);
+  const isAdminRoute = pathname?.startsWith("/admin") ?? false;
 
   // Rafraîchir automatiquement le token si authentifié
   useTokenRefresh();
 
-  useEffect(() => {
-    const performChecks = async () => {
-      setLoading(true);
-      setIsRouteEnabled(false);
-      setIsPasswordRequired(false);
-      setIsAuthenticated(false);
+  const { isRouteEnabled, isProtected } = useMemo(() => {
+    const currentPath = pathname ?? "";
 
-      const checkRouteEnabled = () => {
-        if (!pathname) return false;
+    const checkRouteEnabled = () => {
+      if (!currentPath) return true;
 
-        if (pathname in routes) {
-          return routes[pathname as keyof typeof routes];
-        }
+      if (currentPath in routes) {
+        return routes[currentPath as keyof typeof routes];
+      }
 
-        // Les routes dynamiques incluent /blog, /work et /admin (toutes les sous-routes)
-        const dynamicRoutes = ["/blog", "/work", "/admin"] as const;
-        for (const route of dynamicRoutes) {
-          if (pathname?.startsWith(route)) {
-            // Pour /admin, toujours autoriser l'accès (la protection est gérée séparément)
-            if (route === "/admin") return true;
-            // Pour les autres, vérifier si la route parent est activée
-            if (routes[route]) return true;
-          }
-        }
-
-        return false;
-      };
-
-      const routeEnabled = checkRouteEnabled();
-      setIsRouteEnabled(routeEnabled);
-
-      // Vérifier si la route ou une route parente est protégée
-      const isProtected =
-        protectedRoutes[pathname as keyof typeof protectedRoutes] ||
-        Object.keys(protectedRoutes).some(
-          (route) =>
-            pathname?.startsWith(`${route}/`) &&
-            protectedRoutes[route as keyof typeof protectedRoutes],
-        );
-
-      if (isProtected) {
-        setIsPasswordRequired(true);
-
-        const response = await fetch("/api/check-auth");
-        if (response.ok) {
-          setIsAuthenticated(true);
+      // Les routes dynamiques incluent /blog, /work et /admin (toutes les sous-routes)
+      const dynamicRoutes = ["/blog", "/work", "/admin"] as const;
+      for (const route of dynamicRoutes) {
+        if (currentPath.startsWith(route)) {
+          // Pour /admin, toujours autoriser l'accès (la protection est gérée séparément)
+          if (route === "/admin") return true;
+          // Pour les autres, vérifier si la route parent est activée
+          if (routes[route]) return true;
         }
       }
 
-      setLoading(false);
+      return false;
     };
 
-    performChecks();
+    // Vérifier si la route ou une route parente est protégée
+    const checkProtected = () => {
+      if (!currentPath) return false;
+      return (
+        protectedRoutes[currentPath as keyof typeof protectedRoutes] ||
+        Object.keys(protectedRoutes).some(
+          (route) =>
+            currentPath.startsWith(`${route}/`) &&
+            protectedRoutes[route as keyof typeof protectedRoutes],
+        )
+      );
+    };
+
+    return { isRouteEnabled: checkRouteEnabled(), isProtected: checkProtected() };
   }, [pathname]);
 
+  useEffect(() => {
+    if (!isProtected) {
+      setHasAuthHint(false);
+      return;
+    }
+
+    try {
+      setHasAuthHint(sessionStorage.getItem(AUTH_HINT_KEY) === "1");
+    } catch {
+      setHasAuthHint(false);
+    }
+  }, [isProtected, pathname]);
+
+  useEffect(() => {
+    if (!isProtected) {
+      setAuthChecked(false);
+      setIsAuthenticated(false);
+      return;
+    }
+
+    let cancelled = false;
+    setAuthChecked(false);
+    setIsAuthenticated(false);
+
+    const run = async () => {
+      try {
+        const response = await fetch("/api/check-auth");
+        if (!cancelled) {
+          setIsAuthenticated(response.ok);
+          setAuthChecked(true);
+        }
+      } catch {
+        if (!cancelled) {
+          setIsAuthenticated(false);
+          setAuthChecked(true);
+        }
+      }
+    };
+
+    run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isProtected, pathname]);
+
   const handleLoginSuccess = async () => {
+    try {
+      sessionStorage.setItem(AUTH_HINT_KEY, "1");
+    } catch {
+      // ignore
+    }
+
     // Re-vérifier l'authentification après login pour s'assurer que le cookie est bien propagé
     const response = await fetch("/api/check-auth");
     if (response.ok) {
       setIsAuthenticated(true);
+      setAuthChecked(true);
       // Forcer Next.js à rafraîchir le cache du router pour que les Links fonctionnent
       router.refresh();
     }
   };
 
-  if (loading) {
+  if (!pathname) {
+    return <>{children}</>;
+  }
+
+  if (!isRouteEnabled) {
+    return <NotFound />;
+  }
+
+  if (isProtected && !authChecked) {
+    if (!hasAuthHint) {
+      return <LoginPage onSuccess={handleLoginSuccess} />;
+    }
     return (
       <Flex fillWidth paddingY="128" horizontal="center">
         <Spinner />
@@ -98,11 +148,7 @@ const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
     );
   }
 
-  if (!isRouteEnabled) {
-    return <NotFound />;
-  }
-
-  if (isPasswordRequired && !isAuthenticated) {
+  if (isProtected && !isAuthenticated) {
     return <LoginPage onSuccess={handleLoginSuccess} />;
   }
 

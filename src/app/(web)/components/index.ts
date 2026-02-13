@@ -2,7 +2,7 @@ export { Header } from "@/web/components/ui/Header";
 export { Footer } from "@/web/components/ui/Footer";
 export { Mailchimp } from "@/web/components/ui/Mailchimp";
 export { ProjectCard } from "@/web/components/ui/ProjectCard";
-export { ProjectTag } from "@/web/components/ui/ProjectTag";
+export { Tag } from "@/web/components/ui/Tag";
 export { HeadingLink } from "@/web/components/ui/HeadingLink";
 export { RouteGuard } from "@/web/components/utils/RouteGuard";
 export { Providers } from "@/web/components/utils/Providers";

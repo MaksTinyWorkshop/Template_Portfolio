@@ -55,7 +55,10 @@ import {
   FaWhatsapp,
   FaX,
   FaXTwitter,
+  FaYoutube,
 } from "react-icons/fa6";
+
+import { FiMoreVertical } from "react-icons/fi";
 
 import { FaSignOutAlt } from "react-icons/fa";
 import { GrUserAdmin } from "react-icons/gr";
@@ -93,6 +96,7 @@ export const iconLibrary: Record<string, IconType> = {
   spring: SiSpring,
   nest: SiNestjs,
   postgresql: SiPostgresql,
+  more: FiMoreVertical,
   mysql: SiMysql,
   prisma: SiPrisma,
   docker: SiDocker,
@@ -108,6 +112,7 @@ export const iconLibrary: Record<string, IconType> = {
   malt: SiMalt,
   adminDashboard: GrUserAdmin,
   signOut: FaSignOutAlt,
+  youtube: FaYoutube,
 };
 
 export type IconLibrary = typeof iconLibrary;

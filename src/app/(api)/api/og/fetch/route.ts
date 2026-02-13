@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { withApiErrorHandling } from "@/lib/http/with-api-error";
+import { ApiError } from "@/lib/http/errors";
 
 export const runtime = "edge";
 
@@ -31,19 +33,13 @@ async function fetchWithTimeout(url: string, timeout = 5000) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-  try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        "User-Agent": "bot",
-      },
-    });
-    clearTimeout(timeoutId);
-    return response;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    throw error;
-  }
+  const response = await fetch(url, {
+    signal: controller.signal,
+    headers: {
+      "User-Agent": "bot",
+    },
+  }).finally(() => clearTimeout(timeoutId));
+  return response;
 }
 
 async function extractMetadata(html: string) {
@@ -67,40 +63,25 @@ async function extractMetadata(html: string) {
   };
 }
 
-export async function GET(request: Request) {
+export const GET = withApiErrorHandling(async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get("url");
 
   if (!url) {
-    return NextResponse.json({ error: "URL is required" }, { status: 400 });
+    throw new ApiError("URL is required", 400);
   }
 
-  try {
-    const response = await fetchWithTimeout(url);
+  const response = await fetchWithTimeout(url);
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch URL: ${response.status}`);
-    }
-
-    const html = await response.text();
-    const metadata = await extractMetadata(html);
-
-    return NextResponse.json({
-      ...metadata,
-      url,
-    });
-  } catch (error) {
-    console.error(
-      "Error fetching metadata:",
-      error instanceof Error ? error.message : String(error),
-    );
-
-    return NextResponse.json(
-      {
-        error: "Failed to fetch metadata",
-        message: error instanceof Error ? error.message : "Unknown error occurred",
-      },
-      { status: 500 },
-    );
+  if (!response.ok) {
+    throw new ApiError(`Failed to fetch URL: ${response.status}`, 500);
   }
-}
+
+  const html = await response.text();
+  const metadata = await extractMetadata(html);
+
+  return NextResponse.json({
+    ...metadata,
+    url,
+  });
+});

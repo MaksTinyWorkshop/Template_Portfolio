@@ -1,3 +1,5 @@
+import { ZodError } from "zod";
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -30,6 +32,10 @@ export type ErrorResponseMeta = {
 };
 
 export const mapErrorToStatus = (error: unknown): ErrorResponseMeta => {
+  if (error instanceof ZodError) {
+    return { status: 400, message: "Données invalides", details: error.issues };
+  }
+
   if (error instanceof ValidationError) {
     return {
       status: error.statusCode,

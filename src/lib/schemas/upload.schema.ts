@@ -1,9 +1,10 @@
 import { z } from "zod";
+import { UPLOAD_IMAGE_MIME_TYPES } from "@/lib/modules/assets/constants";
 
 /**
  * Constantes de validation pour l'upload d'images
  */
-export const ALLOWED_MIME_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"] as const;
+export const ALLOWED_MIME_TYPES = UPLOAD_IMAGE_MIME_TYPES;
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 export const MIN_QUALITY = 1;
 export const MAX_QUALITY = 100;
@@ -62,17 +63,8 @@ export const fileValidationSchema = z.object({
 });
 
 /**
- * Schema Zod pour les paramètres de suppression d'upload
- */
-export const deleteUploadSchema = z.object({
-  filename: z.string().min(1, { message: "Le nom de fichier est requis" }),
-  type: uploadTypeSchema,
-});
-
-/**
  * Types TypeScript inférés depuis les schémas Zod
  */
 export type UploadType = z.infer<typeof uploadTypeSchema>;
 export type UploadParams = z.infer<typeof uploadParamsSchema>;
 export type FileValidation = z.infer<typeof fileValidationSchema>;
-export type DeleteUpload = z.infer<typeof deleteUploadSchema>;

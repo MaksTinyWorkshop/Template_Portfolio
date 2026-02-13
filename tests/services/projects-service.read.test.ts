@@ -45,6 +45,156 @@ describe("projects service - read/list", () => {
     expect(result[0]).toMatchObject({ slug: "alpha", status: "published" });
   });
 
+  it("listProjects mappe heroImage depuis la gallerie et normalise les contacts", async () => {
+    const repo = {
+      listProjects: vi.fn().mockResolvedValue([
+        {
+          ...baseProject(),
+          publishedAt: null,
+          gallery: [
+            { purpose: "gallery", order: null, media: { url: "https://example.com/0.png" } },
+            { purpose: "gallery", order: 2, media: { url: "https://example.com/2.png" } },
+            { purpose: "gallery", order: 1, media: { url: "https://example.com/1.png" } },
+          ],
+          tags: [
+            { tag: { slug: "web", name: "Web", color: null } },
+            { tag: { slug: "web", name: "Web", color: "#000" } },
+          ],
+          persons: [
+            {
+              role: null,
+              person: {
+                id: "p-1",
+                fullName: "Bob",
+                pseudo: null,
+                role: null,
+                firstName: null,
+                lastName: null,
+                email: null,
+                siteOwner: false,
+                avatarMedia: null,
+                profileData: "oops",
+              },
+            },
+            {
+              role: null,
+              person: {
+                id: "p-1b",
+                fullName: "Dana",
+                pseudo: null,
+                role: "Dev",
+                firstName: null,
+                lastName: null,
+                email: null,
+                siteOwner: false,
+                avatarMedia: null,
+                profileData: { contacts: "oops" },
+              },
+            },
+            {
+              role: null,
+              person: {
+                id: "p-2",
+                fullName: "Alice",
+                pseudo: "ali",
+                role: "Dev",
+                firstName: null,
+                lastName: null,
+                email: null,
+                siteOwner: false,
+                avatarMedia: null,
+                profileData: {
+                  contacts: {
+                    linkedin: "ftp://example.com/in/alice",
+                    github: "https://github.com/alice",
+                  },
+                },
+              },
+            },
+            {
+              role: null,
+              person: {
+                id: "p-3",
+                fullName: "Charlie",
+                pseudo: null,
+                role: "Dev",
+                firstName: null,
+                lastName: null,
+                email: null,
+                siteOwner: false,
+                avatarMedia: null,
+                profileData: { contacts: { linkedin: "not-a-url" } },
+              },
+            },
+          ],
+        },
+      ]),
+      findProjectBySlug: vi.fn(),
+      findProjectBySlugTx: vi.fn(),
+      listProjectsAdmin: vi.fn(),
+      listProjectTags: vi.fn(),
+      runProjectTransaction: vi.fn(),
+      projectSlugExists: vi.fn(),
+      clearProjectRelations: vi.fn(),
+      createProject: vi.fn(),
+      updateProject: vi.fn(),
+      deleteProjectTx: vi.fn(),
+    };
+    vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => repo);
+
+    const { listProjects } = await import("@/lib/modules/projects/application/projects.service");
+    const result = await listProjects();
+
+    expect(result[0]).toMatchObject({
+      publishedAt: null,
+      heroImage: "https://example.com/0.png",
+      typeProjectTag: [{ slug: "web", name: "Web", color: null }],
+    });
+    expect(result[0].team).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Bob", linkedIn: null, socials: [] }),
+        expect.objectContaining({
+          name: "ali",
+          linkedIn: null,
+          socials: [{ name: "github", url: "https://github.com/alice" }],
+        }),
+        expect.objectContaining({ name: "Charlie", linkedIn: null }),
+      ]),
+    );
+  });
+
+  it("listProjects trie la gallerie meme quand order est null", async () => {
+    const repo = {
+      listProjects: vi.fn().mockResolvedValue([
+        {
+          ...baseProject(),
+          gallery: [
+            { purpose: "gallery", order: null, media: { url: "https://example.com/a.png" } },
+            { purpose: "gallery", order: null, media: { url: "https://example.com/b.png" } },
+          ],
+          persons: [],
+          tags: [],
+        },
+      ]),
+      findProjectBySlug: vi.fn(),
+      findProjectBySlugTx: vi.fn(),
+      listProjectsAdmin: vi.fn(),
+      listProjectTags: vi.fn(),
+      runProjectTransaction: vi.fn(),
+      projectSlugExists: vi.fn(),
+      clearProjectRelations: vi.fn(),
+      createProject: vi.fn(),
+      updateProject: vi.fn(),
+      deleteProjectTx: vi.fn(),
+    };
+    vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => repo);
+
+    const { listProjects } = await import("@/lib/modules/projects/application/projects.service");
+    const result = await listProjects();
+    expect(result[0]?.heroImage).toBe("https://example.com/a.png");
+    expect(result[0]?.gallery).toEqual(["https://example.com/a.png", "https://example.com/b.png"]);
+  });
+
   it("listProjectSlugs renvoie les slugs publies", async () => {
     const repo = {
       listProjects: vi.fn().mockResolvedValue([baseProject(), { ...baseProject(), slug: "beta" }]),
@@ -61,7 +211,9 @@ describe("projects service - read/list", () => {
     };
     vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => repo);
 
-    const { listProjectSlugs } = await import("@/lib/modules/projects/application/projects.service");
+    const { listProjectSlugs } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
     const slugs = await listProjectSlugs();
 
     expect(repo.listProjects).toHaveBeenCalledWith({ onlyPublished: true });
@@ -98,7 +250,7 @@ describe("projects service - read/list", () => {
             },
           },
         ],
-        tags: [{ tag: { name: "Web" } }],
+        tags: [{ tag: { slug: "web", name: "Web", color: null } }],
       }),
       findProjectBySlugTx: vi.fn(),
       listProjectsAdmin: vi.fn(),
@@ -112,20 +264,18 @@ describe("projects service - read/list", () => {
     };
     vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => repo);
 
-    const { getProjectBySlug } = await import("@/lib/modules/projects/application/projects.service");
+    const { getProjectBySlug } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
     const result = await getProjectBySlug("alpha");
 
     expect(repo.findProjectBySlug).toHaveBeenCalledWith("alpha");
     expect(result).toMatchObject({
       slug: "alpha",
       heroImage: "https://example.com/cover.png",
-      typeProjectTag: ["Web"],
+      typeProjectTag: [{ slug: "web", name: "Web", color: null }],
     });
-    expect(result.gallery).toEqual([
-      "https://example.com/1.png",
-      "https://example.com/cover.png",
-      "https://example.com/2.png",
-    ]);
+    expect(result.gallery).toEqual(["https://example.com/1.png", "https://example.com/2.png"]);
     expect(result.images[0]).toBe("https://example.com/cover.png");
     expect(result.team[0].linkedIn).toBeNull();
   });
@@ -151,7 +301,9 @@ describe("projects service - read/list", () => {
     };
     vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => repo);
 
-    const { getProjectBySlug } = await import("@/lib/modules/projects/application/projects.service");
+    const { getProjectBySlug } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
     const result = await getProjectBySlug("alpha");
 
     expect(result.heroImage).toBeNull();
@@ -175,7 +327,9 @@ describe("projects service - read/list", () => {
     };
     vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => repo);
 
-    const { getProjectBySlug } = await import("@/lib/modules/projects/application/projects.service");
+    const { getProjectBySlug } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
     const { ProjectNotFoundError } = await import("@/lib/modules/projects/domain/project.errors");
 
     await expect(getProjectBySlug("missing")).rejects.toBeInstanceOf(ProjectNotFoundError);
@@ -187,7 +341,7 @@ describe("projects service - read/list", () => {
         {
           ...baseProject(),
           status: "draft",
-          tags: [{ tag: { name: "Web" } }],
+          tags: [{ tag: { slug: "web", name: "Web", color: null } }],
         },
       ]),
       findProjectBySlug: vi.fn(),
@@ -203,12 +357,44 @@ describe("projects service - read/list", () => {
     };
     vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => repo);
 
-    const { listProjectsAdmin } = await import("@/lib/modules/projects/application/projects.service");
+    const { listProjectsAdmin } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
     const rows = await listProjectsAdmin();
 
     expect(repo.listProjects).toHaveBeenCalledTimes(1);
     expect(repo.listProjects.mock.calls[0]).toEqual([]);
     expect(rows[0]).toMatchObject({ slug: "alpha", status: "draft", typeProjectTag: ["Web"] });
+  });
+
+  it("listProjectsAdmin renvoie publishedAt vide si la date est absente", async () => {
+    const repo = {
+      listProjects: vi.fn().mockResolvedValue([
+        {
+          ...baseProject(),
+          status: "draft",
+          publishedAt: null,
+          tags: [],
+        },
+      ]),
+      findProjectBySlug: vi.fn(),
+      findProjectBySlugTx: vi.fn(),
+      listProjectsAdmin: vi.fn(),
+      listProjectTags: vi.fn(),
+      runProjectTransaction: vi.fn(),
+      projectSlugExists: vi.fn(),
+      clearProjectRelations: vi.fn(),
+      createProject: vi.fn(),
+      updateProject: vi.fn(),
+      deleteProjectTx: vi.fn(),
+    };
+    vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => repo);
+
+    const { listProjectsAdmin } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
+    const rows = await listProjectsAdmin();
+    expect(rows[0].publishedAt).toBe("");
   });
 
   it("getProjectForAdmin throw ProjectNotFoundError quand introuvable", async () => {
@@ -227,7 +413,9 @@ describe("projects service - read/list", () => {
     };
     vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => repo);
 
-    const { getProjectForAdmin } = await import("@/lib/modules/projects/application/projects.service");
+    const { getProjectForAdmin } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
     const { ProjectNotFoundError } = await import("@/lib/modules/projects/domain/project.errors");
 
     await expect(getProjectForAdmin("missing")).rejects.toBeInstanceOf(ProjectNotFoundError);
@@ -242,9 +430,7 @@ describe("projects service - read/list", () => {
         summary: null,
         publishedAt: new Date("2025-01-01T00:00:00Z"),
         status: "draft",
-        gallery: [
-          { purpose: "cover", order: 0, media: { url: "https://example.com/cover.png" } },
-        ],
+        gallery: [{ purpose: "cover", order: 0, media: { url: "https://example.com/cover.png" } }],
         persons: [
           { person: null },
           {
@@ -264,7 +450,7 @@ describe("projects service - read/list", () => {
             },
           },
         ],
-        tags: [{ tag: { name: "Web" } }],
+        tags: [{ tag: { slug: "web", name: "Web", color: null } }],
         link: null,
         repository: null,
         content: "Contenu",
@@ -281,7 +467,9 @@ describe("projects service - read/list", () => {
     };
     vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => repo);
 
-    const { getProjectForAdmin } = await import("@/lib/modules/projects/application/projects.service");
+    const { getProjectForAdmin } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
     const detail = await getProjectForAdmin("alpha");
 
     expect(detail.slug).toBe("alpha");
@@ -292,6 +480,49 @@ describe("projects service - read/list", () => {
       featuredImage: "https://example.com/cover.png",
     });
     expect(detail.metadata.team.length).toBe(1);
+  });
+
+  it("getProjectForAdmin ne pre-remplit pas featuredImage sans cover explicite", async () => {
+    const repo = {
+      listProjects: vi.fn(),
+      findProjectBySlug: vi.fn().mockResolvedValue({
+        slug: "alpha",
+        title: "Alpha",
+        summary: null,
+        publishedAt: new Date("2025-01-01T00:00:00Z"),
+        status: "draft",
+        gallery: [
+          { purpose: "gallery", order: 0, media: { url: "https://example.com/1.png" } },
+          { purpose: "gallery", order: 1, media: { url: "https://example.com/2.png" } },
+        ],
+        persons: [],
+        tags: [],
+        link: null,
+        repository: null,
+        content: "Contenu",
+      }),
+      findProjectBySlugTx: vi.fn(),
+      listProjectsAdmin: vi.fn(),
+      listProjectTags: vi.fn(),
+      runProjectTransaction: vi.fn(),
+      projectSlugExists: vi.fn(),
+      clearProjectRelations: vi.fn(),
+      createProject: vi.fn(),
+      updateProject: vi.fn(),
+      deleteProjectTx: vi.fn(),
+    };
+    vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => repo);
+
+    const { getProjectForAdmin } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
+    const detail = await getProjectForAdmin("alpha");
+
+    expect(detail.metadata.featuredImage).toBeUndefined();
+    expect(detail.metadata.images).toEqual([
+      "https://example.com/1.png",
+      "https://example.com/2.png",
+    ]);
   });
 
   it("getProjectForAdmin mappe les contacts et socials", async () => {
@@ -346,7 +577,9 @@ describe("projects service - read/list", () => {
     };
     vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => repo);
 
-    const { getProjectForAdmin } = await import("@/lib/modules/projects/application/projects.service");
+    const { getProjectForAdmin } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
     const detail = await getProjectForAdmin("alpha");
 
     expect(detail.metadata.team[0]).toMatchObject({
@@ -356,6 +589,61 @@ describe("projects service - read/list", () => {
     expect(detail.metadata.team[0].socials).toEqual([
       { name: "github", url: "https://github.com/alice" },
     ]);
+  });
+
+  it("getProjectForAdmin applique les fallback publishedAt/content et role vide", async () => {
+    const repo = {
+      listProjects: vi.fn(),
+      findProjectBySlug: vi.fn().mockResolvedValue({
+        slug: "alpha",
+        title: "Alpha",
+        summary: null,
+        publishedAt: null,
+        status: "draft",
+        gallery: [],
+        persons: [
+          {
+            role: null,
+            person: {
+              id: "p-1",
+              fullName: "Alice",
+              pseudo: null,
+              role: null,
+              firstName: null,
+              lastName: null,
+              email: null,
+              siteOwner: false,
+              avatarPath: null,
+              avatarMedia: null,
+              profileData: { contacts: {} },
+            },
+          },
+        ],
+        tags: [],
+        link: null,
+        repository: null,
+        content: null,
+      }),
+      findProjectBySlugTx: vi.fn(),
+      listProjectsAdmin: vi.fn(),
+      listProjectTags: vi.fn(),
+      runProjectTransaction: vi.fn(),
+      projectSlugExists: vi.fn(),
+      clearProjectRelations: vi.fn(),
+      createProject: vi.fn(),
+      updateProject: vi.fn(),
+      deleteProjectTx: vi.fn(),
+    };
+    vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => repo);
+
+    const { getProjectForAdmin } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
+    const detail = await getProjectForAdmin("alpha");
+
+    expect(detail.metadata.publishedAt).toBe("");
+    expect(detail.content).toBe("");
+    expect(detail.metadata.team[0]?.role).toBe("");
   });
 
   it("getProjectForAdmin utilise extractLinkedIn si linkedin est vide apres sanitization", async () => {
@@ -382,7 +670,7 @@ describe("projects service - read/list", () => {
               siteOwner: false,
               avatarPath: null,
               avatarMedia: null,
-              // whitespace-only => getProfileContacts() drops it, extractLinkedIn() returns raw value.
+              // whitespace-only => getProfileContacts() drops it and normalizeHttpUrlOrNull() returns null.
               profileData: { contacts: { linkedin: "   " } },
             },
           },
@@ -404,10 +692,12 @@ describe("projects service - read/list", () => {
     };
     vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => repo);
 
-    const { getProjectForAdmin } = await import("@/lib/modules/projects/application/projects.service");
+    const { getProjectForAdmin } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
     const result = await getProjectForAdmin("alpha");
 
-    expect(result.metadata.team[0].linkedIn).toBe("   ");
+    expect(result.metadata.team[0].linkedIn).toBeUndefined();
   });
 
   it("listProjectTagNames renvoie les noms de tags", async () => {
@@ -426,7 +716,9 @@ describe("projects service - read/list", () => {
     };
     vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => repo);
 
-    const { listProjectTagNames } = await import("@/lib/modules/projects/application/projects.service");
+    const { listProjectTagNames } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
     const names = await listProjectTagNames();
     expect(names).toEqual(["Web", "Mobile"]);
   });

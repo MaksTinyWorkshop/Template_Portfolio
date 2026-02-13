@@ -4,7 +4,7 @@ import { listArticlesAdmin } from "@/lib/modules/articles";
 import { PostsList } from "@/web/components/admin/PostsList";
 
 // Force dynamic rendering - disable static generation during build
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface PostListItem {
   slug: string;

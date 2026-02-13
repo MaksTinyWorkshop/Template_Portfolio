@@ -6,7 +6,7 @@ import { checkAuthAPI } from "@/lib/utils/auth";
 import { withApiErrorHandling } from "@/lib/http/with-api-error";
 import { updateAvailabilitySchema } from "@/lib/schemas/availability.schema";
 import { prisma } from "@/lib/prisma";
-import { ZodError } from "zod";
+import { ApiError } from "@/lib/http/errors";
 
 /**
  * GET /api/availability
@@ -20,10 +20,7 @@ const handleGetAvailability = async (_request: NextRequest) => {
   });
 
   if (!siteOwner) {
-    return NextResponse.json(
-      { error: "Aucun propriétaire de site trouvé" },
-      { status: 404 },
-    );
+    throw new ApiError("Aucun propriétaire de site trouvé", 404);
   }
 
   // Récupérer le dernier log de disponibilité
@@ -57,55 +54,37 @@ const handleGetAvailability = async (_request: NextRequest) => {
 const handlePostAvailability = async (request: NextRequest) => {
   const isAuthenticated = await checkAuthAPI();
   if (!isAuthenticated) {
-    return NextResponse.json({ error: "Non autorisé - Authentification requise" }, { status: 401 });
+    throw new ApiError("Non autorisé - Authentification requise", 401);
   }
 
-  try {
-    // Parser et valider le body avec Zod
-    const body = await request.json();
-    const validatedData = updateAvailabilitySchema.parse(body);
+  const body = await request.json();
+  const validatedData = updateAvailabilitySchema.parse(body);
 
-    // Trouver le site owner
-    const siteOwner = await prisma.person.findFirst({
-      where: { siteOwner: true },
-      select: { id: true },
-    });
+  const siteOwner = await prisma.person.findFirst({
+    where: { siteOwner: true },
+    select: { id: true },
+  });
 
-    if (!siteOwner) {
-      return NextResponse.json(
-        { error: "Aucun propriétaire de site trouvé" },
-        { status: 404 },
-      );
-    }
-
-    // Créer un nouveau log de disponibilité
-    const newLog = await prisma.availabilityLog.create({
-      data: {
-        personId: siteOwner.id,
-        status: validatedData.status,
-      },
-      select: {
-        status: true,
-        createdAt: true,
-      },
-    });
-
-    return NextResponse.json({
-      status: newLog.status,
-      lastUpdated: newLog.createdAt.toISOString(),
-    });
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Données invalides" },
-        { status: 400 },
-      );
-    }
-    throw error;
+  if (!siteOwner) {
+    throw new ApiError("Aucun propriétaire de site trouvé", 404);
   }
+
+  const newLog = await prisma.availabilityLog.create({
+    data: {
+      personId: siteOwner.id,
+      status: validatedData.status,
+    },
+    select: {
+      status: true,
+      createdAt: true,
+    },
+  });
+
+  return NextResponse.json({
+    status: newLog.status,
+    lastUpdated: newLog.createdAt.toISOString(),
+  });
 };
 
 export const GET = withApiErrorHandling(handleGetAvailability);
 export const POST = withApiErrorHandling(handlePostAvailability);
-
-export { handleGetAvailability, handlePostAvailability };

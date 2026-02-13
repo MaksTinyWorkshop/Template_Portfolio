@@ -1,1256 +1,192 @@
--- Date: 2026-02-07T14:10:13.566Z
--- IMPORTANT: Exécuter ce script depuis le conteneur Docker
+-- Seed extrait de prisma/portfolio_2026-02-12_162220.sql
+-- Date génération: 2026-02-12T16:26:57.726Z
+-- Médias orphelins supprimés du seed: 18
 
 BEGIN;
 
--- Nettoyage des tables (ordre inverse des foreign keys)
-TRUNCATE TABLE "AvailabilityLog", "ArticlePerson", "ProjectPerson", "ArticleTag", "ProjectTag", "ProjectImage", "Article", "Project", "Media", "Person", "Tag" RESTART IDENTITY CASCADE;
+TRUNCATE TABLE "AvailabilityLog", "ArticlePerson", "ProjectPerson", "ArticleTag", "ProjectTag", "ProjectImage", "Article", "Project", "Media", "Person", "Tag", "RateLimit" RESTART IDENTITY CASCADE;
 
--- Insertion des médias
-INSERT INTO "Media" (id, url, kind, "createdAt", "updatedAt") VALUES
-('0f54dee9-05cf-92f9-cd97-309e1021040f', '/images/avatars/avatar_max.jpg', 'image', NOW(), NOW()),
-('82a73b17-57bc-41cc-213b-cc142a5ce00e', '/images/articles/linkedin/devs_1.jpeg', 'image', NOW(), NOW()),
-('050aae8f-1bfd-83b8-d602-71c6d69561de', '/images/articles/linkedin/devs_2.jpeg', 'image', NOW(), NOW()),
-('8ef2305b-1662-5451-5bf6-6c9732326756', '/images/articles/linkedin/devs_3.jpeg', 'image', NOW(), NOW()),
-('7db0dbe9-cf21-bb4a-014c-8f7ab0e0836f', '/images/projects/agence-communication/featured.avif', 'image', NOW(), NOW()),
-('919ee17e-6253-5bb3-f998-8c31b10a13dc', '/images/projects/agence-communication/cover-1.avif', 'image', NOW(), NOW()),
-('38c04e17-9f17-613a-b2cf-993cb2fe058a', '/images/projects/agence-communication/cover-2.avif', 'image', NOW(), NOW()),
-('5e5fe220-cd26-df3c-4ba1-8d9245771f6f', '/images/projects/agence-communication/cover-3.avif', 'image', NOW(), NOW()),
-('2a27ffd1-7b2a-d4d1-ad6f-2a09a53ec68f', '/images/projects/agence-communication/cover-4.avif', 'image', NOW(), NOW()),
-('bfeea951-3d07-ac46-e0b7-571b63263619', '/images/projects/artisan-velux/featured.avif', 'image', NOW(), NOW()),
-('4613f3dd-29dc-fb75-ab5e-af1315d8dd28', '/images/projects/artisan-velux/cover-1.avif', 'image', NOW(), NOW()),
-('ca717a1e-d011-9f10-25a8-398d22f194bd', '/images/projects/artisan-velux/cover-2.avif', 'image', NOW(), NOW()),
-('9ccd154d-fd7e-5fe1-ec92-ca706e515fc8', '/images/projects/artisan-velux/cover-3.avif', 'image', NOW(), NOW()),
-('5b991169-a831-22eb-9842-28596884cd34', '/images/projects/artisan-velux/cover-4.avif', 'image', NOW(), NOW()),
-('b37c29f1-a876-c685-f2b7-e8900bffeda1', '/images/projects/endo-sens/cover-1.avif', 'image', NOW(), NOW()),
-('6e9712be-8bea-118b-3f90-ed4c409097ba', '/images/projects/endo-sens/cover-2.avif', 'image', NOW(), NOW()),
-('e72fd49e-2041-912b-e222-e3002ef97557', '/images/projects/juriscope/cover-1.avif', 'image', NOW(), NOW()),
-('ee83d8e0-6c5d-373f-3bdf-6302c03e5660', '/images/projects/juriscope/cover-2.avif', 'image', NOW(), NOW()),
-('6b5b149e-d43f-8de6-8d0e-d90e2ef56d65', '/images/projects/juriscope/cover-3.avif', 'image', NOW(), NOW()),
-('f0c7885d-d8ad-c20f-51cc-c45e23f2037c', '/images/projects/khimaira/cover-1.avif', 'image', NOW(), NOW()),
-('9b88ee55-b25f-e50e-ec33-75e2e54f32cc', '/images/projects/khimaira/cover-2.avif', 'image', NOW(), NOW()),
-('92ed362c-426b-7649-dcba-2455159d2b36', '/images/projects/khimaira/cover-3.avif', 'image', NOW(), NOW()),
-('239efec3-af53-d471-42f2-9fbdbf0a9154', '/images/projects/khimaira/cover-4.avif', 'image', NOW(), NOW()),
-('ef0ea003-e8cb-b20e-1e21-75b8c24cd01a', '/images/projects/khimaira/cover-5.avif', 'image', NOW(), NOW()),
-('509b5904-1f36-bdd4-4040-7fcb2ed7512c', '/images/projects/portfolio_old/cover-1.avif', 'image', NOW(), NOW()),
-('64b7e0d5-712e-a2ce-34b0-8ce5c1cf0868', '/images/projects/portfolio_old/cover-2.avif', 'image', NOW(), NOW()),
-('5ff0be7a-ddb2-5102-ab28-b10d6573c920', '/images/projects/portfolio_old/cover-3.avif', 'image', NOW(), NOW()),
-('41b9112d-cd06-a055-ee5a-9e96b7d63d9a', '/images/projects/webapp-maconnique/cover-1.avif', 'image', NOW(), NOW()),
-('52f2ff8d-4da4-40b0-8f2d-2110dfb4c9be', '/images/projects/portfolio_new/featured.avif', 'image', NOW(), NOW()),
-('8c7d7fcc-dc57-4b7a-9bd4-6a5b6d4b4ec3', '/images/projects/portfolio_new/cover-1.avif', 'image', NOW(), NOW()),
-('c2b93f7f-8764-4dc1-ae2f-1af0de2ff621', '/images/projects/portfolio_new/cover-2.avif', 'image', NOW(), NOW()),
-('d7ab12c6-8e6b-4c2f-8c89-936f7c34b02', '/images/projects/portfolio_new/cover-3.avif', 'image', NOW(), NOW());
+-- Tag
+COPY public."Tag" (id, slug, name, category, description, color, "createdAt", "updatedAt") FROM stdin;
+d5136f80-be8c-ebea-b639-bd9860bf2e45	saas	SaaS	project		#EA580C	2026-02-09 12:35:11.508	2026-02-12 10:39:30.918
+0e40690a-159e-4ed1-b0a3-6ac4422b123e	metier	Métier	project		#1ea420	2026-02-12 11:04:29.252	2026-02-12 11:04:29.252
+544239c3-94bb-424f-a22d-52b8733f1f54	product	Product	article		#98ab07	2026-02-10 15:13:13.049	2026-02-11 18:51:56.297
+baa32cb8-71b8-4cf4-917a-0d54e0b5ab46	test	Test	global		#000000	2026-02-12 11:40:10.1	2026-02-12 11:40:10.1
+c7b3baa7-45dd-4f3f-befc-4201290784d9	opinion	Opinion	article		#8B5CF6	2026-02-10 15:13:13.042	2026-02-11 18:57:33.225
+778e8239-6885-4da9-8b3d-b9354b7f0c80	tech	Tech	article		#14B8A6	2026-02-10 15:13:13.046	2026-02-11 18:57:50.988
+d75fd968-572c-4c79-a9f2-3f51b359ea83	dev	Dev	article		#dc1e1e	2026-02-10 14:47:39.041	2026-02-12 11:41:44.464
+b845869b-2d26-cbde-51d8-ad52acd4e0eb	vitrine	Vitrine	project		#475569	2026-02-09 12:35:11.508	2026-02-12 11:43:36.365
+5c89d3e9-8a7d-4f86-8b66-1b0ef490f3cf	documentation	Documentation	global		#9a56d2	2026-02-09 12:35:11.508	2026-02-12 11:43:36.366
+ddaf7f8e-7ef1-4dac-b8bf-15b9f8760121	web	Web	global		#2563EB	2026-02-11 18:41:44.767	2026-02-12 11:43:51.883
+\.
 
--- Insertion de la personne principale
-INSERT INTO "Person" (id, "firstName", "lastName", pseudo, "fullName", email, role, bio, "profileData", "siteOwner", "avatarPath", "avatarMediaId", "createdAt", "updatedAt") VALUES
-('62cded6b-b881-d682-d8be-815775b7b164', 'YOUR_FIRST_NAME', 'YOUR_LAST_NAME', 'Dinodev', 'YOUR_FIRST_NAME YOUR_LAST_NAME', 'your.email@example.com', 'Développeur Full Stack', 'Développeur full stack freelance, spécialisé dans les sites vitrines et les solutions métier durables.', '{"contacts":{"email":"mailto:your.email@example.com","whatsapp":"https://wa.me/33648652868","linkedin":"https://www.linkedin.com/in/maxfleury-dinodev/","github":"https://github.com/MaksTinyWorkshop","malt":"https://www.malt.fr/profile/maximefleury1","calendar":"https://calendly.com/contact-dinodev"},"metadata":{"location":"Europe/Paris","languages":["Français","English","Español"]}}', true, '/images/avatars/avatar_max.jpg', '0f54dee9-05cf-92f9-cd97-309e1021040f', NOW(), NOW());
+-- Media
+COPY public."Media" (id, url, kind, "storageProvider", "altText", width, height, metadata, "uploadedById", "createdAt", "updatedAt") FROM stdin;
+0f54dee9-05cf-92f9-cd97-309e1021040f	/api/assets/avatars/avatar_max.jpg	image	local	Avatar Max	\N	\N	\N	\N	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+82a73b17-57bc-41cc-213b-cc142a5ce00e	/api/assets/articles/linkedin/devs_1.jpeg	image	local	Illustration article Linkedin Devs 1	\N	\N	\N	\N	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+050aae8f-1bfd-83b8-d602-71c6d69561de	/api/assets/articles/linkedin/devs_2.jpeg	image	local	Illustration article Linkedin Devs 2	\N	\N	\N	\N	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+8ef2305b-1662-5451-5bf6-6c9732326756	/api/assets/articles/linkedin/devs_3.jpeg	image	local	Illustration article Linkedin Devs 3	\N	\N	\N	\N	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+bfeea951-3d07-ac46-e0b7-571b63263619	/api/assets/projects/artisan-velux/featured.avif	image	local	Image principale du projet Artisan Velux	\N	\N	\N	\N	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+f0c7885d-d8ad-c20f-51cc-c45e23f2037c	/api/assets/projects/khimaira/cover-1.avif	image	local	Image Cover 1 du projet Khimaira	\N	\N	\N	\N	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+9b88ee55-b25f-e50e-ec33-75e2e54f32cc	/api/assets/projects/khimaira/cover-2.avif	image	local	Image Cover 2 du projet Khimaira	\N	\N	\N	\N	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+92ed362c-426b-7649-dcba-2455159d2b36	/api/assets/projects/khimaira/cover-3.avif	image	local	Image Cover 3 du projet Khimaira	\N	\N	\N	\N	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+239efec3-af53-d471-42f2-9fbdbf0a9154	/api/assets/projects/khimaira/cover-4.avif	image	local	Image Cover 4 du projet Khimaira	\N	\N	\N	\N	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+ef0ea003-e8cb-b20e-1e21-75b8c24cd01a	/api/assets/projects/khimaira/cover-5.avif	image	local	Image Cover 5 du projet Khimaira	\N	\N	\N	\N	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+41b9112d-cd06-a055-ee5a-9e96b7d63d9a	/api/assets/projects/webapp-maconnique/cover-1.avif	image	local	Image Cover 1 du projet Webapp Maconnique	\N	\N	\N	\N	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+8c7d7fcc-dc57-4b7a-9bd4-6a5b6d4b4ec3	/api/assets/projects/portfolio_new/cover-1.avif	image	local	Image Cover 1 du projet Portfolio New	\N	\N	\N	\N	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+c2b93f7f-8764-4dc1-ae2f-1af0de2ff621	/api/assets/projects/portfolio_new/cover-2.avif	image	local	Image Cover 2 du projet Portfolio New	\N	\N	\N	\N	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+d7ab12c6-8e6b-4c2f-8c89-936f7c34b02	/api/assets/projects/portfolio_new/cover-3.avif	image	local	Image Cover 3 du projet Portfolio New	\N	\N	\N	\N	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+f1ec99d4-9c2b-4074-844f-7db2197410df	/api/assets/articles/linkedin/bmad_article_1.avif	image	local	Illustration article Linkedin Bmad Article 1	\N	\N	\N	\N	2026-02-11 18:51:56.302	2026-02-11 18:51:56.302
+d3c451b7-5eec-404e-a6f1-688fea661252	/api/assets/avatars/avatar_matte.avif	image	local	Avatar Matte	\N	\N	\N	\N	2026-02-12 09:31:46.206	2026-02-12 09:31:46.206
+c94bffa2-8585-4b75-bbfa-99b2e8d65703	/api/assets/avatars/avatar_henri.avif	image	local	Avatar Henri	\N	\N	\N	\N	2026-02-12 09:39:25.288	2026-02-12 09:39:25.288
+efa57b70-3755-47bf-9f40-a9ddf4917cc5	/api/assets/projects/portfolio_old/cover-1.avif	image	local	Image Cover 1 du projet Portfolio Old	\N	\N	\N	\N	2026-02-12 09:41:47.579	2026-02-12 09:41:47.579
+360af584-7fd5-4e2e-8869-f47e087a5e80	/api/assets/projects/portfolio_old/cover-2.avif	image	local	Image Cover 2 du projet Portfolio Old	\N	\N	\N	\N	2026-02-12 09:41:47.581	2026-02-12 09:41:47.581
+15a329bd-8172-4397-8747-a532e8f6b424	/api/assets/projects/portfolio_old/cover-3.avif	image	local	Image Cover 3 du projet Portfolio Old	\N	\N	\N	\N	2026-02-12 09:41:47.583	2026-02-12 09:41:47.583
+54006a2f-36d7-45a8-a9d9-13e4ac9fa2ed	/api/assets/projects/juriscope/cover-1.avif	image	local	Image Cover 1 du projet Juriscope	\N	\N	\N	\N	2026-02-12 10:39:30.9	2026-02-12 10:39:30.9
+72d86cd6-f31d-4934-b10f-1c2cacfbabe5	/api/assets/projects/juriscope/cover-2.avif	image	local	Image Cover 2 du projet Juriscope	\N	\N	\N	\N	2026-02-12 10:39:30.907	2026-02-12 10:39:30.907
+782d7744-7439-47af-bb99-6243490430a3	/api/assets/projects/juriscope/cover-3.avif	image	local	Image Cover 3 du projet Juriscope	\N	\N	\N	\N	2026-02-12 10:39:30.909	2026-02-12 10:39:30.909
+f6a86c41-36a8-4169-b06a-0fa1efa3d8cb	/api/assets/projects/portfolio_new/cover-4.avif	image	local	Image Cover 4 du projet Portfolio New	\N	\N	\N	\N	2026-02-12 14:17:58.615	2026-02-12 14:17:58.615
+db8efc00-2ef6-42e7-bb15-f4ba88dfe85a	/api/assets/projects/portfolio_new/featured.avif	image	local	Image principale du projet Portfolio New	\N	\N	\N	\N	2026-02-12 14:21:40.158	2026-02-12 14:21:40.158
+7f2dae56-7157-46bc-af55-b2ec08423b3d	/api/assets/projects/endo-sens/cover-1.avif	image	local	Image Cover 1 du projet Endo Sens	\N	\N	\N	\N	2026-02-12 14:21:59.533	2026-02-12 14:21:59.533
+3c04531c-e2a1-48e2-aff2-92119c582fdd	/api/assets/projects/endo-sens/cover-2.avif	image	local	Image Cover 2 du projet Endo Sens	\N	\N	\N	\N	2026-02-12 14:21:59.538	2026-02-12 14:21:59.538
+c997628c-4e1a-4b54-8d2b-728f98ce8909	/api/assets/projects/artisan-velux/cover-2.avif	image	local	Image Cover 2 du projet Artisan Velux	\N	\N	\N	\N	2026-02-12 14:22:32.181	2026-02-12 14:22:32.181
+0ed3d70c-1318-4a6c-91f1-f0abbc59e830	/api/assets/projects/artisan-velux/cover-3.avif	image	local	Image Cover 3 du projet Artisan Velux	\N	\N	\N	\N	2026-02-12 14:22:32.182	2026-02-12 14:22:32.182
+d1baa377-3733-4769-b27a-e92201f78067	/api/assets/projects/artisan-velux/cover-4.avif	image	local	Image Cover 4 du projet Artisan Velux	\N	\N	\N	\N	2026-02-12 14:22:32.185	2026-02-12 14:22:32.185
+447ee35a-8d1e-4829-ac0e-dbe5378d588e	/api/assets/projects/agence-communication/featured.avif	image	local	Image principale du projet Agence Communication	\N	\N	\N	\N	2026-02-12 14:23:08.069	2026-02-12 14:23:08.069
+38485521-8469-49e6-b700-303beebb6cfc	/api/assets/projects/agence-communication/cover-1.avif	image	local	Image Cover 1 du projet Agence Communication	\N	\N	\N	\N	2026-02-12 14:23:08.072	2026-02-12 14:23:08.072
+db1230d4-b644-4d05-8e00-17443ec45157	/api/assets/projects/agence-communication/cover-2.avif	image	local	Image Cover 2 du projet Agence Communication	\N	\N	\N	\N	2026-02-12 14:23:08.074	2026-02-12 14:23:08.074
+02625e26-3dea-41f2-92fa-fc2af423fb46	/api/assets/projects/agence-communication/cover-3.avif	image	local	Image Cover 3 du projet Agence Communication	\N	\N	\N	\N	2026-02-12 14:23:08.076	2026-02-12 14:23:08.076
+4f698ae5-8a91-48a3-88a8-41980d2dcb96	/api/assets/projects/agence-communication/cover-4.avif	image	local	Image Cover 4 du projet Agence Communication	\N	\N	\N	\N	2026-02-12 14:23:08.078	2026-02-12 14:23:08.078
+\.
 
--- Mise à jour des médias avec l'uploader
+-- Person
+COPY public."Person" (id, bio, "avatarMediaId", "createdAt", "updatedAt", "firstName", "lastName", pseudo, "fullName", role, email, "profileData", "siteOwner") FROM stdin;
+62cded6b-b881-d682-d8be-815775b7b164	Développeur full stack freelance, spécialisé dans les sites vitrines et les solutions métier durables.	0f54dee9-05cf-92f9-cd97-309e1021040f	2026-02-09 12:35:11.508	2026-02-11 19:00:37.489	YOUR_FIRST_NAME	YOUR_LAST_NAME	Max	YOUR_FIRST_NAME YOUR_LAST_NAME	Développeur Full Stack	your.email@example.com	{"contacts": {"x": "", "malt": "https://www.malt.fr/profile/maximefleury1", "email": "mailto:your.email@example.com", "github": "https://github.com/MaksTinyWorkshop", "reddit": "", "discord": "", "threads": "", "youtube": "", "facebook": "", "linkedin": "https://www.linkedin.com/in/maxfleury-dinodev/", "telegram": "", "whatsapp": "https://wa.me/33648652868", "instagram": "", "pinterest": ""}, "metadata": {"location": "Europe/Paris", "languages": ["Français", "English", "Español"]}}	t
+aba8fbe0-6968-4c68-a8c7-e97489bc6a60	\N	d3c451b7-5eec-404e-a6f1-688fea661252	2026-02-12 09:31:46.237	2026-02-12 09:31:46.237	Matthias	Marty	Matte	Matthias Marty	Designer	contact@tamatelier.com	{"contacts": {"x": "", "malt": "", "email": "mailto:contact@tamatelier.com", "github": "", "reddit": "", "discord": "", "threads": "", "youtube": "", "facebook": "", "linkedin": "https://www.linkedin.com/in/matthias-marty/", "telegram": "", "whatsapp": "", "instagram": "", "pinterest": ""}}	f
+ca6a370b-d907-4b92-a139-54b7dcc3eb73	\N	c94bffa2-8585-4b75-bbfa-99b2e8d65703	2026-02-12 09:39:25.291	2026-02-12 09:39:25.291	Henri	Delperier	Henri	Henri Delperier	Lead Dev	delperier.ei@gmail.com	{"contacts": {"x": "", "malt": "", "email": "mailto:delperier.ei@gmail.com", "github": "", "reddit": "", "discord": "", "threads": "", "youtube": "", "facebook": "", "linkedin": "https://www.linkedin.com/in/henri-delperier-1317738b/", "telegram": "", "whatsapp": "", "instagram": "", "pinterest": ""}}	f
+\.
+
+-- Re-lie tous les médias au propriétaire principal (après insertion Person pour respecter la FK)
 UPDATE "Media" SET "uploadedById" = '62cded6b-b881-d682-d8be-815775b7b164';
 
--- Insertion des tags
-INSERT INTO "Tag" (id, slug, name, category, "createdAt", "updatedAt") VALUES
-('63e3cd64-45f0-7193-affd-53a9102e1ef6', 'reflexions', 'Reflexions', 'article', NOW(), NOW()),
-('be94ba0c-4aa8-164f-fbec-d18f6dc96dcc', 'opinion-tech', 'Opinion, Tech', 'article', NOW(), NOW()),
-('e51e1bcd-fce4-0087-73e1-771f2b9caba0', 'tutorial-tech-dev', 'Tutorial, Tech, Dev', 'article', NOW(), NOW()),
-('a775e468-65b3-9037-fa59-7184232d4f25', 'web', 'Web', 'project', NOW(), NOW()),
-('b845869b-2d26-cbde-51d8-ad52acd4e0eb', 'vitrine', 'Vitrine', 'project', NOW(), NOW()),
-('d5136f80-be8c-ebea-b639-bd9860bf2e45', 'saas', 'SaaS', 'project', NOW(), NOW()),
-('1f2194b3-ce5c-0aa5-2b13-52ebb1f1156d', 'metier', 'Métier', 'project', NOW(), NOW()),
-('5c89d3e9-8a7d-4f86-8b66-1b0ef490f3cf', 'documentation', 'Documentation', 'project', NOW(), NOW());
-
--- Insertion des autres personnes
-INSERT INTO "Person" (id, "fullName", "createdAt", "updatedAt") VALUES
-('6bd9d1ea-279e-3ae9-2294-177c7469bd30', 'Max', NOW(), NOW()),
-('406eeaf3-15e9-d7a6-9f5c-47c96d35b2c8', 'Henri D', NOW(), NOW());
-
--- Insertion des articles
-INSERT INTO "Article" (id, slug, title, summary, content, status, "publishAt", featured, "mediaId", "createdAt", "updatedAt") VALUES
-('5dc9a3f6-3d5c-28fc-d0fd-93a6d358a9e0', 'devs-1', 'On ne manque pas de développeurs. On manque d’entreprises prêtes à en former', 'La tech ne manque pas de développeurs : elle manque d’entreprises disposées à former des juniors. Pendant que les processus de recrutement s’étirent, que les CV IA circulent en boucle et que les annonces périmées restent en ligne, les équipes tournent à flux tendu. L’IA accélère le travail, mais ne remplacera jamais la transmission, qui seule permet de créer des seniors. Et à force d’attendre un “profil parfait”, le secteur devient autophage', '
-## 🍽️ De la restauration à la tech : le choc culturel
-
-Avant l’IT, j’ai dirigé plusieurs restaurants, et j’y ai appris un truc très simple :
-
-Une équipe ne s’effondre pas d’un coup. Elle s’abîme quand on refuse de la renforcer.
-C’était vrai en restauration, je découvre que c’est tout aussi vrai dans la tech.
-
-Quand je me suis reconverti, j’ai fait ma part :
-
-- 📚 j’ai appris,
-- 💻 j’ai codé,
-- 🧠 j’ai compris.
-
-Puis j’ai rencontré le recrutement tech... Et là j’ai compris que, tel Alice (ou Néo selon les refs), j''ai suivi le lapin blanc
-
----
-
-## 🎪 Le cirque absurde du recrutement tech
-
-**« On manque de développeurs ! »** … mais on refuse les juniors.
-
-**« On veut un profil opérationnel J+1 ! »** … mais l’annonce date de 4 mois.
-
-**« On n’a pas le temps d’onboarder ! »** … mais l’équipe se noie depuis autant de temps au moins.
-
-La contradiction est flagrante.
-
-Et puis le rituel habituel :
-
-T''envoies un CV à une ESN lambda
-Tu reçois un message automatique, qui te dit qu''on te recontactera sous deux semaines, même si réponse négative oui oui, parce que "chez nous, chaque candidat compte"
-
-Si tu passes ce premier filtre :
-
-- Visio avec RH sous 2 semaines
-- Test technique de 4 heures une semaine plus tard
-- Entretien N+1
-- Entretien N+2
-- Débrief
-- Décision sous 20 jours ouvrés
-
-Avec en option :
-
-- 🩺 un bilan sanguin
-- 🧠 un test psychomoteur
-- 🚗 le carnet de révision de ta voiture....
-
-Comme si t''allais bosser pour Le bureau des légendes ! Mais bon sang, "période d''essai", ça n''évoque rien pour personne ??
-
----
-
-## 🤡 Le paradoxe moderne : IA → CV → IA → ESN → IA
-
-Aujourd’hui, beaucoup de candidats envoient des CV… qu’ils n’ont même plus écrits avec leurs petites mains
-Ils sont générés par IA -> pour plaire à des IA -> qui les filtrent pour des ESN -> qui lisent ces CVIA -> pour des annonces parfois obsolètes...
-Evidemment, dans cet intervalle, l''équipe tourne avec au moins une personne manquante : c’est un peu comme éteindre un incendie avec un verre d’eau. Ça tient… jusqu’au moment où ça ne tient plus.
-
-**Bienvenue dans la boucle de l’absurde.**
-
-🦈 Et pendant ce temps-là : des requins surfent la vague -> En parallèle sur les réseaux pullulent des offres de tous poils, miraculeuses :
-
-Abonnements miraculeux : « Plus d’entretiens à 29€/mois ! »
-
-Automatisation agressive : « 500 CV envoyés par jour, optimisés IA ! »
-
-Promesses à la DARTY : « Garantie réussite ! »
-
-Au final :
-
-- les ATS saturent,
-- les juniors s’épuisent,
-- les recruteurs croulent sous les clones,
-- et rien n’avance vraiment.
-
-Un business qui profite surtout… à ceux qui ont créé le problème. Payer pour trouver du travail : on marche vraiment sur la tête.
-
----
-
-## 👨💻 Parlons enfin des juniors (les vrais)
-
-Contrairement aux clichés, un junior sait coder.
-Ce qui lui manque ? Le contexte. Pas la compétence.
-
-Comme en restauration : un serveur expérimenté qui change d’établissement sait bosser, il ne sait juste pas encore dans quel frigo sont rangés les desserts et le ketchup pour la 12 ! Et ça, ça s’apprend... vite. Plus vite que n’importe quel process de recrutement XXL en tout cas.
-
----
-
-## 🤖 Ce que l’IA fait vraiment (et ce qu’elle ne fera jamais)
-
-Je n’ai pas peur de l’IA.
-Je l’utilise tous les jours, et je progresse chaque jour grâce à elle... J’ai testé GPT, Claude, Copilot, Cursor, Windsurf, Replit… Et soyons lucides : ça change profondément la manière de travailler.
-
-C''est dingue ce qu''elle sait faire :
-
-- générer un squelette de front en 3 minutes,
-- résoudre en 20 secondes un bug que je traînais depuis 2 jours,
-- expliquer un concept mieux que la doc officielle,
-- proposer un refactoring propre, argumenté et cohérent, ...
-
-Oui, certaines choses que j’ai apprises sont déjà en partie obsolètes. Pas parce qu’elles ne servent plus, mais parce que l’IA permet d’aller plus vite dessus.
-Mais soyons clairs : Une IA accélère, elle n’assume pas un poste.
-
-Elle ne comprend pas :
-
-- le métier,
-- les priorités,
-- les compromis,
-- la culture d’équipe,
-- la communication humaine,
-- les enjeux non écrits.
-
-Alors j’ai posé la question directement à un LLM (chat GPT 5.2) : “Une IA peut-elle remplacer un junior en entreprise ?”
-
-Voici sa réponse :
-
-> « Non. Une IA peut produire du code, expliquer des concepts, résoudre des bugs simples et accélérer certaines tâches. Mais elle ne comprend ni le métier, ni les priorités, ni le contexte humain dans lequel s’inscrit un projet. > Un junior, lui, apprend ces éléments, s’adapte, pose les bonnes questions, comprend les contraintes réelles et finit par contribuer au produit, pas seulement au code. L’IA exécute sans responsabilité. Un junior évolue, devient > autonome et finit par apporter une valeur qu’aucun modèle ne peut remplacer. En réalité, l’IA peut augmenter un junior… mais sûrement pas le remplacer. »
-
-Il m''a pondu un résultat beaucoup plus long évidemment, que je lui ai demandé de résumer (malin le gars)...
-
-Au final, l’IA peut t’aider à apprendre plus vite. Mais elle ne remplacera jamais ce que seule une équipe peut transmettre.
-**Et tout est dit.**
-
----
-
-## 🧩 Former un junior, c’est renforcer une équipe
-
-Ça oblige à :
-
-- clarifier
-- documenter
-- structurer
-
-Bref, à rendre l’équipe plus solide, plus résiliente, et surtout, composée de personnes qui ne viennent pas bosser avec la boule au ventre !
-
-👉 La **transmission**, c’est comme dans les grandes cuisines : un chef étoilé ne garde jamais ses secrets pour lui. Il montre comment lever un filet, réduire une sauce, dresser une assiette parfaite. Il transforme un commis hésitant en un créateur précis, rapide et sûr de lui. Dans la tech comme en cuisine, les talents rares ne naissent pas “tout faits”. Ils se forment, patiemment.
-
-C’est ça, un vrai mouton à cinq pattes : le résultat de la transmission, pas du hasard.
-
-👉 Comment on crée des seniors... sans former de juniors ?? Je suis preneur. 📝🙂
-
-Et le plus ironique dans tout ça ? Si la tech appliquait à elle-même la logique qu’elle exige des juniors, elle serait déjà en avance de deux versions.
-
-```ts
-// TODO: recruter un junior
-if (needsDev && juniorCandidate) {
-  hire(juniorCandidate);
-} else {
-  burnOut(team);
-}
-```
-
----
-
-## 🧠 Ce que je veux dire, vraiment
-
-Je ne demande pas qu’on me déroule le tapis rouge. Juste qu’on regarde la réalité en face : le secteur se prive lui-même des talents qu’il dit chercher.
-
----
-
-## 🐍 Conclusion
-
-Je ne suis pas amer, loin s''en faut : je suis motivé, curieux, travailleur. Et conscient du monde dans lequel j’entre. Je suis juste triste de voir un secteur devenir autophage, à force de s’obstiner à chercher ce qu’il refuse de construire.
-', 'published', '2026-01-20T00:00:00.000Z', true, '82a73b17-57bc-41cc-213b-cc142a5ce00e', NOW(), NOW()),
-('5d826f76-b112-f19f-f128-a0eba00e0983', 'devs-2', 'Quand coder n''est plus ce qui fait la différence 💻 ➡️ 🧠', 'Sur quoi repose réellement la valeur d''un développeur, quand les organisations peinent à jouer leur rôle ?', '
-## 🎯 La vraie question qu''on évite
-
-Dans un article précédent, je défendais une idée simple : on ne manque pas de développeurs, mais d''entreprises prêtes à les accueillir correctement.
-
-On parle beaucoup de pénurie. Beaucoup moins de transmission, d''onboarding, de conditions réelles d''apprentissage.
-
-Cette réflexion m''a conduit à une autre question, plus discrète, mais tout aussi structurante 👇
-
-Sur quoi repose réellement la valeur d''un développeur, quand les organisations peinent à jouer leur rôle ?
-
----
-
-## 💻 Coder correctement n''est plus un critère, c''est un prérequis
-
-Produire du code qui fonctionne est devenu plus courant. Dans beaucoup d''équipes, ce n''est plus ce qui fait la différence.
-
-Coder correctement est devenu un prérequis. Pas un critère.
-
-Dans beaucoup d''équipes, deux développeurs peuvent livrer un résultat techniquement satisfaisant. Et pourtant, ils ne sont pas perçus de la même manière.
-
-La différence ne se joue pas seulement dans le code. Elle se joue dans ce que ce code fait au travail autour de lui.
-
-Dans sa lisibilité.
-Dans sa capacité à être repris.
-Dans les décisions implicites qu''il fige, parfois sans débat.
-
----
-
-## 🎭 La charge invisible qu''on ne nomme jamais
-
-Quand le cadre est fragile, quand la transmission est faible, quand les responsabilités sont floues, on attend implicitement de certains développeurs qu''ils fassent correctement ce qui fait pourtant partie du métier :
-
-Comprendre le contexte.
-Relier la technique aux usages réels.
-Poser les questions nécessaires.
-
-Le problème, ce n''est pas que ces attentes existent. C''est qu''elles s''exercent dans des cadres qui ne donnent pas toujours les moyens de les assumer.
-
-Pas parce que c''est explicitement leur rôle... Mais parce que, sinon, personne ne le fait 🤷♂️
-
----
-
-## 🔍 Ce qu''on valorise vraiment (sans le dire)
-
-Ce déplacement n''est pas neutre. Il crée des attentes implicites, des critères de valeur rarement formulés. Parfois aussi une forme d''injustice silencieuse, parce que cette charge n''est
-
-ni reconnue,
-ni répartie,
-ni discutée.
-
-Certains développeurs sont valorisés non pas pour ce qu''ils produisent, mais pour ce qu''ils absorbent :
-
-le flou,
-les non-dits,
-les angles morts de l''organisation.
-
-👉 Tant que ces attentes resteront implicites, les entreprises continueront à appeler "talent" ce qui est en réalité une capacité à encaisser le désordre.
-
----
-
-## 🧩 Le vrai problème : une responsabilité collective
-
-Si coder ne suffit plus à faire la différence, ce n''est pas parce que la technique aurait perdu de la valeur. C''est parce que, trop souvent, elle doit compenser ce que les organisations n''assument plus assez clairement :
-
-la transmission,
-la clarification,
-la responsabilité des décisions.
-
-Et ça, ce n''est pas un sujet de performance individuelle. C''est un sujet de responsabilité collective, et tant qu''il restera implicite, il continuera d''user les mêmes profils 🧩
-
----
-
-## 💭 La question finale
-
-Si coder ne suffit plus à faire la différence, qu''est-ce que nos organisations attendent vraiment des développeurs… sans toujours le formuler clairement ?
-
-_(Dans la continuité de l''article : « Il ne manque pas de développeurs. Il manque des entreprises prêtes à les accueillir. »)_
-', 'published', '2026-01-26T00:00:00.000Z', true, '050aae8f-1bfd-83b8-d602-71c6d69561de', NOW(), NOW()),
-('4e4c0d6c-51a4-6f6a-f801-77331767c145', 'devs-3', 'Quand le cadre ne tient plus, ce qu’on attend vraiment des développeurs', 'Après avoir interrogé les conditions d’entrée dans le métier, puis ce qui fait réellement la valeur d’un développeur, une autre question s’est imposée. Que demande-t-on, concrètement, aux développeurs quand le cadre de travail ne tient plus ?', '
-Dans des réflexions récentes, j’ai parlé d’accueil, de transmission, et de ce que le cadre de travail fait (ou ne fait pas) aux développeurs.
-
-Après avoir interrogé les conditions d’entrée dans le métier, puis ce qui fait réellement la valeur d’un développeur, une autre question s’est imposée.
-
-# Que demande-t-on, concrètement, aux développeurs quand le cadre de travail ne tient plus ?
-
----
-
-## 🧩 L’autonomie, mot-valise confortable
-
-Quand une organisation dit chercher des développeurs « autonomes », elle ne parle presque jamais de code.
-
-Elle parle d’une capacité à faire avancer le travail dans des contextes où le cadre n’est pas entièrement posé. Livrer malgré l’incertitude. Décider quand les arbitrages n’ont pas été faits. Comprendre des enjeux métier jamais vraiment explicités.
-
-Sur le principe, rien de choquant. Mais dans la pratique, ce mot recouvre souvent des attentes très différentes, rarement nommées comme telles.
-
----
-
-## 🛠️ Ce qui fait réellement partie du métier
-
-Comprendre le contexte métier. Relier la technique aux usages réels. Poser les questions nécessaires avant d’implémenter.
-
-Sur ce point, il n’y a pas débat : c’est bien du **travail de développeur**.
-
-Ce n’est ni un bonus, ni une posture héroïque, ni une compétence réservée à quelques profils « plus mûrs ».
-
-Dès lors que le développement ne se réduit pas à écrire du code isolé, c’est le cœur du métier.
-
----
-
-## ⚠️ Là où le décalage apparaît
-
-Le problème commence quand ces attentes sont posées sans que le cadre permette réellement de les exercer.
-
-- Quand il n’y a pas de temps pour comprendre.
-- Pas d’espace pour questionner.
-- Pas de responsabilités clairement assumées.
-- Et des décisions qui arrivent trop tard (ou jamais)
-
-Dans ces conditions, le travail change de nature. Ce qui devrait être pensé collectivement devient une charge individuelle. Ce qui devrait être explicite devient implicite.
-
-Et ce qui devrait être soutenu devient silencieux.
-
----
-
-## 🎬 Une scène ordinaire
-
-Un développeur arrive sur un projet en cours. Le périmètre est déjà là. Les décisions aussi, en théorie.
-
-Mais très vite, il comprend que beaucoup de choses n’ont jamais vraiment été tranchées.
-
-Les priorités bougent. Les règles métier sont connues « par quelques personnes ». Les compromis passés ne sont écrits nulle part.
-
-Officiellement, on lui demande d’implémenter. En pratique, on attend qu’il comprenne ce qui n’a pas été formulé, qu’il anticipe les effets de décisions prises ailleurs, et qu’il évite des erreurs dont personne n’a réellement pris la responsabilité.
-
-Il fait son travail, sérieusement.
-
-Mais une partie de ce travail consiste surtout à combler les trous du cadre.
-
----
-
-## 🧱 De la responsabilité au fardeau
-
-Progressivement, certaines capacités prennent plus de poids que d’autres. Pas celles qui figurent dans les fiches de poste. Pas celles qui sont évaluées formellement.
-
-Mais celles qui permettent de tenir malgré l’instabilité.
-
-Absorber le flou. Composer avec les non-dits. Faire avancer un système dans lequel tout n’est pas structuré.
-
-Ces capacités deviennent décisives, mais rarement reconnues comme telles.
-
----
-
-## 🗣️ Quand le langage masque le problème
-
-À ce stade, un glissement s’opère. Ce qui relève de la compensation organisationnelle est rebaptisé autrement. On parle de maturité, de hauteur de vue, sens du business.
-
-Parfois même de talent.
-
-Ce vocabulaire est pratique, il évite de nommer ce qui manque réellement dans le cadre. Mais il individualise un problème qui est, au départ, collectif.
-
----
-
-## 🌱 Une conséquence directe : l’impossibilité d’accueillir des juniors
-
-Ce fonctionnement a une autre conséquence, rarement formulée. Il rend l’arrivée de profils juniors extrêmement difficile.
-
-Non pas parce qu’ils manqueraient de compétences, mais parce qu’un cadre fragile exige, dès le départ, une capacité à compenser, à anticiper, à absorber.
-
-Or c’est précisément ce que l’on ne peut pas raisonnablement attendre de quelqu’un qui arrive. Dans un cadre plus explicite
-
-- où les décisions sont nommées,
-- où les responsabilités sont claires,
-- où les compromis passés sont documentés
-
-l’onboarding devient tout de suite plus simple. Pas parce que les juniors seraient « mieux formés ». Mais parce que le travail attendu devient lisible.
-
-Assainir le cadre de travail, ce n’est pas seulement améliorer le quotidien des équipes en place. C’est créer les conditions réelles d’accueil des profils juniors, sans leur demander, dès le premier jour, de compenser ce que l’organisation n’a pas encore structuré.
-
----
-
-## 🎯 Une sélection silencieuse
-
-Quand ces attentes restent implicites, elles finissent par produire un effet de sélection. Pas sur la pertinence des choix. Pas sur la qualité du travail produit. Mais sur la capacité à encaisser. À durer, absorber, compenser.
-
-Ceux qui tiennent sont valorisés. Ceux qui s’épuisent sortent du cadre, souvent en silence.
-
----
-
-## ❓ La vraie question
-
-La question n’est pas : « faut-il des développeurs plus matures ? » Ils le sont déjà.
-
-La question est plus inconfortable : **sommes-nous prêts à rendre explicites ce que nous attendons réellement d’eux, à organiser le cadre pour que ce travail soit possible, et à en assumer la responsabilité collectivement ?**
-
-Tant que ces attentes resteront implicites, elles continueront de peser sur les mêmes profils. Et à être appelées « talent », là où il s’agit surtout d’une capacité à travailler dans un cadre qui ne tient pas encore.
-
----
-
-## 🧭 Mot de fin
-
-Ce texte ne propose pas de solution miracle. Il propose une mise à plat. Parce que, dans le travail comme ailleurs, ce qui n’est pas nommé finit toujours par s’user quelque part.', 'published', '2026-02-02T00:00:00.000Z', true, '8ef2305b-1662-5451-5bf6-6c9732326756', NOW(), NOW()),
-('a55cd105-4176-8e25-3173-7d00b05b8c03', 'la-stack-est-une-consequence-pas-un-point-de-depart', 'La stack est une conséquence, pas un point de départ ', 'Quand un projet démarre, la vraie question n’est pas la stack, mais le besoin à adresser.  ', '
-Quand un projet démarre, la vraie question n’est pas la stack, mais le besoin à adresser.  
-Vitrine, application, backend, base de données : chaque cas appelle une structure différente.
-
-Plutôt que de réinventer la roue à chaque fois, j’ai construit un ensemble de bases et de scripts qui m’orientent rapidement vers la bonne solution, le tout encapsulé dans des devcontainers pour démarrer immédiatement, quel que soit l’environnement.
-
----
-
-## Formaliser l’entonnoir de décision 🧠
-
-Au départ, tous les projets ne se ressemblent pas, mais les mêmes questions reviennent systématiquement.
-
-- Est-ce un site vitrine ou une application ?
-- Y a-t-il de la donnée à persister ?
-- Faut-il un backend, une API, une base de données ?
-
-Ces questions conditionnent bien plus l’architecture d’un projet que le choix d’un framework.
-
-J’ai donc transformé cette réflexion implicite en quelque chose de plus explicite :  
-un **entonnoir de décision**, simple et reproductible.
-
----
-
-## Un menu de structures adaptées 📋
-
-L’idée est volontairement simple.
-
-En fonction du besoin du projet, je veux pouvoir m’orienter rapidement vers une base adaptée :
-
-- **Vitrine**  
-  Structure légère, orientée performance
-
-- **Application**  
-  Front et backend clairement séparés
-
-- **Donnée**  
-  Schéma, ORM et conventions en place
-
-Chaque base répond à un cas précis, sans chercher à couvrir tous les scénarios possibles.
-
----
-
-## Réduire les décisions répétées 🔁
-
-Ce travail n’a pas pour objectif d’être exhaustif ou universel.
-
-Il sert surtout à éliminer les décisions que je prenais systématiquement au début de chaque projet :
-
-- structure des dossiers
-- outils de base
-- conventions
-- scripts de démarrage
-
-Une fois ces choix stabilisés, l’énergie peut enfin être mise ailleurs :  
-sur le besoin réel du client et la logique métier.
-
----
-
-## Des structures concrètes : les briques du socle 🧱
-
-Une fois l’entonnoir posé, il restait à le matérialiser.
-
-Plutôt que de maintenir une structure unique censée tout faire, j’ai choisi de construire plusieurs bases ciblées, chacune adaptée à un type de projet précis.
-
-Ces bases ne sont pas des templates figés, mais des **points de départ cohérents**, pensés pour être utilisés en conditions réelles.
-
-Le choix des outils n’est pas un dogme, mais une réponse pragmatique aux projets rencontrés.
-
----
-
-### Vitrine : une base légère et performante 🚀
-
-Tous les projets n’ont pas besoin d’un backend ou d’une base de données.
-
-Pour une vitrine, l’objectif est simple :
-- performance
-- clarté
-- maintenance minimale
-
-Cette base s’appuie sur Astro :
-- rendu statique par défaut
-- JavaScript limité au strict nécessaire
-- structure claire orientée contenu
-
-L’enjeu n’est pas d’ajouter de la complexité, mais au contraire de **savoir s’arrêter** quand le besoin est simple.
-
----
-
-### Application : front et backend clairement séparés 🧩
-
-Dès qu’un projet dépasse la simple vitrine, les besoins changent.
-
-Il faut gérer :
-- de la logique métier
-- des utilisateurs
-- des échanges avec une API
-
-Pour ces cas, j’ai mis en place un monorepo structuré autour :
-- d’un backend Express
-- d’un front Vue
-- de conventions claires entre les deux
-
-Ce choix facilite :
-- la cohérence des contrats
-- l’évolution du projet
-- l’onboarding d’un autre développeur
-
----
-
-### Base de données : anticiper sans sur-ingénierie 🗄️
-
-Ajouter une base de données change profondément la nature d’un projet.
-
-Les erreurs deviennent plus coûteuses et les choix initiaux pèsent plus longtemps.
-
-Pour ces projets, j’ai intégré dès le départ :
-- un ORM (Prisma)
-- un schéma explicite
-- des conventions pour les migrations
-
-L’objectif n’est pas de tout prévoir, mais d’avoir une base saine pour faire évoluer le projet sans repartir de zéro.
-
----
-
-## Le devcontainer comme socle commun 🐳
-
-Ces structures auraient peu d’intérêt si leur mise en place dépendait encore de la machine ou de l’environnement du développeur.
-
-Chaque base est pensée pour être utilisée directement dans un devcontainer :
-- mêmes versions d’outils
-- mêmes scripts
-- même comportement, quel que soit l’OS
-
-**Ouvrir le projet, coder, point.**
-
-Cela permet :
-- d’éviter les “ça marche chez moi”
-- de faciliter l’onboarding
-- de garantir une compatibilité maximale entre environnements
-
----
-
-## Des scripts au service du besoin ⚙️
-
-Autour de ces bases, j’ai progressivement ajouté des scripts pour :
-- initialiser un projet
-- lancer les services nécessaires
-- rester cohérent d’un projet à l’autre
-
-Ils ne cherchent pas à être magiques.  
-Ils existent surtout pour réduire les frictions et automatiser ce qui n’a pas besoin d’être redécidé.
-
----
-
-## Ce que je ferais différemment aujourd’hui 🔍
-
-Avec le recul, une chose me paraît importante à préciser :  
-les choix de frameworks et d’outils présentés ici sont avant tout **des choix personnels**.
-
-Ils sont directement liés aux projets que j’ai eu à réaliser jusqu’ici, à leurs contraintes, et à ce que je cherchais à optimiser à ce moment-là.
-
-Certains de ces socles sont d’ailleurs partis de templates existants, que j’ai progressivement adaptés et revisités à ma façon.  
-Un peu comme un cuisinier qui part d’une recette existante, puis la revisite selon son goût, ses outils et le contexte.
-
-Avec plus d’expérience, je referais probablement certains choix différemment.  
-Et c’est normal.
-
-L’objectif n’est pas de figer une stack idéale, mais de structurer une manière de réfléchir :
-- partir du besoin
-- limiter les décisions répétées
-- construire des bases suffisamment saines pour évoluer
-
-Ces repositories sont moins une vérité technique qu’un instantané de mon parcours à un moment donné.
-
----
-
-## Ce que ce socle dit de ma façon de travailler ✨
-
-Ce travail n’a pas été motivé par l’envie de créer la bonne stack, mais par celle de mieux travailler au quotidien.
-
-Formaliser un entonnoir de décision, stabiliser des bases réutilisables et développer dans des environnements reproductibles m’a appris une chose essentielle :
-
-**la qualité d’un projet se joue souvent avant la première feature.**
-
-Aujourd’hui, ce socle me sert de garde-fou.  
-Il m’aide à éviter de réinventer la roue, à démarrer vite, et à rester concentré sur ce qui apporte réellement de la valeur.
-
----
-C''est cadeau ☺️
-
-👉[Boilerplate Astro](https://github.com/MaksTinyWorkshop/Boilerplate_Vitrine_Astro)
-
-👉[Boilerplate App](https://github.com/MaksTinyWorkshop/Boilerplate_Monorepo_Express_Vue_Prisma)
-
-👉[Devcontainer "Framework"](https://github.com/MaksTinyWorkshop/devcontainer-framework)', 'published', '2025-10-30T00:00:00.000Z', true, NULL, NOW(), NOW());
-
--- Liaison articles → auteurs
-INSERT INTO "ArticlePerson" (id, "articleId", "personId", role, "order", "primary", "createdAt", "updatedAt") VALUES
-('c7ec2aa5-bd95-53c3-9d62-47abd8ad8d62', '5dc9a3f6-3d5c-28fc-d0fd-93a6d358a9e0', '62cded6b-b881-d682-d8be-815775b7b164', 'Auteur principal', 1, true, NOW(), NOW()),
-('0c97f7f3-cf52-4fd0-1ebc-5cfcfc5316a6', '5d826f76-b112-f19f-f128-a0eba00e0983', '62cded6b-b881-d682-d8be-815775b7b164', 'Auteur principal', 1, true, NOW(), NOW()),
-('e90c8785-a408-2ae9-aad0-223f7da44b3a', '4e4c0d6c-51a4-6f6a-f801-77331767c145', '62cded6b-b881-d682-d8be-815775b7b164', 'Auteur principal', 1, true, NOW(), NOW()),
-('f77589ab-6960-700f-59f8-1e6403b50d68', 'a55cd105-4176-8e25-3173-7d00b05b8c03', '62cded6b-b881-d682-d8be-815775b7b164', 'Auteur principal', 1, true, NOW(), NOW());
-
--- Liaison articles → tags
-INSERT INTO "ArticleTag" (id, "articleId", "tagId", "createdAt", "updatedAt") VALUES
-('4dd43e40-154d-ab55-0802-f4c2e36b8ac2', '5dc9a3f6-3d5c-28fc-d0fd-93a6d358a9e0', '63e3cd64-45f0-7193-affd-53a9102e1ef6', NOW(), NOW()),
-('525621b2-d077-a076-5afd-e70637075b5b', '5d826f76-b112-f19f-f128-a0eba00e0983', '63e3cd64-45f0-7193-affd-53a9102e1ef6', NOW(), NOW()),
-('a99ba14b-87a0-b805-e0d7-a9da627cbadc', '4e4c0d6c-51a4-6f6a-f801-77331767c145', 'be94ba0c-4aa8-164f-fbec-d18f6dc96dcc', NOW(), NOW()),
-('9af9b5b8-d64b-1461-c338-1257fb8949eb', 'a55cd105-4176-8e25-3173-7d00b05b8c03', 'e51e1bcd-fce4-0087-73e1-771f2b9caba0', NOW(), NOW());
-
--- Insertion des projets
-INSERT INTO "Project" (id, slug, title, summary, content, status, "publishedAt", link, repository, "createdAt", "updatedAt") VALUES
-('b997d961-b22b-6126-7a77-8dd648c02b76', 'agence-communication', 'C''Com', 'Site vitrine moderne et performant pour une agence de communication spécialisée en écrans publicitaires, conçu avec Astro pour des performances optimales.', '
-## Le Besoin Métier
-
-L''agence de communication C''Com spécialisée dans les écrans publicitaires avait besoin d''une présence web professionnelle pour :
-
-- Présenter leurs sservices et leur expertise
-- Mettre en avant leurs réalisations
-- Faciliter la prise de contact avec leurs prospects
-- Se démarquer dans un secteur concurrentiel
-
-## L''Approche
-
-**Vitrine rapide et efficace** : Le client avait besoin d''un site en ligne rapidement, sans complexité technique inutile.
-
-Ma proposition :
-
-- Un site statique ultra-performant avec Astro
-- Un design moderne et épuré
-- Une optimisation SEO poussée pour le référencement local
-- Une expérience utilisateur fluide sur tous les appareils
-
-## La Solution
-
-### Caractéristiques Techniques
-
-- **Framework** : Astro pour des performances maximales
-- **Design** : Responsive, mobile first
-- **SEO** : Optimisation complète pour le référencement
-- **Performance** : Temps de chargement minimal, images optimisées
-- **Accessibilité** : Respect des standards WCAG
-
-### Fonctionnalités
-
-- Page d''accueil impactante présentant les services
-- Galerie de réalisations
-- Page de présentation de l''équipe
-- Formulaires de contact
-- Design adaptatif pour tous les écrans
-
-## Technologies Utilisées
-
-- **Astro** : Framework moderne pour sites statiques ultra-rapides
-- **CSS/SCSS** : Styling responsive et maintenable
-- **JavaScript** : Interactions légères et performantes
-- **Optimisation** : Images WebP, lazy loading, minification
-
-## Résultat
-
-Un site vitrine professionnel, rapide et efficace qui permet à l''agence de :
-
-- Présenter son expertise avec élégance
-- Convertir les visiteurs en prospects qualifiés
-- Se positionner comme un acteur moderne et professionnel
-- Bénéficier d''excellentes performances SEO
-
----
-
-> _Exemple type d''un projet "site vitrine" : rapide, performant, professionnel. Quand vous avez besoin d''une présence web efficace sans complexité inutile._
-', 'published', '2024-11-01T00:00:00.000Z', 'https://c-com.fr/', NULL, NOW(), NOW()),
-('007df7e6-512d-01ea-500d-bacabc612f59', 'artisan-velux', 'Envolet'' Toit ', 'Site vitrine avec formulaire de contact optimisé + capture de leads pour un artisan spécialisé en accessoires Velux couvrant la Bretagne et la Normandie.', '
-## Le Besoin Métier
-
-Un artisan spécialisé dans l''installation et dépannage d''accessoires de fenêtres de toit Velux, couvrant la Bretagne et la Normandie, avait besoin de :
-
-- Une présence web professionnelle pour inspirer confiance
-- Un outil de capture de leads efficace
-- Une mise en avant de son expertise et de sa zone géographique
-- Un site simple à maintenir
-
-## L''Approche
-
-**Vitrine + Conversion** : Au-delà de la simple présentation, l''objectif était de transformer les visiteurs en demandes de devis qualifiées.
-
-Questions posées :
-
-- Quelles informations les clients potentiels recherchent-ils ?
-- Comment simplifier la prise de contact ?
-- Comment mettre en avant la zone géographique couverte ?
-- Quels sont les critères de confiance pour un artisan ?
-
-## La Solution
-
-### Site Vitrine Optimisé
-
-Un site conçu avec Astro qui combine :
-
-- **Présentation professionnelle** : Mise en valeur de l''expertise Velux
-- **Zone géographique claire** : Bretagne et Normandie bien identifiées
-- **Formulaire de contact intuitif** : Capture de leads simplifiée
-- **Preuves de confiance** : Certifications, garanties, témoignages
-
-### Fonctionnalités Clés
-
-- Page d''accueil impactante avec call-to-action clair
-- Présentation des services et de l''expertise
-- CTA optimisé pour la conversion
-- Galerie de réalisations
-
-## Technologies Utilisées
-
-- **Astro** : Performance et SEO optimaux
-- **Formulaire** : Intégration simple et sécurisée
-- **CSS/SCSS** : Design responsive et moderne
-- **Optimisation SEO** : Référencement local (Bretagne, Normandie, Velux)
-
-## Résultat
-
-Un site vitrine qui sert de véritable outil commercial :
-
-- Présence web professionnelle inspirant confiance
-- Génération de demandes de devis qualifiées
-- Référencement local optimisé
-- Taux de conversion visiteurs → leads maximisé
-- Maintenance simple pour le client
-
----
-
-> _Exemple de projet vitrine "augmenté" : pas seulement montrer, mais aussi convertir. La présence web comme outil de développement commercial._
-', 'published', '2024-12-01T00:00:00.000Z', 'https://envolettoit.fr', NULL, NOW(), NOW()),
-('e3cabbf6-46ca-ebe7-52c9-7dd9c0c9bf2c', 'endo-sens', 'Endo-sens', 'Page de présentation pour un stage de préparation dans le domaine de la santé et du bien-être féminin.', '
-## Le Besoin Métier
-
-Endo-sens propose un stage de préparation dans le domaine de la santé et du bien-être féminin, prévu pour mars de cette année. Le besoin était de créer une landing page efficace pour :
-
-- Présenter le stage et ses bénéfices
-- Capter l''attention des participantes potentielles
-- Faciliter les inscriptions
-- Transmettre les valeurs de bienveillance et d''accompagnement
-
-Site Web à venir, consécutivement aux stages
-
-## L''Approche
-
-**Landing Page Ciblée** : Une page unique, impactante, avec un objectif clair : convertir les visiteurs en inscriptions.
-
-Questions essentielles :
-
-- Quel message principal faire passer ?
-- Comment créer la confiance dans un domaine sensible (santé féminine) ?
-- Quels éléments rassurants mettre en avant ?
-- Comment simplifier le parcours d''inscription ?
-
-## La Solution
-
-### Landing Simple et Optimisée
-
-Conçue avec soin pour maximiser la conversion :
-
-- **Message clair et empathique** : Ton bienveillant adapté au public cible
-- **Présentation du stage** : Bénéfices, contenu, approche
-- **Appel à l''action évident** : Inscription facilitée
-- **Éléments de réassurance** : Expertise, témoignages, garanties
-
-### Fonctionnalités Clés
-
-- Hero section impactante avec accroche claire
-- Présentation du contenu du stage
-- Section bénéfices / transformations attendues
-- Présentation des intervenant(e)s
-- Formulaire d''inscription ou pré-inscription
-- Design apaisant et rassurant
-
-## Technologies Utilisées
-
-- **Pur HTML/CSS** : Très léger, aucun besoin d''infrastructure lourde
-- **Design** : Interface douce, rassurante, adaptée au sujet
-- **Formulaire** : Inscription simple et sécurisée via Google Form
-
-## Contexte
-
-**Lancement prévu** : Mars 2025
-
-Cette landing page s''inscrit dans un projet à dimension sociale et humaine, axé sur le bien-être et la santé féminine. Le site met l''accent sur :
-
-- L''empathie et la compréhension des enjeux
-- La clarté de l''information
-- La facilité d''accès et d''inscription
-- Un design qui reflète les valeurs du projet
-
-## Impact Attendu
-
-- Présentation professionnelle et rassurante du stage
-- Maximisation du taux de conversion visiteurs → inscriptions
-- Communication claire des bénéfices et de l''approche
-- Création de confiance dans un domaine sensible
-
----
-
-> _Projet à impact social dans le domaine de la santé féminine. Exemple de landing page ciblée avec une approche empathique et bienveillante._
-', 'published', '2026-01-01T00:00:00.000Z', 'https://www.endo-sens.fr/', 'https://github.com/MaksTinyWorkshop/Endosens-Stage', NOW(), NOW()),
-('88bfd9a8-dd50-e098-471f-d7c55c830f5e', 'juriscope', 'Juriscope', 'Plateforme collaborative de gestion documentaire juridique pensée pour durer. De la modélisation des données à la mise en production : une solution sur mesure pour centraliser, organiser et sécuriser la connaissance juridique d''équipes collaboratives.', '
-## Le Besoin Métier
-
-**Juriscope** répond au besoin d''une plateforme centralisée de **gestion et d''archivage de documents juridiques** pour des équipes collaboratives. Le projet adresse plusieurs problématiques :
-
-- **Centralisation documentaire** : Regrouper l''ensemble des documents juridiques (articles, décisions, commentaires) en lien avec des ouvrages et auteurs de référence
-- **Versioning et archivage** : Gérer le cycle de vie complet des documents (brouillon → publié → obsolète) avec traçabilité complète des versions
-- **Collaboration structurée** : Permettre à des équipes d''utilisateurs d''annoter, commenter et organiser collectivement la documentation juridique
-- **Organisation par métadonnées** : Système flexible de tags hiérarchiques pour classifier et retrouver rapidement l''information
-- **Sécurité et droits d''accès** : Contrôler finement qui peut consulter, créer, modifier, publier ou supprimer des documents selon des profils de droits
-
-## Les Questions Posées
-
-Le projet répond à ces questions clés :
-
-1. **Comment gérer efficacement plusieurs versions d''un même document juridique ?**
-2. **Comment organiser une base documentaire sans structure fixe prédéfinie ?**
-3. **Comment intégrer des données juridiques officielles externes ?**
-4. **Comment garantir la sécurité des données sensibles ?**
-5. **Comment permettre l''annotation personnelle sans polluer la base commune ?**
-
-## La Solution Sur Mesure
-
-### Architecture Technique
-
-- Architecture 3-tiers moderne
-- Intégrations externes :
-  - Keycloak (OAuth2/OpenID Connect)
-  - Legifrance API (données juridiques)
-- Patterns architecturaux utilisés:
-  - **DAO Pattern** : Abstraction de l''accès aux données avec interfaces génériques
-  - **Service Layer Pattern** : Logique métier isolée dans des services réutilisables
-  - **DTO Pattern** : Séparation entités persistantes / objets de transfert avec ModelMapper
-  - **Generic Repository** : GenericDao et GenericService pour mutualiser le code CRUD
-  - **Resource Server OAuth2** : Délégation d''authentification à Keycloak
-  - **Reactive Programming** : WebFlux pour les appels API externes
-
-### Fonctionnalités Clés
-
-1. **Gestion Documentaire Complète**
-2. **Système de Versioning Intelligent**
-3. **Organisation par Tags Hiérarchiques**
-4. **Collaboration Multi-utilisateurs**
-5. **Référentiels Métier**
-6. **Intégration API Externe**
-7. **Sécurité Renforcée**
-
-## Technologies Utilisées
-
-### Backend
-
-- **Java 21** - Langage principal
-- **Spring Boot 3.3.1** - Framework applicatif
-- **Spring Security** - Authentification OAuth2/JWT, CSRF, CORS
-- **Spring WebFlux** - Client HTTP réactif pour API externes
-- **MyBatis 3.0.3** - Mapper objet-relationnel (ORM)
-- **MariaDB** - Base de données relationnelle
-- **ModelMapper 3.2.0** - Conversion Bean/DTO
-- **JSoup 1.18.1** - Parsing HTML
-- **GSON 2.11.0** - Sérialisation JSON
-
-### Frontend
-
-- **Angular 18.0.6** - Framework SPA
-- **TypeScript 5.4.2** - Langage
-- **Bootstrap 5.3.3** - UI/CSS
-- **Keycloak-Angular 16.0.1** - Intégration authentification
-- **D3.js 7.9.0** + d3-org-chart - Visualisations (organigrammes)
-- **ng-select 13.4.1** - Sélecteurs avancés
-- **ngx-toastr 19.0.0** - Notifications
-- **CryptoJS 4.2.0** - Cryptographie côté client
-
-### Sécurité & Infrastructure
-
-- **Keycloak 25.0.1** - Serveur d''identité (IAM)
-- **OAuth2 / OpenID Connect** - Protocoles d''authentification
-- **JWT** - Tokens d''accès
-
-### Outils de build
-
-- **Maven 3.x** - Gestion de dépendances backend
-- **npm / Angular CLI** - Gestion frontend
-
-## Défis et Apprentissages
-
-### Défis techniques rencontrés
-
-1. **Gestion complexe du versioning**
-2. **Sécurité multi-couches**
-3. **Architecture générique réutilisable**
-4. **Intégration API externe avec authentification**
-5. **Tags hiérarchiques flexibles**
-6. **Protection CSRF en architecture SPA**
-
-### Apprentissages clés
-
-- Maîtrise de **MyBatis** pour mapping SQL complexe (requêtes avec associations multiples)
-- Intégration **OAuth2 Resource Server** avec Keycloak
-- Gestion d''**architecture générique** pour réduire la duplication de code
-- Implémentation de **patterns d''entreprise** (DAO, Service Layer, DTO)
-- **Programmation réactive** avec Spring WebFlux pour appels API
-
-## Impact
-
-### Statut actuel
-
-- Version **1.2** en développement actif
-
-### Bénéfices attendus
-
-1. **Gain de productivité**
-   - Réduction du temps de recherche documentaire grâce au système de tags et filtres
-   - Centralisation de toute la documentation juridique (élimination de sources dispersées)
-
-2. **Amélioration de la qualité**
-   - Versioning intégral : traçabilité complète des modifications
-   - Validation par publication : séparation brouillons/documents validés
-   - Annotations collaboratives pour enrichissement continu
-
-3. **Sécurité et conformité**
-   - Contrôle d''accès granulaire par profil de droits
-   - Authentification centralisée (SSO Keycloak)
-   - Traçabilité complète (qui a créé/modifié quoi et quand)
-
-4. **Collaboration renforcée**
-   - Travail d''équipe structuré autour de tags communs
-   - Notes personnelles pour annotations privées
-   - Système de responsabilité par équipe
-
-5. **Enrichissement automatique**
-   - Intégration future de données Legifrance officielles
-   - Possibilité d''enrichir la base avec des sources externes validées
-
-6. **Évolutivité**
-   - Architecture générique facilitant l''ajout de nouvelles entités
-   - Système de tags flexible s''adaptant à toute taxonomie
-   - API REST documentée pour intégrations futures
-
----
-
-_Ce rapport reflète un projet d''application d''entreprise robuste pour la gestion documentaire juridique, avec une architecture moderne et des standards industriels (Spring Boot, OAuth2, SPA Angular), en CI/CD._
-', 'published', '2024-07-01T00:00:00.000Z', NULL, NULL, NOW(), NOW()),
-('f3473f35-2d1d-4546-96e2-a65b1c9b0c0a', 'portfolio-new', 'Portfolio professionnel', 'Vue d''ensemble d''un écosystème digital complet (site public, admin, documentation) construit sur Next.js + PostgreSQL/Prisma.', '
-## Le Besoin Métier
-
-Le site doit réunir une vitrine publique haut de gamme, une administration opérationnelle et une documentation source unique pour piloter tous les projets, articles et obligations légales.
-
-## Les Questions Posées
-
-- Comment offrir une expérience visuelle Next.js/Once UI tout en s''appuyant sur une seule base de données (MDX + PostgreSQL/Prisma) ?
-- Comment automatiser publication/revalidation tout en gardant l''admin sécurisé (JWT, RouteGuard, refresh token) ?
-- Comment centraliser la documentation technique sans multiplier les doublons ?
-
-## La Solution Sur Mesure
-
-### Architecture Technique
-
-- Next.js 16 App Router + React Server Components pour la couche publique et la page mentions légales.
-- Once UI comme design system (Line, RevealFx, Badge, etc.) et composants MDX personnalisés (`mdx.tsx`).
-- PostgreSQL 16 + Prisma 7 pour les projets/articles/tags/médias/disponibilités avec validation Zod (`metadata + content`).
-- APIs admin (`/api/admin/projects`, `/api/admin/posts`, `/api/admin/publish`, `/api/availability`) + Docker Compose + scripts de seed.
-
-### Fonctionnalités Clés
-
-- Hero, sections "Dernier projet", "Derniers articles", "Autres projets" et page Mentions légales réactives.
-- Dashboard admin avec stats, QuickAction, formulaires projet/article, gestion disponibilité, uploads images et validation.
-- Publication automatisée (commits + revalidation des routes) et documentation Hub & Spoke (docs/index, project-overview, architecture, development-guide).
-
-## Technologies Utilisées
-
-- Frontend : Next.js 16, React 19, TypeScript 5.8, Once UI 1.5.6, next-mdx-remote.
-- Backend & données : Node.js, Prisma/PostgreSQL, JWT, Zod, API REST.
-- Ops : Docker Compose, Biome, ESLint, lint-staged, pipelines `npm run dev` / `npm run build`, revalidation Next.js.
-
-## Défis et Apprentissages
-
-- Synchroniser SSR/SSG/CSR avec PostgreSQL et MDX sans multiplier les requêtes.
-- Structurer la documentation en Hub & Spoke pour éviter toute duplication.
-- Assurer la sécurité admin (RouteGuard, JWT, refresh token) tout en gardant la publication fluide.
-- Valider les payloads `metadata + content` issus du formulaire admin.
-
-## Impact
-
-**Statut actuel** : production-ready, dashboard admin déployé, documentation alignée, pipeline push + revalidation opérationnel.
-
-**Bénéfices attendus** : crédibilité accrue, gouvernance documentaire fiable, publication instantanée des projets/articles et base extensible pour nouveaux cas d''usage.
-', 'published', '2026-02-09T00:00:00.000Z', 'https://portfolio.dinodev.me', 'https://github.com/MaksTinyWorkshop/Porfolio_new', NOW(), NOW()),
-('436eef20-203d-83bf-cf5b-2eb0d5061b69', 'khimaira', 'Khimaira', 'Premier de mes sites vitrine mis en production pour des amis restaurateurs Rennais, refondu depuis.', '
-## Le Besoin Métier
-
-Des amis restaurateurs qui se lançaient avaient besoin d''une présence en ligne, et moi d''un projet pour me faire la main. Le but était:
-
-- Une présence web professionnelle pour inspirer confiance
-- Une mise en avant de leur carte et atypicité
-- Un site simple à maintenir
-
-## L''Approche
-
-**Vitrine** : Au-delà de la simple présentation, l''objectif était de transformer les visiteurs en réservation, simplement, en dehors de toute interface payante (La Fourchette, Trip Advisor,...).
-
-Questions posées :
-
-- Quelles informations les clients potentiels recherchent-ils ?
-- Comment simplifier la prise de contact ?
-- Comment mettre en avant la zone géographique couverte ?
-
-## La Solution
-
-### Site Vitrine Optimisé
-
-Un site conçu avec React qui combine :
-
-- Présentation simple
-- Menu avec tarif clair et lisible
-
-## Technologies Utilisées
-
-- **React** : Performance
-- **Hébergement Git** : Intégration simple et sécurisée
-- **CSS/SCSS** : Design responsive et moderne
-- **Optimisation SEO** : Référencement local
-
-## Résultat
-
-Un mini site vitrine qui sert de carte de visite :
-
-- Présence web
-- Appels
-- Référencement local optimisé
-- Maintenance très simple
-
----
-', 'published', '2024-01-01T00:00:00.000Z', NULL, 'https://github.com/MaksTinyWorkshop/khimaira', NOW(), NOW()),
-('6348c29a-41f8-1567-2ce8-0484d6d7cab2', 'porfolio-old', 'Ancien Portfolio', 'Portfolio personnel moderne : une vitrine web construite à partir d’un starter Astro et adaptée à mes besoins pro du moment. Il n''est plus en ligne évidemment, remplacé par le présent site web.', '
-## Le Besoin Métier
-
-Créer une présentation professionnelle en ligne de mon profil / mes projets sur Internet. Le site sert de vitrine portfolio, avec un code propre et déployable, pour mettre en avant mes compétences et réalisations, et être visible aussi bien sur mobile que desktop.
-
-## L''Approche
-
-Utiliser Astro Starter Kit: Portfolio comme base, puis personnaliser le contenu pour qu’il reflète mon identité, lister mes projets, compétences et expériences. Le projet est structuré pour être léger, facilement modifiable et optimisé pour le web moderne.
-
-- un système clair de pages (Home, Projets, Contact…)
-- une typographie et style cohérents
-- des sections modulaires réutilisables
-- un déploiement simple (Netlify / Vercel / GitHub Pages)
-
-## La Solution
-
-### Caractéristiques Techniques
-
-- Basé sur Astro Starter Kit → static site performant.
-- Structure modulaire avec src/ (Astro/TS/CSS).
-- Scripts npm classiques (dev, build, preview).
-- SEO & best practices intégrés via Astro.
-
-### Fonctionnalités
-
-- Serveur de développement local avec hot-reload (npm run dev).
-- Build statique optimisé (npm run build).
-- Preview du build local (npm run preview).
-- Navigation simple et pages portfolio.
-
-(Cf. ce qui est visible dans la doc du projet.)
-
-## Technologies Utilisées
-
-- **Astro** : Framework moderne pour sites statiques ultra-rapides
-- **CSS/SCSS + TypeScript** : Styling responsive et maintenable
-- **Optimisation** : Images WebP, lazy loading, minification
-
-## Résultat
-
-Un site portfolio statique, rapide, maintenable, prêt à être déployé (sur Netlify, Vercel, GitHub Pages, etc.). Le projet est organisé, basé sur un starter éprouvé et conçu pour présenter efficacement mon profil de développeur.', 'published', '2024-04-01T00:00:00.000Z', NULL, 'https://github.com/MaksTinyWorkshop/Portfolio', NOW(), NOW()),
-('e9d0f34f-0608-43be-31c9-3089a61f50c9', 'webapp-maconnique', 'Trois Points', 'Solution métier sur mesure pour la gestion complète de la vie interne d''une loge maçonnique : orchestration rituelle, gestion administrative et transmission des savoirs.', '
-## Le Besoin Métier
-
-La gestion d''une loge maçonnique implique des processus complexes et spécifiques : orchestration des cérémonies rituelles, suivi administratif des membres, gestion documentaire sensible, et transmission fluide des responsabilités lors des passations de postes.
-
-Le défi était plus que triple :
-
-- **Éviter la perte d''information** lors des changements de dirigeants
-- **Fluidifier les passations de postes** avec une documentation centralisée
-- **Orchestrer la dimension rituelle** tout en respectant la confidentialité des données
-
-## Les Questions Posées
-
-J''ai dû prendre le temps de comprendre :
-
-- Quels sont les workflows spécifiques d''une loge maçonnique ?
-- Comment gérer des données sensibles avec les niveaux de confidentialité appropriés ?
-- Quelles sont les informations critiques à ne jamais perdre lors d''une passation ?
-- Comment rendre l''outil intuitif pour des utilisateurs non-techniques ?
-
-## La Solution Sur Mesure
-
-### Architecture Technique
-
-**Stack complète adaptée aux besoins** :
-
-- **Front-end** : Interface intuitive et responsive
-- **Back-end** : API robuste avec authentification sécurisée
-- **Base de données** : PostgreSQL pour la gestion des données relationnelles
-- **Sécurité** : Chiffrement des données sensibles, gestion granulaire des permissions
-
-### Fonctionnalités Clés
-
-- **Gestion des membres** : Suivi complet des parcours et des responsabilités
-- **Orchestration rituelle** : Planification et suivi des cérémonies avec workflows dédiés
-- **Documentation centralisée** : Base de connaissances accessible selon les permissions
-- **Passations automatisées** : Transfert guidé des responsabilités avec checklists
-- **Tableau de bord** : Vue d''ensemble de la vie de la loge en temps réel
-
-## Technologies Utilisées
-
-- **Front-end** : Vue.js, TypeScript
-- **Back-end** : NestJS, TypeScript
-- **Base de données** : PostgreSQL
-- **Architecture** : Monorepo
-- **DevOps** : Docker, CI/CD
-- **Sécurité** : JWT, chiffrement des données sensibles
-
-## Défis et Apprentissages
-
-Le principal défi a été de transformer une compréhension profonde d''un domaine métier très spécifique (les rituels et l''organisation maçonnique) en une architecture logicielle intuitive.
-
-La solution a consisté à :
-
-- Mener des sessions de découverte approfondies avec les utilisateurs finaux
-- Créer des workflows qui respectent les traditions tout en modernisant les processus
-- Concevoir une interface qui "ne nécessite pas de mode d''emploi"
-
-## Impact
-
-**Statut actuel** : En cours de développement
-
-**Bénéfices attendus** :
-
-- Transmission fluide des responsabilités sans perte d''information
-- Prise de poste sereine pour les nouveaux dirigeants
-- Centralisation de la connaissance et de la documentation
-- Gain de temps sur les tâches administratives
-- Sécurité et confidentialité des données garanties
-
----
-
-> _Ce projet illustre parfaitement mon approche : partir d''une compréhension métier approfondie pour concevoir l''outil numérique sur mesure qui répond vraiment aux besoins._
-', 'published', '2025-01-01T00:00:00.000Z', NULL, NULL, NOW(), NOW());
-
--- Liaison projets → tags
-INSERT INTO "ProjectTag" (id, "projectId", "tagId", "createdAt", "updatedAt") VALUES
-('72c63d3f-fbea-5f01-923d-312d8f55002e', 'b997d961-b22b-6126-7a77-8dd648c02b76', 'a775e468-65b3-9037-fa59-7184232d4f25', NOW(), NOW()),
-('bbe1c3a6-a73e-2970-b42a-9b0f17a40e4d', 'b997d961-b22b-6126-7a77-8dd648c02b76', 'b845869b-2d26-cbde-51d8-ad52acd4e0eb', NOW(), NOW()),
-('03248e76-818d-cae5-c53d-d47094e3d8a3', '007df7e6-512d-01ea-500d-bacabc612f59', 'a775e468-65b3-9037-fa59-7184232d4f25', NOW(), NOW()),
-('22f9a6eb-56ee-1139-1138-dc342ff0632c', '007df7e6-512d-01ea-500d-bacabc612f59', 'b845869b-2d26-cbde-51d8-ad52acd4e0eb', NOW(), NOW()),
-('1bc791a6-11b7-fc92-cf87-32c46166165a', 'e3cabbf6-46ca-ebe7-52c9-7dd9c0c9bf2c', 'a775e468-65b3-9037-fa59-7184232d4f25', NOW(), NOW()),
-('d9cfff4e-086a-3554-bb4d-49889bfa9b0a', 'e3cabbf6-46ca-ebe7-52c9-7dd9c0c9bf2c', 'b845869b-2d26-cbde-51d8-ad52acd4e0eb', NOW(), NOW()),
-('1c633159-8a32-7266-090c-33a9d5961ad2', '88bfd9a8-dd50-e098-471f-d7c55c830f5e', 'a775e468-65b3-9037-fa59-7184232d4f25', NOW(), NOW()),
-('8a72bf1e-1a57-aeb8-e587-410e703168af', '88bfd9a8-dd50-e098-471f-d7c55c830f5e', 'd5136f80-be8c-ebea-b639-bd9860bf2e45', NOW(), NOW()),
-('bc68ba78-d8a4-de22-a9f6-d4965ade15e1', '88bfd9a8-dd50-e098-471f-d7c55c830f5e', '1f2194b3-ce5c-0aa5-2b13-52ebb1f1156d', NOW(), NOW()),
-('08df08b8-562a-8ea1-655d-6c2674ab5c22', '436eef20-203d-83bf-cf5b-2eb0d5061b69', 'a775e468-65b3-9037-fa59-7184232d4f25', NOW(), NOW()),
-('e82dcb49-8a4f-5d8b-9f7f-c38a0b9ae404', '436eef20-203d-83bf-cf5b-2eb0d5061b69', 'b845869b-2d26-cbde-51d8-ad52acd4e0eb', NOW(), NOW()),
-('cc2876f7-96ec-734f-306e-85625d5fc47e', '6348c29a-41f8-1567-2ce8-0484d6d7cab2', 'a775e468-65b3-9037-fa59-7184232d4f25', NOW(), NOW()),
-('304296ed-631c-f3db-c840-ecd100de36a1', '6348c29a-41f8-1567-2ce8-0484d6d7cab2', 'b845869b-2d26-cbde-51d8-ad52acd4e0eb', NOW(), NOW()),
-('3e2ef760-9fa8-91a2-29c5-fa6ce06096ee', 'e9d0f34f-0608-43be-31c9-3089a61f50c9', 'a775e468-65b3-9037-fa59-7184232d4f25', NOW(), NOW()),
-('040ddb16-41dd-6b22-e03a-5e7362f0c9fd', 'e9d0f34f-0608-43be-31c9-3089a61f50c9', '1f2194b3-ce5c-0aa5-2b13-52ebb1f1156d', NOW(), NOW()),
-('1e6d5cba-9f77-4920-b5dc-0f61f88ea5e3', 'f3473f35-2d1d-4546-96e2-a65b1c9b0c0a', 'a775e468-65b3-9037-fa59-7184232d4f25', NOW(), NOW()),
-('3d77b472-ff57-4c34-8852-f5ab7283cbfb', 'f3473f35-2d1d-4546-96e2-a65b1c9b0c0a', '1f2194b3-ce5c-0aa5-2b13-52ebb1f1156d', NOW(), NOW()),
-('4f6d0c73-af33-45e2-85c8-c658a62d0f55', 'f3473f35-2d1d-4546-96e2-a65b1c9b0c0a', '5c89d3e9-8a7d-4f86-8b66-1b0ef490f3cf', NOW(), NOW());
-
--- Liaison projets → personnes
-INSERT INTO "ProjectPerson" (id, "projectId", "personId", role, "order", "primary", "createdAt", "updatedAt") VALUES
-('511bd1ab-6677-7ff0-e517-4c520507241e', 'b997d961-b22b-6126-7a77-8dd648c02b76', '6bd9d1ea-279e-3ae9-2294-177c7469bd30', 'Développeur Full Stack', 1, true, NOW(), NOW()),
-('3ec50986-8f02-5885-1ab5-387571c2346b', '007df7e6-512d-01ea-500d-bacabc612f59', '6bd9d1ea-279e-3ae9-2294-177c7469bd30', 'Développeur Full Stack', 1, true, NOW(), NOW()),
-('bb31665a-c096-8b0d-bb51-8b717fb84167', 'e3cabbf6-46ca-ebe7-52c9-7dd9c0c9bf2c', '6bd9d1ea-279e-3ae9-2294-177c7469bd30', 'Développeur Full Stack', 1, true, NOW(), NOW()),
-('28912b69-bcd6-0355-909d-3aa750f2369e', '88bfd9a8-dd50-e098-471f-d7c55c830f5e', '6bd9d1ea-279e-3ae9-2294-177c7469bd30', 'Développeur Full Stack', 1, true, NOW(), NOW()),
-('9247f1ca-b5fc-a208-6c49-2d4ec550b8d1', '88bfd9a8-dd50-e098-471f-d7c55c830f5e', '406eeaf3-15e9-d7a6-9f5c-47c96d35b2c8', 'Développeur Full Stack', 2, false, NOW(), NOW()),
-('e63ba989-3cc8-6bd4-c08f-c54bc64b02bb', '436eef20-203d-83bf-cf5b-2eb0d5061b69', '6bd9d1ea-279e-3ae9-2294-177c7469bd30', 'Développeur Full Stack', 1, true, NOW(), NOW()),
-('a3efa5f4-5a58-24b8-04d0-d001f9ba75bc', '6348c29a-41f8-1567-2ce8-0484d6d7cab2', '6bd9d1ea-279e-3ae9-2294-177c7469bd30', 'Développeur Full Stack', 1, true, NOW(), NOW()),
-('708e889b-f50d-f55f-9095-123562ca16c6', 'e9d0f34f-0608-43be-31c9-3089a61f50c9', '6bd9d1ea-279e-3ae9-2294-177c7469bd30', 'Développeur Full Stack', 1, true, NOW(), NOW()),
-('a12f2d6c-5bdf-4a4f-8c20-90b1d1c839fd', 'f3473f35-2d1d-4546-96e2-a65b1c9b0c0a', '62cded6b-b881-d682-d8be-815775b7b164', 'Développeur Full Stack', 1, true, NOW(), NOW());
-
--- Liaison projets → images
-INSERT INTO "ProjectImage" (id, "projectId", "mediaId", purpose, "order", "createdAt", "updatedAt") VALUES
-('44c2943a-48e2-5f99-958a-90f2c13580d1', 'b997d961-b22b-6126-7a77-8dd648c02b76', '7db0dbe9-cf21-bb4a-014c-8f7ab0e0836f', 'cover', 0, NOW(), NOW()),
-('c05e6161-b9a0-a9c3-dd09-c9200afe7253', 'b997d961-b22b-6126-7a77-8dd648c02b76', '919ee17e-6253-5bb3-f998-8c31b10a13dc', 'gallery', 1, NOW(), NOW()),
-('19b3a5ca-1f4d-928b-3cd5-ef211c6b27c4', 'b997d961-b22b-6126-7a77-8dd648c02b76', '38c04e17-9f17-613a-b2cf-993cb2fe058a', 'gallery', 2, NOW(), NOW()),
-('319658ab-a05d-5f56-2c7d-e2c62f2644f9', 'b997d961-b22b-6126-7a77-8dd648c02b76', '5e5fe220-cd26-df3c-4ba1-8d9245771f6f', 'gallery', 3, NOW(), NOW()),
-('5cd3c037-b796-fcb6-d5ee-80b0b9f2a57f', 'b997d961-b22b-6126-7a77-8dd648c02b76', '2a27ffd1-7b2a-d4d1-ad6f-2a09a53ec68f', 'gallery', 4, NOW(), NOW()),
-('f42460d1-e199-6524-44b4-196953abb479', '007df7e6-512d-01ea-500d-bacabc612f59', 'bfeea951-3d07-ac46-e0b7-571b63263619', 'cover', 0, NOW(), NOW()),
-('a4087af6-e3f6-25f0-4266-b420ca8169f4', '007df7e6-512d-01ea-500d-bacabc612f59', '4613f3dd-29dc-fb75-ab5e-af1315d8dd28', 'gallery', 1, NOW(), NOW()),
-('a08a8497-fbb4-2ac9-bfe5-f3411cab941e', '007df7e6-512d-01ea-500d-bacabc612f59', 'ca717a1e-d011-9f10-25a8-398d22f194bd', 'gallery', 2, NOW(), NOW()),
-('2b336022-29ea-aa24-961a-8c5735c14f03', '007df7e6-512d-01ea-500d-bacabc612f59', '9ccd154d-fd7e-5fe1-ec92-ca706e515fc8', 'gallery', 3, NOW(), NOW()),
-('218a5f6c-b973-23eb-cc1e-da5dceb77854', '007df7e6-512d-01ea-500d-bacabc612f59', '5b991169-a831-22eb-9842-28596884cd34', 'gallery', 4, NOW(), NOW()),
-('64841358-99aa-b121-8225-64e90f26334d', 'e3cabbf6-46ca-ebe7-52c9-7dd9c0c9bf2c', 'b37c29f1-a876-c685-f2b7-e8900bffeda1', 'cover', 0, NOW(), NOW()),
-('6076190b-73d4-4a81-6a54-3656b9ad94e7', 'e3cabbf6-46ca-ebe7-52c9-7dd9c0c9bf2c', '6e9712be-8bea-118b-3f90-ed4c409097ba', 'gallery', 1, NOW(), NOW()),
-('7314f8e7-158a-df45-38be-68fb8bf94ca3', '88bfd9a8-dd50-e098-471f-d7c55c830f5e', 'e72fd49e-2041-912b-e222-e3002ef97557', 'cover', 0, NOW(), NOW()),
-('6eac4d65-2f79-c89c-e20c-ab233d5ebbc3', '88bfd9a8-dd50-e098-471f-d7c55c830f5e', 'ee83d8e0-6c5d-373f-3bdf-6302c03e5660', 'gallery', 1, NOW(), NOW()),
-('478b9929-d540-ac37-b244-eccfd9e59dbd', '88bfd9a8-dd50-e098-471f-d7c55c830f5e', '6b5b149e-d43f-8de6-8d0e-d90e2ef56d65', 'gallery', 2, NOW(), NOW()),
-('1e41c87f-f5b8-790c-f434-8a074579ee9e', '436eef20-203d-83bf-cf5b-2eb0d5061b69', 'f0c7885d-d8ad-c20f-51cc-c45e23f2037c', 'cover', 0, NOW(), NOW()),
-('aee8d140-aa30-d21e-83f5-7b39849fb916', '436eef20-203d-83bf-cf5b-2eb0d5061b69', '9b88ee55-b25f-e50e-ec33-75e2e54f32cc', 'gallery', 1, NOW(), NOW()),
-('33a403bb-4d64-45df-aad2-9819f8df0691', '436eef20-203d-83bf-cf5b-2eb0d5061b69', '92ed362c-426b-7649-dcba-2455159d2b36', 'gallery', 2, NOW(), NOW()),
-('cda8f820-3997-609c-4ab1-54afcbba0fd6', '436eef20-203d-83bf-cf5b-2eb0d5061b69', '239efec3-af53-d471-42f2-9fbdbf0a9154', 'gallery', 3, NOW(), NOW()),
-('7497d61a-b09d-288b-51f8-713542e39c36', '436eef20-203d-83bf-cf5b-2eb0d5061b69', 'ef0ea003-e8cb-b20e-1e21-75b8c24cd01a', 'gallery', 4, NOW(), NOW()),
-('c6fb4c5f-6752-66a3-a5a8-b382636ae9fa', '6348c29a-41f8-1567-2ce8-0484d6d7cab2', '509b5904-1f36-bdd4-4040-7fcb2ed7512c', 'cover', 0, NOW(), NOW()),
-('3ba76491-ae86-4253-2ac0-a47f13a7fe0b', '6348c29a-41f8-1567-2ce8-0484d6d7cab2', '64b7e0d5-712e-a2ce-34b0-8ce5c1cf0868', 'gallery', 1, NOW(), NOW()),
-('509937c0-ca3c-fd6c-d29b-f92635e473c0', '6348c29a-41f8-1567-2ce8-0484d6d7cab2', '5ff0be7a-ddb2-5102-ab28-b10d6573c920', 'gallery', 2, NOW(), NOW()),
-('059254ca-8189-e26f-ecb1-aa8841291463', 'e9d0f34f-0608-43be-31c9-3089a61f50c9', '41b9112d-cd06-a055-ee5a-9e96b7d63d9a', 'cover', 0, NOW(), NOW()),
-('5fbbf24d-5f3d-47b7-812a-2f034b7a3ed1', 'f3473f35-2d1d-4546-96e2-a65b1c9b0c0a', '52f2ff8d-4da4-40b0-8f2d-2110dfb4c9be', 'cover', 0, NOW(), NOW()),
-('6c8fef01-4b1a-4bca-9258-173f6ffb4218', 'f3473f35-2d1d-4546-96e2-a65b1c9b0c0a', '8c7d7fcc-dc57-4b7a-9bd4-6a5b6d4b4ec3', 'gallery', 1, NOW(), NOW()),
-('7b0a83f5-0d46-4bec-bb2a-8f7a3df4b2d2', 'f3473f35-2d1d-4546-96e2-a65b1c9b0c0a', 'c2b93f7f-8764-4dc1-ae2f-1af0de2ff621', 'gallery', 2, NOW(), NOW()),
-('8aadaee1-4435-458f-bf59-5168a7eb1373', 'f3473f35-2d1d-4546-96e2-a65b1c9b0c0a', 'd7ab12c6-8e6b-4c2f-8c89-936f7c34b02', 'gallery', 3, NOW(), NOW());
-
--- Insertion du log de disponibilité initial pour le site owner
-INSERT INTO "AvailabilityLog" (id, "personId", status, "createdAt") VALUES
-('b7c4dce9-df5e-406e-8550-faef8ba52e9b', '62cded6b-b881-d682-d8be-815775b7b164', 'unavailable', NOW());
+-- Article
+COPY public."Article" (id, slug, title, summary, content, "readingTime", status, "publishAt", featured, visibility, "createdAt", "updatedAt", "mediaId") FROM stdin;
+24d16439-9af2-4e9d-8844-0923bfb1c585	bmad-ou-ce-que-l-ia-r-v-le-de-nos-fa-ons-de-travailler	BMAD, ou ce que l’IA révèle de nos façons de travailler	Sur le papier, rien de révolutionnaire. Et c’est précisément ce qui rend la méthode BMAD intéressante. Elle ne promet pas d’aller plus vite. Elle impose surtout de ralentir avant de produire.	Depuis quelque temps, on voit circuler la méthode BMAD. Présentée comme une manière plus structurée d’utiliser l’IA dans le travail produit.\n\n- Business. \n- Model. \n- Architecture. \n- Delivery.\n\nSur le papier, rien de révolutionnaire. Et c’est précisément ce qui la rend intéressante. BMAD ne promet pas d’aller plus vite. Elle impose surtout de ralentir avant de produire. De poser le contexte. De clarifier le besoin. De réfléchir aux usages avant d’écrire une ligne.\n\nAutrement dit : de faire correctement un travail qui, pendant longtemps, allait de soi. \n\n---\n\n## 🔍 Rien de nouveau sous le capot\nSi on enlève l’IA de l’équation, BMAD ressemble à ce que beaucoup d’équipes ont déjà pratiqué :\n\n- comprendre pourquoi on construit quelque chose,\n- formuler un problème avant de chercher une solution,\n- faire des choix d’architecture conscients,\n- livrer quelque chose qui a un usage réel.\n\nCes étapes n’ont rien d’innovant. Elles ont simplement cessé d’être garanties par le cadre de travail. Ce travail-là n’a jamais été automatique. Il était simplement plus souvent pris en charge ailleurs.\n\n- Tickets flous. \n- Décisions non prises. \n- Responsabilités diluées. \n- Urgence permanente.\n\nBMAD ne crée pas ces questions. Elle les réintroduit là où elles ont parfois disparu.\n\nBeaucoup d’organisations ont aujourd’hui des workflows clairs. Des process documentés. Des rôles bien définis. Le problème n’est pas leur existence. \n\nC’est ce qu’ils laissent à gérer quand tout ne se passe pas comme prévu.\n\n---\n\n## 🔁 Le point de bascule\nEt c’est ici que le regard change. Si une méthode devient nécessaire pour rappeler qu’un produit a un usage, le problème n’est pas la méthode. Et je ne m’en exclue pas. \n\nBMAD m’aide moi aussi à mieux travailler. \n\nPas parce qu’elle est brillante, mais parce qu’elle m’oblige à poser des questions que le cadre ne garantit plus. Ce que BMAD formalise, ce ne sont pas des bonnes pratiques “IA”. Ce sont des responsabilités classiques du travail produit. Lorsqu’elles ne sont plus prises en charge collectivement, elles finissent par être assumées individuellement.\n\n---\n\n## 👤 Travailler seul, avec une équipe… fictive\nLà où je trouve BMAD particulièrement intéressante, c’est qu’elle donne à un développeur seul l’opportunité de travailler comme s’il avait une équipe complète.\n\nPas une vraie équipe, évidemment. \n\nMais une succession de rôles, de points de vue, de contre-questions. Avec une contrainte forte : ne pouvoir faire confiance à personne... pour une vingtaine d’euros par mois. \n\nBMAD n’exonère jamais le développeur de décider. \n\nElle l’oblige même à le faire.\n\n---\n\n## ⚖️ Une opportunité… et un déplacement\nBMAD peut clairement devenir un levier pour travailler en solo. Notamment pour des freelances capables de cadrer, structurer, décider et livrer proprement. Mais plus cette structuration devient individuelle, plus la question collective se pose.\n\n---\n\n## ❓ Quand un travail n’a plus d’endroit clair où vivre\n\nCe travail-là, comprendre, décider et transmettre, ne peut pas reposer sur des individus isolés.\n\nTant qu’il n’est pas pris en charge collectivement, les méthodes continueront de pallier ce qui manque.\n\nEt ce ne sera jamais un problème de méthode.	\N	published	2026-02-10 00:00:00	f	\N	2026-02-10 15:13:13.052	2026-02-11 18:51:56.308	f1ec99d4-9c2b-4074-844f-7db2197410df
+4e4c0d6c-51a4-6f6a-f801-77331767c145	devs-3	Quand le cadre ne tient plus, ce qu’on attend vraiment des développeurs	Après avoir interrogé les conditions d’entrée dans le métier, puis ce qui fait réellement la valeur d’un développeur, une autre question s’est imposée. Que demande-t-on, concrètement, aux développeurs quand le cadre de travail ne tient plus ?	\nDans des réflexions récentes, j’ai parlé d’accueil, de transmission, et de ce que le cadre de travail fait (ou ne fait pas) aux développeurs.\n\nAprès avoir interrogé les conditions d’entrée dans le métier, puis ce qui fait réellement la valeur d’un développeur, une autre question s’est imposée.\n\n# Que demande-t-on, concrètement, aux développeurs quand le cadre de travail ne tient plus ?\n\n---\n\n## 🧩 L’autonomie, mot-valise confortable\n\nQuand une organisation dit chercher des développeurs « autonomes », elle ne parle presque jamais de code.\n\nElle parle d’une capacité à faire avancer le travail dans des contextes où le cadre n’est pas entièrement posé. Livrer malgré l’incertitude. Décider quand les arbitrages n’ont pas été faits. Comprendre des enjeux métier jamais vraiment explicités.\n\nSur le principe, rien de choquant. Mais dans la pratique, ce mot recouvre souvent des attentes très différentes, rarement nommées comme telles.\n\n---\n\n## 🛠️ Ce qui fait réellement partie du métier\n\nComprendre le contexte métier. Relier la technique aux usages réels. Poser les questions nécessaires avant d’implémenter.\n\nSur ce point, il n’y a pas débat : c’est bien du **travail de développeur**.\n\nCe n’est ni un bonus, ni une posture héroïque, ni une compétence réservée à quelques profils « plus mûrs ».\n\nDès lors que le développement ne se réduit pas à écrire du code isolé, c’est le cœur du métier.\n\n---\n\n## ⚠️ Là où le décalage apparaît\n\nLe problème commence quand ces attentes sont posées sans que le cadre permette réellement de les exercer.\n\n- Quand il n’y a pas de temps pour comprendre.\n- Pas d’espace pour questionner.\n- Pas de responsabilités clairement assumées.\n- Et des décisions qui arrivent trop tard (ou jamais)\n\nDans ces conditions, le travail change de nature. Ce qui devrait être pensé collectivement devient une charge individuelle. Ce qui devrait être explicite devient implicite.\n\nEt ce qui devrait être soutenu devient silencieux.\n\n---\n\n## 🎬 Une scène ordinaire\n\nUn développeur arrive sur un projet en cours. Le périmètre est déjà là. Les décisions aussi, en théorie.\n\nMais très vite, il comprend que beaucoup de choses n’ont jamais vraiment été tranchées.\n\nLes priorités bougent. Les règles métier sont connues « par quelques personnes ». Les compromis passés ne sont écrits nulle part.\n\nOfficiellement, on lui demande d’implémenter. En pratique, on attend qu’il comprenne ce qui n’a pas été formulé, qu’il anticipe les effets de décisions prises ailleurs, et qu’il évite des erreurs dont personne n’a réellement pris la responsabilité.\n\nIl fait son travail, sérieusement.\n\nMais une partie de ce travail consiste surtout à combler les trous du cadre.\n\n---\n\n## 🧱 De la responsabilité au fardeau\n\nProgressivement, certaines capacités prennent plus de poids que d’autres. Pas celles qui figurent dans les fiches de poste. Pas celles qui sont évaluées formellement.\n\nMais celles qui permettent de tenir malgré l’instabilité.\n\nAbsorber le flou. Composer avec les non-dits. Faire avancer un système dans lequel tout n’est pas structuré.\n\nCes capacités deviennent décisives, mais rarement reconnues comme telles.\n\n---\n\n## 🗣️ Quand le langage masque le problème\n\nÀ ce stade, un glissement s’opère. Ce qui relève de la compensation organisationnelle est rebaptisé autrement. On parle de maturité, de hauteur de vue, sens du business.\n\nParfois même de talent.\n\nCe vocabulaire est pratique, il évite de nommer ce qui manque réellement dans le cadre. Mais il individualise un problème qui est, au départ, collectif.\n\n---\n\n## 🌱 Une conséquence directe : l’impossibilité d’accueillir des juniors\n\nCe fonctionnement a une autre conséquence, rarement formulée. Il rend l’arrivée de profils juniors extrêmement difficile.\n\nNon pas parce qu’ils manqueraient de compétences, mais parce qu’un cadre fragile exige, dès le départ, une capacité à compenser, à anticiper, à absorber.\n\nOr c’est précisément ce que l’on ne peut pas raisonnablement attendre de quelqu’un qui arrive. Dans un cadre plus explicite\n\n- où les décisions sont nommées,\n- où les responsabilités sont claires,\n- où les compromis passés sont documentés\n\nl’onboarding devient tout de suite plus simple. Pas parce que les juniors seraient « mieux formés ». Mais parce que le travail attendu devient lisible.\n\nAssainir le cadre de travail, ce n’est pas seulement améliorer le quotidien des équipes en place. C’est créer les conditions réelles d’accueil des profils juniors, sans leur demander, dès le premier jour, de compenser ce que l’organisation n’a pas encore structuré.\n\n---\n\n## 🎯 Une sélection silencieuse\n\nQuand ces attentes restent implicites, elles finissent par produire un effet de sélection. Pas sur la pertinence des choix. Pas sur la qualité du travail produit. Mais sur la capacité à encaisser. À durer, absorber, compenser.\n\nCeux qui tiennent sont valorisés. Ceux qui s’épuisent sortent du cadre, souvent en silence.\n\n---\n\n## ❓ La vraie question\n\nLa question n’est pas : « faut-il des développeurs plus matures ? » Ils le sont déjà.\n\nLa question est plus inconfortable : **sommes-nous prêts à rendre explicites ce que nous attendons réellement d’eux, à organiser le cadre pour que ce travail soit possible, et à en assumer la responsabilité collectivement ?**\n\nTant que ces attentes resteront implicites, elles continueront de peser sur les mêmes profils. Et à être appelées « talent », là où il s’agit surtout d’une capacité à travailler dans un cadre qui ne tient pas encore.\n\n---\n\n## 🧭 Mot de fin\n\nCe texte ne propose pas de solution miracle. Il propose une mise à plat. Parce que, dans le travail comme ailleurs, ce qui n’est pas nommé finit toujours par s’user quelque part.	\N	published	2026-02-02 00:00:00	t	\N	2026-02-09 12:35:11.508	2026-02-11 18:55:02.736	8ef2305b-1662-5451-5bf6-6c9732326756
+5d826f76-b112-f19f-f128-a0eba00e0983	devs-2	Quand coder n'est plus ce qui fait la différence 💻 ➡️ 🧠	Sur quoi repose réellement la valeur d'un développeur, quand les organisations peinent à jouer leur rôle ?	\n## 🎯 La vraie question qu'on évite\n\nDans un article précédent, je défendais une idée simple : on ne manque pas de développeurs, mais d'entreprises prêtes à les accueillir correctement.\n\nOn parle beaucoup de pénurie. Beaucoup moins de transmission, d'onboarding, de conditions réelles d'apprentissage.\n\nCette réflexion m'a conduit à une autre question, plus discrète, mais tout aussi structurante 👇\n\nSur quoi repose réellement la valeur d'un développeur, quand les organisations peinent à jouer leur rôle ?\n\n---\n\n## 💻 Coder correctement n'est plus un critère, c'est un prérequis\n\nProduire du code qui fonctionne est devenu plus courant. Dans beaucoup d'équipes, ce n'est plus ce qui fait la différence.\n\nCoder correctement est devenu un prérequis. Pas un critère.\n\nDans beaucoup d'équipes, deux développeurs peuvent livrer un résultat techniquement satisfaisant. Et pourtant, ils ne sont pas perçus de la même manière.\n\nLa différence ne se joue pas seulement dans le code. Elle se joue dans ce que ce code fait au travail autour de lui.\n\nDans sa lisibilité.\nDans sa capacité à être repris.\nDans les décisions implicites qu'il fige, parfois sans débat.\n\n---\n\n## 🎭 La charge invisible qu'on ne nomme jamais\n\nQuand le cadre est fragile, quand la transmission est faible, quand les responsabilités sont floues, on attend implicitement de certains développeurs qu'ils fassent correctement ce qui fait pourtant partie du métier :\n\nComprendre le contexte.\nRelier la technique aux usages réels.\nPoser les questions nécessaires.\n\nLe problème, ce n'est pas que ces attentes existent. C'est qu'elles s'exercent dans des cadres qui ne donnent pas toujours les moyens de les assumer.\n\nPas parce que c'est explicitement leur rôle... Mais parce que, sinon, personne ne le fait 🤷♂️\n\n---\n\n## 🔍 Ce qu'on valorise vraiment (sans le dire)\n\nCe déplacement n'est pas neutre. Il crée des attentes implicites, des critères de valeur rarement formulés. Parfois aussi une forme d'injustice silencieuse, parce que cette charge n'est\n\nni reconnue,\nni répartie,\nni discutée.\n\nCertains développeurs sont valorisés non pas pour ce qu'ils produisent, mais pour ce qu'ils absorbent :\n\nle flou,\nles non-dits,\nles angles morts de l'organisation.\n\n👉 Tant que ces attentes resteront implicites, les entreprises continueront à appeler "talent" ce qui est en réalité une capacité à encaisser le désordre.\n\n---\n\n## 🧩 Le vrai problème : une responsabilité collective\n\nSi coder ne suffit plus à faire la différence, ce n'est pas parce que la technique aurait perdu de la valeur. C'est parce que, trop souvent, elle doit compenser ce que les organisations n'assument plus assez clairement :\n\nla transmission,\nla clarification,\nla responsabilité des décisions.\n\nEt ça, ce n'est pas un sujet de performance individuelle. C'est un sujet de responsabilité collective, et tant qu'il restera implicite, il continuera d'user les mêmes profils 🧩\n\n---\n\n## 💭 La question finale\n\nSi coder ne suffit plus à faire la différence, qu'est-ce que nos organisations attendent vraiment des développeurs… sans toujours le formuler clairement ?\n\n_(Dans la continuité de l'article : « Il ne manque pas de développeurs. Il manque des entreprises prêtes à les accueillir. »)_\n	\N	published	2026-01-26 00:00:00	t	\N	2026-02-09 12:35:11.508	2026-02-11 18:55:24.555	050aae8f-1bfd-83b8-d602-71c6d69561de
+5dc9a3f6-3d5c-28fc-d0fd-93a6d358a9e0	devs-1	On ne manque pas de développeurs. On manque d’entreprises prêtes à en former	La tech ne manque pas de développeurs : elle manque d’entreprises disposées à former des juniors. Pendant que les processus de recrutement s’étirent, que les CV IA circulent en boucle et que les annonces périmées restent en ligne, les équipes tournent à flux tendu. 	\n## 🍽️ De la restauration à la tech : le choc culturel\n\nAvant l’IT, j’ai dirigé plusieurs restaurants, et j’y ai appris un truc très simple :\n\nUne équipe ne s’effondre pas d’un coup. Elle s’abîme quand on refuse de la renforcer.\nC’était vrai en restauration, je découvre que c’est tout aussi vrai dans la tech.\n\nQuand je me suis reconverti, j’ai fait ma part :\n\n- 📚 j’ai appris,\n- 💻 j’ai codé,\n- 🧠 j’ai compris.\n\nPuis j’ai rencontré le recrutement tech... Et là j’ai compris que, tel Alice (ou Néo selon les refs), j'ai suivi le lapin blanc\n\n---\n\n## 🎪 Le cirque absurde du recrutement tech\n\n**« On manque de développeurs ! »** … mais on refuse les juniors.\n\n**« On veut un profil opérationnel J+1 ! »** … mais l’annonce date de 4 mois.\n\n**« On n’a pas le temps d’onboarder ! »** … mais l’équipe se noie depuis autant de temps au moins.\n\nLa contradiction est flagrante.\n\nEt puis le rituel habituel :\n\nT'envoies un CV à une ESN lambda\nTu reçois un message automatique, qui te dit qu'on te recontactera sous deux semaines, même si réponse négative oui oui, parce que "chez nous, chaque candidat compte"\n\nSi tu passes ce premier filtre :\n\n- Visio avec RH sous 2 semaines\n- Test technique de 4 heures une semaine plus tard\n- Entretien N+1\n- Entretien N+2\n- Débrief\n- Décision sous 20 jours ouvrés\n\nAvec en option :\n\n- 🩺 un bilan sanguin\n- 🧠 un test psychomoteur\n- 🚗 le carnet de révision de ta voiture....\n\nComme si t'allais bosser pour Le bureau des légendes ! Mais bon sang, "période d'essai", ça n'évoque rien pour personne ??\n\n---\n\n## 🤡 Le paradoxe moderne : IA → CV → IA → ESN → IA\n\nAujourd’hui, beaucoup de candidats envoient des CV… qu’ils n’ont même plus écrits avec leurs petites mains\nIls sont générés par IA -> pour plaire à des IA -> qui les filtrent pour des ESN -> qui lisent ces CVIA -> pour des annonces parfois obsolètes...\nEvidemment, dans cet intervalle, l'équipe tourne avec au moins une personne manquante : c’est un peu comme éteindre un incendie avec un verre d’eau. Ça tient… jusqu’au moment où ça ne tient plus.\n\n**Bienvenue dans la boucle de l’absurde.**\n\n🦈 Et pendant ce temps-là : des requins surfent la vague -> En parallèle sur les réseaux pullulent des offres de tous poils, miraculeuses :\n\nAbonnements miraculeux : « Plus d’entretiens à 29€/mois ! »\n\nAutomatisation agressive : « 500 CV envoyés par jour, optimisés IA ! »\n\nPromesses à la DARTY : « Garantie réussite ! »\n\nAu final :\n\n- les ATS saturent,\n- les juniors s’épuisent,\n- les recruteurs croulent sous les clones,\n- et rien n’avance vraiment.\n\nUn business qui profite surtout… à ceux qui ont créé le problème. Payer pour trouver du travail : on marche vraiment sur la tête.\n\n---\n\n## 👨💻 Parlons enfin des juniors (les vrais)\n\nContrairement aux clichés, un junior sait coder.\nCe qui lui manque ? Le contexte. Pas la compétence.\n\nComme en restauration : un serveur expérimenté qui change d’établissement sait bosser, il ne sait juste pas encore dans quel frigo sont rangés les desserts et le ketchup pour la 12 ! Et ça, ça s’apprend... vite. Plus vite que n’importe quel process de recrutement XXL en tout cas.\n\n---\n\n## 🤖 Ce que l’IA fait vraiment (et ce qu’elle ne fera jamais)\n\nJe n’ai pas peur de l’IA.\nJe l’utilise tous les jours, et je progresse chaque jour grâce à elle... J’ai testé GPT, Claude, Copilot, Cursor, Windsurf, Replit… Et soyons lucides : ça change profondément la manière de travailler.\n\nC'est dingue ce qu'elle sait faire :\n\n- générer un squelette de front en 3 minutes,\n- résoudre en 20 secondes un bug que je traînais depuis 2 jours,\n- expliquer un concept mieux que la doc officielle,\n- proposer un refactoring propre, argumenté et cohérent, ...\n\nOui, certaines choses que j’ai apprises sont déjà en partie obsolètes. Pas parce qu’elles ne servent plus, mais parce que l’IA permet d’aller plus vite dessus.\nMais soyons clairs : Une IA accélère, elle n’assume pas un poste.\n\nElle ne comprend pas :\n\n- le métier,\n- les priorités,\n- les compromis,\n- la culture d’équipe,\n- la communication humaine,\n- les enjeux non écrits.\n\nAlors j’ai posé la question directement à un LLM (chat GPT 5.2) : “Une IA peut-elle remplacer un junior en entreprise ?”\n\nVoici sa réponse :\n\n> « Non. Une IA peut produire du code, expliquer des concepts, résoudre des bugs simples et accélérer certaines tâches. Mais elle ne comprend ni le métier, ni les priorités, ni le contexte humain dans lequel s’inscrit un projet. > Un junior, lui, apprend ces éléments, s’adapte, pose les bonnes questions, comprend les contraintes réelles et finit par contribuer au produit, pas seulement au code. L’IA exécute sans responsabilité. Un junior évolue, devient > autonome et finit par apporter une valeur qu’aucun modèle ne peut remplacer. En réalité, l’IA peut augmenter un junior… mais sûrement pas le remplacer. »\n\nIl m'a pondu un résultat beaucoup plus long évidemment, que je lui ai demandé de résumer (malin le gars)...\n\nAu final, l’IA peut t’aider à apprendre plus vite. Mais elle ne remplacera jamais ce que seule une équipe peut transmettre.\n**Et tout est dit.**\n\n---\n\n## 🧩 Former un junior, c’est renforcer une équipe\n\nÇa oblige à :\n\n- clarifier\n- documenter\n- structurer\n\nBref, à rendre l’équipe plus solide, plus résiliente, et surtout, composée de personnes qui ne viennent pas bosser avec la boule au ventre !\n\n👉 La **transmission**, c’est comme dans les grandes cuisines : un chef étoilé ne garde jamais ses secrets pour lui. Il montre comment lever un filet, réduire une sauce, dresser une assiette parfaite. Il transforme un commis hésitant en un créateur précis, rapide et sûr de lui. Dans la tech comme en cuisine, les talents rares ne naissent pas “tout faits”. Ils se forment, patiemment.\n\nC’est ça, un vrai mouton à cinq pattes : le résultat de la transmission, pas du hasard.\n\n👉 Comment on crée des seniors... sans former de juniors ?? Je suis preneur. 📝🙂\n\nEt le plus ironique dans tout ça ? Si la tech appliquait à elle-même la logique qu’elle exige des juniors, elle serait déjà en avance de deux versions.\n\n```ts\n// TODO: recruter un junior\nif (needsDev && juniorCandidate) {\n  hire(juniorCandidate);\n} else {\n  burnOut(team);\n}\n```\n\n---\n\n## 🧠 Ce que je veux dire, vraiment\n\nJe ne demande pas qu’on me déroule le tapis rouge. Juste qu’on regarde la réalité en face : le secteur se prive lui-même des talents qu’il dit chercher.\n\n---\n\n## 🐍 Conclusion\n\nJe ne suis pas amer, loin s'en faut : je suis motivé, curieux, travailleur. Et conscient du monde dans lequel j’entre. Je suis juste triste de voir un secteur devenir autophage, à force de s’obstiner à chercher ce qu’il refuse de construire.\n	\N	published	2026-01-20 00:00:00	t	\N	2026-02-09 12:35:11.508	2026-02-11 18:57:33.235	82a73b17-57bc-41cc-213b-cc142a5ce00e
+a55cd105-4176-8e25-3173-7d00b05b8c03	la-stack-est-une-consequence-pas-un-point-de-depart	La stack est une conséquence, pas un point de départ 	Quand un projet démarre, la vraie question n’est pas la stack, mais le besoin à adresser.  	\nQuand un projet démarre, la vraie question n’est pas la stack, mais le besoin à adresser.  \nVitrine, application, backend, base de données : chaque cas appelle une structure différente.\n\nPlutôt que de réinventer la roue à chaque fois, j’ai construit un ensemble de bases et de scripts qui m’orientent rapidement vers la bonne solution, le tout encapsulé dans des devcontainers pour démarrer immédiatement, quel que soit l’environnement.\n\n---\n\n## Formaliser l’entonnoir de décision 🧠\n\nAu départ, tous les projets ne se ressemblent pas, mais les mêmes questions reviennent systématiquement.\n\n- Est-ce un site vitrine ou une application ?\n- Y a-t-il de la donnée à persister ?\n- Faut-il un backend, une API, une base de données ?\n\nCes questions conditionnent bien plus l’architecture d’un projet que le choix d’un framework.\n\nJ’ai donc transformé cette réflexion implicite en quelque chose de plus explicite :  \nun **entonnoir de décision**, simple et reproductible.\n\n---\n\n## Un menu de structures adaptées 📋\n\nL’idée est volontairement simple.\n\nEn fonction du besoin du projet, je veux pouvoir m’orienter rapidement vers une base adaptée :\n\n- **Vitrine**  \n  Structure légère, orientée performance\n\n- **Application**  \n  Front et backend clairement séparés\n\n- **Donnée**  \n  Schéma, ORM et conventions en place\n\nChaque base répond à un cas précis, sans chercher à couvrir tous les scénarios possibles.\n\n---\n\n## Réduire les décisions répétées 🔁\n\nCe travail n’a pas pour objectif d’être exhaustif ou universel.\n\nIl sert surtout à éliminer les décisions que je prenais systématiquement au début de chaque projet :\n\n- structure des dossiers\n- outils de base\n- conventions\n- scripts de démarrage\n\nUne fois ces choix stabilisés, l’énergie peut enfin être mise ailleurs :  \nsur le besoin réel du client et la logique métier.\n\n---\n\n## Des structures concrètes : les briques du socle 🧱\n\nUne fois l’entonnoir posé, il restait à le matérialiser.\n\nPlutôt que de maintenir une structure unique censée tout faire, j’ai choisi de construire plusieurs bases ciblées, chacune adaptée à un type de projet précis.\n\nCes bases ne sont pas des templates figés, mais des **points de départ cohérents**, pensés pour être utilisés en conditions réelles.\n\nLe choix des outils n’est pas un dogme, mais une réponse pragmatique aux projets rencontrés.\n\n---\n\n### Vitrine : une base légère et performante 🚀\n\nTous les projets n’ont pas besoin d’un backend ou d’une base de données.\n\nPour une vitrine, l’objectif est simple :\n- performance\n- clarté\n- maintenance minimale\n\nCette base s’appuie sur Astro :\n- rendu statique par défaut\n- JavaScript limité au strict nécessaire\n- structure claire orientée contenu\n\nL’enjeu n’est pas d’ajouter de la complexité, mais au contraire de **savoir s’arrêter** quand le besoin est simple.\n\n---\n\n### Application : front et backend clairement séparés 🧩\n\nDès qu’un projet dépasse la simple vitrine, les besoins changent.\n\nIl faut gérer :\n- de la logique métier\n- des utilisateurs\n- des échanges avec une API\n\nPour ces cas, j’ai mis en place un monorepo structuré autour :\n- d’un backend Express\n- d’un front Vue\n- de conventions claires entre les deux\n\nCe choix facilite :\n- la cohérence des contrats\n- l’évolution du projet\n- l’onboarding d’un autre développeur\n\n---\n\n### Base de données : anticiper sans sur-ingénierie 🗄️\n\nAjouter une base de données change profondément la nature d’un projet.\n\nLes erreurs deviennent plus coûteuses et les choix initiaux pèsent plus longtemps.\n\nPour ces projets, j’ai intégré dès le départ :\n- un ORM (Prisma)\n- un schéma explicite\n- des conventions pour les migrations\n\nL’objectif n’est pas de tout prévoir, mais d’avoir une base saine pour faire évoluer le projet sans repartir de zéro.\n\n---\n\n## Le devcontainer comme socle commun 🐳\n\nCes structures auraient peu d’intérêt si leur mise en place dépendait encore de la machine ou de l’environnement du développeur.\n\nChaque base est pensée pour être utilisée directement dans un devcontainer :\n- mêmes versions d’outils\n- mêmes scripts\n- même comportement, quel que soit l’OS\n\n**Ouvrir le projet, coder, point.**\n\nCela permet :\n- d’éviter les “ça marche chez moi”\n- de faciliter l’onboarding\n- de garantir une compatibilité maximale entre environnements\n\n---\n\n## Des scripts au service du besoin ⚙️\n\nAutour de ces bases, j’ai progressivement ajouté des scripts pour :\n- initialiser un projet\n- lancer les services nécessaires\n- rester cohérent d’un projet à l’autre\n\nIls ne cherchent pas à être magiques.  \nIls existent surtout pour réduire les frictions et automatiser ce qui n’a pas besoin d’être redécidé.\n\n---\n\n## Ce que je ferais différemment aujourd’hui 🔍\n\nAvec le recul, une chose me paraît importante à préciser :  \nles choix de frameworks et d’outils présentés ici sont avant tout **des choix personnels**.\n\nIls sont directement liés aux projets que j’ai eu à réaliser jusqu’ici, à leurs contraintes, et à ce que je cherchais à optimiser à ce moment-là.\n\nCertains de ces socles sont d’ailleurs partis de templates existants, que j’ai progressivement adaptés et revisités à ma façon.  \nUn peu comme un cuisinier qui part d’une recette existante, puis la revisite selon son goût, ses outils et le contexte.\n\nAvec plus d’expérience, je referais probablement certains choix différemment.  \nEt c’est normal.\n\nL’objectif n’est pas de figer une stack idéale, mais de structurer une manière de réfléchir :\n- partir du besoin\n- limiter les décisions répétées\n- construire des bases suffisamment saines pour évoluer\n\nCes repositories sont moins une vérité technique qu’un instantané de mon parcours à un moment donné.\n\n---\n\n## Ce que ce socle dit de ma façon de travailler ✨\n\nCe travail n’a pas été motivé par l’envie de créer la bonne stack, mais par celle de mieux travailler au quotidien.\n\nFormaliser un entonnoir de décision, stabiliser des bases réutilisables et développer dans des environnements reproductibles m’a appris une chose essentielle :\n\n**la qualité d’un projet se joue souvent avant la première feature.**\n\nAujourd’hui, ce socle me sert de garde-fou.  \nIl m’aide à éviter de réinventer la roue, à démarrer vite, et à rester concentré sur ce qui apporte réellement de la valeur.\n\n---\nC'est cadeau ☺️\n\n👉[Boilerplate Astro](https://github.com/MaksTinyWorkshop/Boilerplate_Vitrine_Astro)\n\n👉[Boilerplate App](https://github.com/MaksTinyWorkshop/Boilerplate_Monorepo_Express_Vue_Prisma)\n\n👉[Devcontainer "Framework"](https://github.com/MaksTinyWorkshop/devcontainer-framework)	\N	published	2025-10-30 00:00:00	t	\N	2026-02-09 12:35:11.508	2026-02-11 18:57:50.996	\N
+51b04f89-d102-44b4-bbdb-d3132f83c56c	qsdf	qsdf	qsdf	qsdfqsdf	\N	draft	2026-02-12 00:00:00	f	\N	2026-02-12 11:41:44.467	2026-02-12 11:41:44.467	\N
+\.
+
+-- Project
+COPY public."Project" (id, slug, title, summary, status, link, repository, "publishedAt", "createdAt", "updatedAt", content) FROM stdin;
+436eef20-203d-83bf-cf5b-2eb0d5061b69	khimaira	Khimaira	Premier de mes sites vitrine mis en production pour des amis restaurateurs Rennais, refondu depuis.	published	\N	https://github.com/MaksTinyWorkshop/khimaira	2024-01-01 00:00:00	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508	\n## Le Besoin Métier\n\nDes amis restaurateurs qui se lançaient avaient besoin d'une présence en ligne, et moi d'un projet pour me faire la main. Le but était:\n\n- Une présence web professionnelle pour inspirer confiance\n- Une mise en avant de leur carte et atypicité\n- Un site simple à maintenir\n\n## L'Approche\n\n**Vitrine** : Au-delà de la simple présentation, l'objectif était de transformer les visiteurs en réservation, simplement, en dehors de toute interface payante (La Fourchette, Trip Advisor,...).\n\nQuestions posées :\n\n- Quelles informations les clients potentiels recherchent-ils ?\n- Comment simplifier la prise de contact ?\n- Comment mettre en avant la zone géographique couverte ?\n\n## La Solution\n\n### Site Vitrine Optimisé\n\nUn site conçu avec React qui combine :\n\n- Présentation simple\n- Menu avec tarif clair et lisible\n\n## Technologies Utilisées\n\n- **React** : Performance\n- **Hébergement Git** : Intégration simple et sécurisée\n- **CSS/SCSS** : Design responsive et moderne\n- **Optimisation SEO** : Référencement local\n\n## Résultat\n\nUn mini site vitrine qui sert de carte de visite :\n\n- Présence web\n- Appels\n- Référencement local optimisé\n- Maintenance très simple\n\n---\n
+b997d961-b22b-6126-7a77-8dd648c02b76	agence-communication	C'Com	Site vitrine moderne et performant pour une agence de communication spécialisée en écrans publicitaires, conçu avec Astro pour des performances optimales.	published	https://c-com.fr/		2024-11-01 00:00:00	2026-02-09 12:35:11.508	2026-02-12 14:23:08.087	\n## Le Besoin Métier\n\nL'agence de communication C'Com spécialisée dans les écrans publicitaires avait besoin d'une présence web professionnelle pour :\n\n- Présenter leurs sservices et leur expertise\n- Mettre en avant leurs réalisations\n- Faciliter la prise de contact avec leurs prospects\n- Se démarquer dans un secteur concurrentiel\n\n## L'Approche\n\n**Vitrine rapide et efficace** : Le client avait besoin d'un site en ligne rapidement, sans complexité technique inutile.\n\nMa proposition :\n\n- Un site statique ultra-performant avec Astro\n- Un design moderne et épuré\n- Une optimisation SEO poussée pour le référencement local\n- Une expérience utilisateur fluide sur tous les appareils\n\n## La Solution\n\n### Caractéristiques Techniques\n\n- **Framework** : Astro pour des performances maximales\n- **Design** : Responsive, mobile first\n- **SEO** : Optimisation complète pour le référencement\n- **Performance** : Temps de chargement minimal, images optimisées\n- **Accessibilité** : Respect des standards WCAG\n\n### Fonctionnalités\n\n- Page d'accueil impactante présentant les services\n- Galerie de réalisations\n- Page de présentation de l'équipe\n- Formulaires de contact\n- Design adaptatif pour tous les écrans\n\n## Technologies Utilisées\n\n- **Astro** : Framework moderne pour sites statiques ultra-rapides\n- **CSS/SCSS** : Styling responsive et maintenable\n- **JavaScript** : Interactions légères et performantes\n- **Optimisation** : Images WebP, lazy loading, minification\n\n## Résultat\n\nUn site vitrine professionnel, rapide et efficace qui permet à l'agence de :\n\n- Présenter son expertise avec élégance\n- Convertir les visiteurs en prospects qualifiés\n- Se positionner comme un acteur moderne et professionnel\n- Bénéficier d'excellentes performances SEO\n\n---\n\n> _Exemple type d'un projet "site vitrine" : rapide, performant, professionnel. Quand vous avez besoin d'une présence web efficace sans complexité inutile._\n
+88bfd9a8-dd50-e098-471f-d7c55c830f5e	juriscope	Juriscope	Plateforme collaborative de gestion documentaire juridique pensée pour durer. De la modélisation des données à la mise en production : une solution sur mesure pour centraliser, organiser et sécuriser la connaissance juridique d'équipes collaboratives.	published			2024-07-01 00:00:00	2026-02-09 12:35:11.508	2026-02-12 12:40:55.296	\n## Le Besoin Métier\n\n**Juriscope** répond au besoin d'une plateforme centralisée de **gestion et d'archivage de documents juridiques** pour des équipes collaboratives. Le projet adresse plusieurs problématiques :\n\n- **Centralisation documentaire** : Regrouper l'ensemble des documents juridiques (articles, décisions, commentaires) en lien avec des ouvrages et auteurs de référence\n- **Versioning et archivage** : Gérer le cycle de vie complet des documents (brouillon → publié → obsolète) avec traçabilité complète des versions\n- **Collaboration structurée** : Permettre à des équipes d'utilisateurs d'annoter, commenter et organiser collectivement la documentation juridique\n- **Organisation par métadonnées** : Système flexible de tags hiérarchiques pour classifier et retrouver rapidement l'information\n- **Sécurité et droits d'accès** : Contrôler finement qui peut consulter, créer, modifier, publier ou supprimer des documents selon des profils de droits\n\n## Les Questions Posées\n\nLe projet répond à ces questions clés :\n\n1. **Comment gérer efficacement plusieurs versions d'un même document juridique ?**\n2. **Comment organiser une base documentaire sans structure fixe prédéfinie ?**\n3. **Comment intégrer des données juridiques officielles externes ?**\n4. **Comment garantir la sécurité des données sensibles ?**\n5. **Comment permettre l'annotation personnelle sans polluer la base commune ?**\n\n## La Solution Sur Mesure\n\n### Architecture Technique\n\n- Architecture 3-tiers moderne\n- Intégrations externes :\n  - Keycloak (OAuth2/OpenID Connect)\n  - Legifrance API (données juridiques)\n- Patterns architecturaux utilisés:\n  - **DAO Pattern** : Abstraction de l'accès aux données avec interfaces génériques\n  - **Service Layer Pattern** : Logique métier isolée dans des services réutilisables\n  - **DTO Pattern** : Séparation entités persistantes / objets de transfert avec ModelMapper\n  - **Generic Repository** : GenericDao et GenericService pour mutualiser le code CRUD\n  - **Resource Server OAuth2** : Délégation d'authentification à Keycloak\n  - **Reactive Programming** : WebFlux pour les appels API externes\n\n### Fonctionnalités Clés\n\n1. **Gestion Documentaire Complète**\n2. **Système de Versioning Intelligent**\n3. **Organisation par Tags Hiérarchiques**\n4. **Collaboration Multi-utilisateurs**\n5. **Référentiels Métier**\n6. **Intégration API Externe**\n7. **Sécurité Renforcée**\n\n## Technologies Utilisées\n\n### Backend\n\n- **Java 21** - Langage principal\n- **Spring Boot 3.3.1** - Framework applicatif\n- **Spring Security** - Authentification OAuth2/JWT, CSRF, CORS\n- **Spring WebFlux** - Client HTTP réactif pour API externes\n- **MyBatis 3.0.3** - Mapper objet-relationnel (ORM)\n- **MariaDB** - Base de données relationnelle\n- **ModelMapper 3.2.0** - Conversion Bean/DTO\n- **JSoup 1.18.1** - Parsing HTML\n- **GSON 2.11.0** - Sérialisation JSON\n\n### Frontend\n\n- **Angular 18.0.6** - Framework SPA\n- **TypeScript 5.4.2** - Langage\n- **Bootstrap 5.3.3** - UI/CSS\n- **Keycloak-Angular 16.0.1** - Intégration authentification\n- **D3.js 7.9.0** + d3-org-chart - Visualisations (organigrammes)\n- **ng-select 13.4.1** - Sélecteurs avancés\n- **ngx-toastr 19.0.0** - Notifications\n- **CryptoJS 4.2.0** - Cryptographie côté client\n\n### Sécurité & Infrastructure\n\n- **Keycloak 25.0.1** - Serveur d'identité (IAM)\n- **OAuth2 / OpenID Connect** - Protocoles d'authentification\n- **JWT** - Tokens d'accès\n\n### Outils de build\n\n- **Maven 3.x** - Gestion de dépendances backend\n- **npm / Angular CLI** - Gestion frontend\n\n## Défis et Apprentissages\n\n### Défis techniques rencontrés\n\n1. **Gestion complexe du versioning**\n2. **Sécurité multi-couches**\n3. **Architecture générique réutilisable**\n4. **Intégration API externe avec authentification**\n5. **Tags hiérarchiques flexibles**\n6. **Protection CSRF en architecture SPA**\n\n### Apprentissages clés\n\n- Maîtrise de **MyBatis** pour mapping SQL complexe (requêtes avec associations multiples)\n- Intégration **OAuth2 Resource Server** avec Keycloak\n- Gestion d'**architecture générique** pour réduire la duplication de code\n- Implémentation de **patterns d'entreprise** (DAO, Service Layer, DTO)\n- **Programmation réactive** avec Spring WebFlux pour appels API\n\n## Impact\n\n### Statut actuel\n\n- Version **1.2** en développement actif\n\n### Bénéfices attendus\n\n1. **Gain de productivité**\n   - Réduction du temps de recherche documentaire grâce au système de tags et filtres\n   - Centralisation de toute la documentation juridique (élimination de sources dispersées)\n\n2. **Amélioration de la qualité**\n   - Versioning intégral : traçabilité complète des modifications\n   - Validation par publication : séparation brouillons/documents validés\n   - Annotations collaboratives pour enrichissement continu\n\n3. **Sécurité et conformité**\n   - Contrôle d'accès granulaire par profil de droits\n   - Authentification centralisée (SSO Keycloak)\n   - Traçabilité complète (qui a créé/modifié quoi et quand)\n\n4. **Collaboration renforcée**\n   - Travail d'équipe structuré autour de tags communs\n   - Notes personnelles pour annotations privées\n   - Système de responsabilité par équipe\n\n5. **Enrichissement automatique**\n   - Intégration future de données Legifrance officielles\n   - Possibilité d'enrichir la base avec des sources externes validées\n\n6. **Évolutivité**\n   - Architecture générique facilitant l'ajout de nouvelles entités\n   - Système de tags flexible s'adaptant à toute taxonomie\n   - API REST documentée pour intégrations futures\n\n---\n\n_Ce rapport reflète un projet d'application d'entreprise robuste pour la gestion documentaire juridique, avec une architecture moderne et des standards industriels (Spring Boot, OAuth2, SPA Angular), en CI/CD._\n
+e9d0f34f-0608-43be-31c9-3089a61f50c9	webapp-maconnique	Trois Points	Solution métier sur mesure pour la gestion complète de la vie interne d'une loge maçonnique : orchestration rituelle, gestion administrative et transmission des savoirs.	published			2025-01-01 00:00:00	2026-02-09 12:35:11.508	2026-02-12 12:40:45.705	\n## Le Besoin Métier\n\nLa gestion d'une loge maçonnique implique des processus complexes et spécifiques : orchestration des cérémonies rituelles, suivi administratif des membres, gestion documentaire sensible, et transmission fluide des responsabilités lors des passations de postes.\n\nLe défi était plus que triple :\n\n- **Éviter la perte d'information** lors des changements de dirigeants\n- **Fluidifier les passations de postes** avec une documentation centralisée\n- **Orchestrer la dimension rituelle** tout en respectant la confidentialité des données\n\n## Les Questions Posées\n\nJ'ai dû prendre le temps de comprendre :\n\n- Quels sont les workflows spécifiques d'une loge maçonnique ?\n- Comment gérer des données sensibles avec les niveaux de confidentialité appropriés ?\n- Quelles sont les informations critiques à ne jamais perdre lors d'une passation ?\n- Comment rendre l'outil intuitif pour des utilisateurs non-techniques ?\n\n## La Solution Sur Mesure\n\n### Architecture Technique\n\n**Stack complète adaptée aux besoins** :\n\n- **Front-end** : Interface intuitive et responsive\n- **Back-end** : API robuste avec authentification sécurisée\n- **Base de données** : PostgreSQL pour la gestion des données relationnelles\n- **Sécurité** : Chiffrement des données sensibles, gestion granulaire des permissions\n\n### Fonctionnalités Clés\n\n- **Gestion des membres** : Suivi complet des parcours et des responsabilités\n- **Orchestration rituelle** : Planification et suivi des cérémonies avec workflows dédiés\n- **Documentation centralisée** : Base de connaissances accessible selon les permissions\n- **Passations automatisées** : Transfert guidé des responsabilités avec checklists\n- **Tableau de bord** : Vue d'ensemble de la vie de la loge en temps réel\n\n## Technologies Utilisées\n\n- **Front-end** : Vue.js, TypeScript\n- **Back-end** : NestJS, TypeScript\n- **Base de données** : PostgreSQL\n- **Architecture** : Monorepo\n- **DevOps** : Docker, CI/CD\n- **Sécurité** : JWT, chiffrement des données sensibles\n\n## Défis et Apprentissages\n\nLe principal défi a été de transformer une compréhension profonde d'un domaine métier très spécifique (les rituels et l'organisation maçonnique) en une architecture logicielle intuitive.\n\nLa solution a consisté à :\n\n- Mener des sessions de découverte approfondies avec les utilisateurs finaux\n- Créer des workflows qui respectent les traditions tout en modernisant les processus\n- Concevoir une interface qui "ne nécessite pas de mode d'emploi"\n\n## Impact\n\n**Statut actuel** : En cours de développement\n\n**Bénéfices attendus** :\n\n- Transmission fluide des responsabilités sans perte d'information\n- Prise de poste sereine pour les nouveaux dirigeants\n- Centralisation de la connaissance et de la documentation\n- Gain de temps sur les tâches administratives\n- Sécurité et confidentialité des données garanties\n\n---\n\n> _Ce projet illustre parfaitement mon approche : partir d'une compréhension métier approfondie pour concevoir l'outil numérique sur mesure qui répond vraiment aux besoins._\n
+f3473f35-2d1d-4546-96e2-a65b1c9b0c0a	portfolio-new	Portfolio professionnel	Vue d'ensemble d'un écosystème digital complet (site public, admin, documentation) construit sur Next.js + PostgreSQL/Prisma.	published		https://github.com/MaksTinyWorkshop/Template_Portfolio	2026-02-09 00:00:00	2026-02-09 12:35:11.508	2026-02-12 14:21:40.176	## Le Besoin Métier\n\nLe site doit réunir une vitrine publique haut de gamme, une administration opérationnelle et une documentation source unique pour piloter tous les projets, articles et obligations légales.\n\n> Ce portfolio a donné lieu à un **template open-source** décliné en deux variantes (lien Github ci-dessus) -> **contenu MDX** ou **base de données PostgreSQL/Prisma**. A été pensé comme une **fondation production-ready** : vitrine, administration sécurisée et publication automatisée. Consulter la documentation fournie\n\n## Les Questions Posées\n\n- Comment offrir une expérience visuelle Next.js/Once UI tout en s'appuyant sur une seule base de données (MDX + PostgreSQL/Prisma) ?\n- Comment automatiser publication/revalidation tout en gardant l'admin sécurisé (JWT, RouteGuard, refresh token) ?\n- Comment centraliser la documentation technique sans multiplier les doublons ?\n\n## La Solution Sur Mesure\n\n### Architecture Technique\n\n- Next.js 16 App Router + React Server Components pour la couche publique et la page mentions légales.\n- Once UI comme design system (Line, RevealFx, Badge, etc.) et composants MDX personnalisés (`mdx.tsx`).\n- PostgreSQL 16 + Prisma 7 pour les projets/articles/tags/médias/disponibilités avec validation Zod (`metadata + content`).\n- APIs admin (`/api/admin/projects`, `/api/admin/posts`, `/api/admin/publish`, `/api/availability`) + Docker Compose + scripts de seed.\n\n### Fonctionnalités Clés\n\n- Hero, sections "Dernier projet", "Derniers articles", "Autres projets" et page Mentions légales réactives.\n- Dashboard admin avec stats, QuickAction, formulaires projet/article, gestion disponibilité, uploads images et validation.\n- Publication automatisée (commits + revalidation des routes) et documentation Hub & Spoke (docs/index, project-overview, architecture, development-guide).\n\n## Technologies Utilisées\n\n- Frontend : Next.js 16, React 19, TypeScript 5.8, Once UI 1.5.6, next-mdx-remote.\n- Backend & données : Node.js, Prisma/PostgreSQL, JWT, Zod, API REST.\n- Ops : Docker Compose, Biome, ESLint, lint-staged, pipelines `npm run dev` / `npm run build`, revalidation Next.js.\n\n## Défis et Apprentissages\n\n- Synchroniser SSR/SSG/CSR avec PostgreSQL et MDX sans multiplier les requêtes.\n- Structurer la documentation en Hub & Spoke pour éviter toute duplication.\n- Assurer la sécurité admin (RouteGuard, JWT, refresh token) tout en gardant la publication fluide.\n- Valider les payloads `metadata + content` issus du formulaire admin.\n\n## Impact\n\n**Statut actuel** : production-ready, dashboard admin déployé, documentation alignée, pipeline push + revalidation opérationnel.\n\n**Bénéfices attendus** : crédibilité accrue, gouvernance documentaire fiable, publication instantanée des projets/articles et base extensible pour nouveaux cas d'usage.\n
+e3cabbf6-46ca-ebe7-52c9-7dd9c0c9bf2c	endo-sens	Endo-sens	Page de présentation pour un stage de préparation dans le domaine de la santé et du bien-être féminin.	published	https://www.endo-sens.fr/	https://github.com/MaksTinyWorkshop/Endosens-Stage	2026-01-01 00:00:00	2026-02-09 12:35:11.508	2026-02-12 14:21:59.546	\n## Le Besoin Métier\n\nEndo-sens propose un stage de préparation dans le domaine de la santé et du bien-être féminin, prévu pour mars de cette année. Le besoin était de créer une landing page efficace pour :\n\n- Présenter le stage et ses bénéfices\n- Capter l'attention des participantes potentielles\n- Faciliter les inscriptions\n- Transmettre les valeurs de bienveillance et d'accompagnement\n\nSite Web à venir, consécutivement aux stages\n\n## L'Approche\n\n**Landing Page Ciblée** : Une page unique, impactante, avec un objectif clair : convertir les visiteurs en inscriptions.\n\nQuestions essentielles :\n\n- Quel message principal faire passer ?\n- Comment créer la confiance dans un domaine sensible (santé féminine) ?\n- Quels éléments rassurants mettre en avant ?\n- Comment simplifier le parcours d'inscription ?\n\n## La Solution\n\n### Landing Simple et Optimisée\n\nConçue avec soin pour maximiser la conversion :\n\n- **Message clair et empathique** : Ton bienveillant adapté au public cible\n- **Présentation du stage** : Bénéfices, contenu, approche\n- **Appel à l'action évident** : Inscription facilitée\n- **Éléments de réassurance** : Expertise, témoignages, garanties\n\n### Fonctionnalités Clés\n\n- Hero section impactante avec accroche claire\n- Présentation du contenu du stage\n- Section bénéfices / transformations attendues\n- Présentation des intervenant(e)s\n- Formulaire d'inscription ou pré-inscription\n- Design apaisant et rassurant\n\n## Technologies Utilisées\n\n- **Pur HTML/CSS** : Très léger, aucun besoin d'infrastructure lourde\n- **Design** : Interface douce, rassurante, adaptée au sujet\n- **Formulaire** : Inscription simple et sécurisée via Google Form\n\n## Contexte\n\n**Lancement prévu** : Mars 2025\n\nCette landing page s'inscrit dans un projet à dimension sociale et humaine, axé sur le bien-être et la santé féminine. Le site met l'accent sur :\n\n- L'empathie et la compréhension des enjeux\n- La clarté de l'information\n- La facilité d'accès et d'inscription\n- Un design qui reflète les valeurs du projet\n\n## Impact Attendu\n\n- Présentation professionnelle et rassurante du stage\n- Maximisation du taux de conversion visiteurs → inscriptions\n- Communication claire des bénéfices et de l'approche\n- Création de confiance dans un domaine sensible\n\n---\n\n> _Projet à impact social dans le domaine de la santé féminine. Exemple de landing page ciblée avec une approche empathique et bienveillante._\n
+6348c29a-41f8-1567-2ce8-0484d6d7cab2	porfolio-old	Ancien Portfolio	Portfolio personnel moderne : une vitrine web construite à partir d’un starter Astro et adaptée à mes besoins pro du moment. Il n'est plus en ligne évidemment, remplacé par le présent site web.	published		https://github.com/MaksTinyWorkshop/Portfolio	2024-04-01 00:00:00	2026-02-09 12:35:11.508	2026-02-12 14:18:42.448	\n## Le Besoin Métier\n\nCréer une présentation professionnelle en ligne de mon profil / mes projets sur Internet. Le site sert de vitrine portfolio, avec un code propre et déployable, pour mettre en avant mes compétences et réalisations, et être visible aussi bien sur mobile que desktop.\n\n## L'Approche\n\nUtiliser Astro Starter Kit: Portfolio comme base, puis personnaliser le contenu pour qu’il reflète mon identité, lister mes projets, compétences et expériences. Le projet est structuré pour être léger, facilement modifiable et optimisé pour le web moderne.\n\n- un système clair de pages (Home, Projets, Contact…)\n- une typographie et style cohérents\n- des sections modulaires réutilisables\n- un déploiement simple (Netlify / Vercel / GitHub Pages)\n\n## La Solution\n\n### Caractéristiques Techniques\n\n- Basé sur Astro Starter Kit → static site performant.\n- Structure modulaire avec src/ (Astro/TS/CSS).\n- Scripts npm classiques (dev, build, preview).\n- SEO & best practices intégrés via Astro.\n\n### Fonctionnalités\n\n- Serveur de développement local avec hot-reload (npm run dev).\n- Build statique optimisé (npm run build).\n- Preview du build local (npm run preview).\n- Navigation simple et pages portfolio.\n\n(Cf. ce qui est visible dans la doc du projet.)\n\n## Technologies Utilisées\n\n- **Astro** : Framework moderne pour sites statiques ultra-rapides\n- **CSS/SCSS + TypeScript** : Styling responsive et maintenable\n- **Optimisation** : Images WebP, lazy loading, minification\n\n## Résultat\n\nUn site portfolio statique, rapide, maintenable, prêt à être déployé (sur Netlify, Vercel, GitHub Pages, etc.). Le projet est organisé, basé sur un starter éprouvé et conçu pour présenter efficacement mon profil de développeur.
+007df7e6-512d-01ea-500d-bacabc612f59	artisan-velux	Envolet' Toit 	Site vitrine avec formulaire de contact optimisé + capture de leads pour un artisan spécialisé en accessoires Velux couvrant la Bretagne et la Normandie.	published	https://envolettoit.fr		2024-12-01 00:00:00	2026-02-09 12:35:11.508	2026-02-12 14:22:32.193	\n## Le Besoin Métier\n\nUn artisan spécialisé dans l'installation et dépannage d'accessoires de fenêtres de toit Velux, couvrant la Bretagne et la Normandie, avait besoin de :\n\n- Une présence web professionnelle pour inspirer confiance\n- Un outil de capture de leads efficace\n- Une mise en avant de son expertise et de sa zone géographique\n- Un site simple à maintenir\n\n## L'Approche\n\n**Vitrine + Conversion** : Au-delà de la simple présentation, l'objectif était de transformer les visiteurs en demandes de devis qualifiées.\n\nQuestions posées :\n\n- Quelles informations les clients potentiels recherchent-ils ?\n- Comment simplifier la prise de contact ?\n- Comment mettre en avant la zone géographique couverte ?\n- Quels sont les critères de confiance pour un artisan ?\n\n## La Solution\n\n### Site Vitrine Optimisé\n\nUn site conçu avec Astro qui combine :\n\n- **Présentation professionnelle** : Mise en valeur de l'expertise Velux\n- **Zone géographique claire** : Bretagne et Normandie bien identifiées\n- **Formulaire de contact intuitif** : Capture de leads simplifiée\n- **Preuves de confiance** : Certifications, garanties, témoignages\n\n### Fonctionnalités Clés\n\n- Page d'accueil impactante avec call-to-action clair\n- Présentation des services et de l'expertise\n- CTA optimisé pour la conversion\n- Galerie de réalisations\n\n## Technologies Utilisées\n\n- **Astro** : Performance et SEO optimaux\n- **Formulaire** : Intégration simple et sécurisée\n- **CSS/SCSS** : Design responsive et moderne\n- **Optimisation SEO** : Référencement local (Bretagne, Normandie, Velux)\n\n## Résultat\n\nUn site vitrine qui sert de véritable outil commercial :\n\n- Présence web professionnelle inspirant confiance\n- Génération de demandes de devis qualifiées\n- Référencement local optimisé\n- Taux de conversion visiteurs → leads maximisé\n- Maintenance simple pour le client\n\n---\n\n> _Exemple de projet vitrine "augmenté" : pas seulement montrer, mais aussi convertir. La présence web comme outil de développement commercial._\n
+\.
+
+-- ArticleTag
+COPY public."ArticleTag" (id, "articleId", "tagId", "createdAt", "updatedAt") FROM stdin;
+53db585f-62d7-482e-9438-af7dc2aadb9b	24d16439-9af2-4e9d-8844-0923bfb1c585	778e8239-6885-4da9-8b3d-b9354b7f0c80	2026-02-11 18:51:56.308	2026-02-11 18:51:56.308
+3d1dc609-5221-4d81-b93d-f6f17c2e6456	24d16439-9af2-4e9d-8844-0923bfb1c585	544239c3-94bb-424f-a22d-52b8733f1f54	2026-02-11 18:51:56.308	2026-02-11 18:51:56.308
+50ee3f20-1489-4aa1-bf7b-0e7b52fd8575	24d16439-9af2-4e9d-8844-0923bfb1c585	c7b3baa7-45dd-4f3f-befc-4201290784d9	2026-02-11 18:51:56.308	2026-02-11 18:51:56.308
+551f3b3f-4efd-4f6e-a9a6-ffcb0627c8da	4e4c0d6c-51a4-6f6a-f801-77331767c145	c7b3baa7-45dd-4f3f-befc-4201290784d9	2026-02-11 18:55:02.736	2026-02-11 18:55:02.736
+3cb22d5a-b494-4200-a0e2-4c9e04b10da5	5d826f76-b112-f19f-f128-a0eba00e0983	c7b3baa7-45dd-4f3f-befc-4201290784d9	2026-02-11 18:55:24.555	2026-02-11 18:55:24.555
+bd8fb591-8b95-4780-824c-53d5b7389bda	5dc9a3f6-3d5c-28fc-d0fd-93a6d358a9e0	c7b3baa7-45dd-4f3f-befc-4201290784d9	2026-02-11 18:57:33.235	2026-02-11 18:57:33.235
+0694b3a2-40ff-46b5-b71a-a9a7781b9d54	a55cd105-4176-8e25-3173-7d00b05b8c03	d75fd968-572c-4c79-a9f2-3f51b359ea83	2026-02-11 18:57:50.996	2026-02-11 18:57:50.996
+b4182e1c-8791-427b-a427-0b57e7dda245	a55cd105-4176-8e25-3173-7d00b05b8c03	778e8239-6885-4da9-8b3d-b9354b7f0c80	2026-02-11 18:57:50.996	2026-02-11 18:57:50.996
+f4bbd8b6-7cd9-404f-90ee-d185fc72d21b	51b04f89-d102-44b4-bbdb-d3132f83c56c	d75fd968-572c-4c79-a9f2-3f51b359ea83	2026-02-12 11:41:44.467	2026-02-12 11:41:44.467
+\.
+
+-- ProjectTag
+COPY public."ProjectTag" (id, "projectId", "tagId", "createdAt", "updatedAt") FROM stdin;
+e82dcb49-8a4f-5d8b-9f7f-c38a0b9ae404	436eef20-203d-83bf-cf5b-2eb0d5061b69	b845869b-2d26-cbde-51d8-ad52acd4e0eb	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+ffa1a044-1dc9-4378-9eaa-eb7185a5fc6b	e9d0f34f-0608-43be-31c9-3089a61f50c9	0e40690a-159e-4ed1-b0a3-6ac4422b123e	2026-02-12 12:40:45.705	2026-02-12 12:40:45.705
+8744194c-8530-40f8-b942-780fd6dd5eeb	e9d0f34f-0608-43be-31c9-3089a61f50c9	ddaf7f8e-7ef1-4dac-b8bf-15b9f8760121	2026-02-12 12:40:45.705	2026-02-12 12:40:45.705
+a86e5814-2f7e-4c26-9647-039f2d01f219	88bfd9a8-dd50-e098-471f-d7c55c830f5e	0e40690a-159e-4ed1-b0a3-6ac4422b123e	2026-02-12 12:40:55.296	2026-02-12 12:40:55.296
+cd9c83f8-df83-490d-a4b9-3019dc2ed062	88bfd9a8-dd50-e098-471f-d7c55c830f5e	d5136f80-be8c-ebea-b639-bd9860bf2e45	2026-02-12 12:40:55.296	2026-02-12 12:40:55.296
+50b89463-ae7d-4669-80d9-aff9fd75963e	6348c29a-41f8-1567-2ce8-0484d6d7cab2	b845869b-2d26-cbde-51d8-ad52acd4e0eb	2026-02-12 14:18:42.448	2026-02-12 14:18:42.448
+18fa54c1-7fe5-4482-b9c7-fef3f0e2cb4f	6348c29a-41f8-1567-2ce8-0484d6d7cab2	ddaf7f8e-7ef1-4dac-b8bf-15b9f8760121	2026-02-12 14:18:42.448	2026-02-12 14:18:42.448
+f3b63f98-4ed8-4d47-bbcf-4bab479585f8	f3473f35-2d1d-4546-96e2-a65b1c9b0c0a	0e40690a-159e-4ed1-b0a3-6ac4422b123e	2026-02-12 14:21:40.176	2026-02-12 14:21:40.176
+2ba37881-3896-4ba5-8234-16ea0ff0ba74	f3473f35-2d1d-4546-96e2-a65b1c9b0c0a	ddaf7f8e-7ef1-4dac-b8bf-15b9f8760121	2026-02-12 14:21:40.176	2026-02-12 14:21:40.176
+6c94b2db-2416-4d8f-9ace-fc6360e05add	f3473f35-2d1d-4546-96e2-a65b1c9b0c0a	b845869b-2d26-cbde-51d8-ad52acd4e0eb	2026-02-12 14:21:40.176	2026-02-12 14:21:40.176
+b0a12591-08c4-406b-b7f4-8e1b0952a050	f3473f35-2d1d-4546-96e2-a65b1c9b0c0a	5c89d3e9-8a7d-4f86-8b66-1b0ef490f3cf	2026-02-12 14:21:40.176	2026-02-12 14:21:40.176
+2440b8c5-2765-40b3-b5fe-e01147552e22	e3cabbf6-46ca-ebe7-52c9-7dd9c0c9bf2c	b845869b-2d26-cbde-51d8-ad52acd4e0eb	2026-02-12 14:21:59.546	2026-02-12 14:21:59.546
+d934bc8b-955e-492c-bf7e-dd4f44f42a1f	007df7e6-512d-01ea-500d-bacabc612f59	ddaf7f8e-7ef1-4dac-b8bf-15b9f8760121	2026-02-12 14:22:32.193	2026-02-12 14:22:32.193
+89ecb4b3-f9a2-4cb3-a747-42a8168655eb	007df7e6-512d-01ea-500d-bacabc612f59	b845869b-2d26-cbde-51d8-ad52acd4e0eb	2026-02-12 14:22:32.193	2026-02-12 14:22:32.193
+c0da4b35-6f25-4f9a-b2c0-e402cca73620	b997d961-b22b-6126-7a77-8dd648c02b76	ddaf7f8e-7ef1-4dac-b8bf-15b9f8760121	2026-02-12 14:23:08.087	2026-02-12 14:23:08.087
+9df12237-bf1e-4fb3-9c8b-9de7ef5dcddd	b997d961-b22b-6126-7a77-8dd648c02b76	b845869b-2d26-cbde-51d8-ad52acd4e0eb	2026-02-12 14:23:08.087	2026-02-12 14:23:08.087
+\.
+
+-- ArticlePerson
+COPY public."ArticlePerson" (id, "articleId", "personId", role, "order", "primary", "createdAt", "updatedAt") FROM stdin;
+c7ec2aa5-bd95-53c3-9d62-47abd8ad8d62	5dc9a3f6-3d5c-28fc-d0fd-93a6d358a9e0	62cded6b-b881-d682-d8be-815775b7b164	Auteur principal	1	t	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+0c97f7f3-cf52-4fd0-1ebc-5cfcfc5316a6	5d826f76-b112-f19f-f128-a0eba00e0983	62cded6b-b881-d682-d8be-815775b7b164	Auteur principal	1	t	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+e90c8785-a408-2ae9-aad0-223f7da44b3a	4e4c0d6c-51a4-6f6a-f801-77331767c145	62cded6b-b881-d682-d8be-815775b7b164	Auteur principal	1	t	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+f77589ab-6960-700f-59f8-1e6403b50d68	a55cd105-4176-8e25-3173-7d00b05b8c03	62cded6b-b881-d682-d8be-815775b7b164	Auteur principal	1	t	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+\.
+
+-- ProjectPerson
+COPY public."ProjectPerson" (id, "projectId", "personId", role, "order", "primary", "createdAt", "updatedAt") FROM stdin;
+b358af83-d0f8-4310-922d-088754f67b0f	e9d0f34f-0608-43be-31c9-3089a61f50c9	62cded6b-b881-d682-d8be-815775b7b164	Développeur Full Stack	0	f	2026-02-12 12:40:45.705	2026-02-12 12:40:45.705
+2801a5cf-38ab-41a4-a274-f7aa66f01530	88bfd9a8-dd50-e098-471f-d7c55c830f5e	ca6a370b-d907-4b92-a139-54b7dcc3eb73	Lead Dev	1	f	2026-02-12 12:40:55.296	2026-02-12 12:40:55.296
+5b363261-8941-414c-8558-940e171aaaee	88bfd9a8-dd50-e098-471f-d7c55c830f5e	62cded6b-b881-d682-d8be-815775b7b164	Développeur Full Stack	0	f	2026-02-12 12:40:55.296	2026-02-12 12:40:55.296
+dfb6b3c3-e66e-425d-822b-057e61f46a90	6348c29a-41f8-1567-2ce8-0484d6d7cab2	62cded6b-b881-d682-d8be-815775b7b164	Développeur Full Stack	0	f	2026-02-12 14:18:42.448	2026-02-12 14:18:42.448
+04e8d1d0-59e0-4aa7-b337-cafa1728620c	f3473f35-2d1d-4546-96e2-a65b1c9b0c0a	62cded6b-b881-d682-d8be-815775b7b164	Développeur Full Stack	0	f	2026-02-12 14:21:40.176	2026-02-12 14:21:40.176
+059cdf61-d836-4edc-bdde-ee6f39bf55c5	e3cabbf6-46ca-ebe7-52c9-7dd9c0c9bf2c	62cded6b-b881-d682-d8be-815775b7b164	Développeur Full Stack	0	f	2026-02-12 14:21:59.546	2026-02-12 14:21:59.546
+dee25e17-d56c-451a-9554-10a478999e30	007df7e6-512d-01ea-500d-bacabc612f59	aba8fbe0-6968-4c68-a8c7-e97489bc6a60	Designer	1	f	2026-02-12 14:22:32.193	2026-02-12 14:22:32.193
+97c1ece1-cb76-4d5d-8b28-bbf7a60f6ae7	007df7e6-512d-01ea-500d-bacabc612f59	62cded6b-b881-d682-d8be-815775b7b164	Développeur Full Stack	0	f	2026-02-12 14:22:32.193	2026-02-12 14:22:32.193
+555ff0df-954e-41c8-8c34-a069337e4524	b997d961-b22b-6126-7a77-8dd648c02b76	aba8fbe0-6968-4c68-a8c7-e97489bc6a60	Designer	1	f	2026-02-12 14:23:08.087	2026-02-12 14:23:08.087
+116c29b6-3a38-4c49-9f46-cda8d67bec86	b997d961-b22b-6126-7a77-8dd648c02b76	62cded6b-b881-d682-d8be-815775b7b164	Développeur Full Stack	0	f	2026-02-12 14:23:08.087	2026-02-12 14:23:08.087
+\.
+
+-- ProjectImage
+COPY public."ProjectImage" (id, "projectId", "mediaId", purpose, "order", "createdAt", "updatedAt") FROM stdin;
+1e41c87f-f5b8-790c-f434-8a074579ee9e	436eef20-203d-83bf-cf5b-2eb0d5061b69	f0c7885d-d8ad-c20f-51cc-c45e23f2037c	cover	0	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+aee8d140-aa30-d21e-83f5-7b39849fb916	436eef20-203d-83bf-cf5b-2eb0d5061b69	9b88ee55-b25f-e50e-ec33-75e2e54f32cc	gallery	1	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+33a403bb-4d64-45df-aad2-9819f8df0691	436eef20-203d-83bf-cf5b-2eb0d5061b69	92ed362c-426b-7649-dcba-2455159d2b36	gallery	2	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+cda8f820-3997-609c-4ab1-54afcbba0fd6	436eef20-203d-83bf-cf5b-2eb0d5061b69	239efec3-af53-d471-42f2-9fbdbf0a9154	gallery	3	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+7497d61a-b09d-288b-51f8-713542e39c36	436eef20-203d-83bf-cf5b-2eb0d5061b69	ef0ea003-e8cb-b20e-1e21-75b8c24cd01a	gallery	4	2026-02-09 12:35:11.508	2026-02-09 12:35:11.508
+b3e82e3e-1361-4bbd-a2a2-921d18c9d87b	e9d0f34f-0608-43be-31c9-3089a61f50c9	41b9112d-cd06-a055-ee5a-9e96b7d63d9a	gallery	0	2026-02-12 12:40:45.705	2026-02-12 12:40:45.705
+89c0a339-fa85-48c7-b6ac-652c240845e1	88bfd9a8-dd50-e098-471f-d7c55c830f5e	782d7744-7439-47af-bb99-6243490430a3	gallery	2	2026-02-12 12:40:55.296	2026-02-12 12:40:55.296
+bcd9155c-f328-410e-9e91-419d4185451f	88bfd9a8-dd50-e098-471f-d7c55c830f5e	72d86cd6-f31d-4934-b10f-1c2cacfbabe5	gallery	1	2026-02-12 12:40:55.296	2026-02-12 12:40:55.296
+cc827b67-00d0-4655-9c92-06b3ebcaaca9	88bfd9a8-dd50-e098-471f-d7c55c830f5e	54006a2f-36d7-45a8-a9d9-13e4ac9fa2ed	gallery	0	2026-02-12 12:40:55.296	2026-02-12 12:40:55.296
+50867ecf-480e-4a44-a015-836fccaa17cc	6348c29a-41f8-1567-2ce8-0484d6d7cab2	15a329bd-8172-4397-8747-a532e8f6b424	gallery	2	2026-02-12 14:18:42.448	2026-02-12 14:18:42.448
+59399cce-2d99-42aa-9c32-8a4173dd59d9	6348c29a-41f8-1567-2ce8-0484d6d7cab2	360af584-7fd5-4e2e-8869-f47e087a5e80	gallery	1	2026-02-12 14:18:42.448	2026-02-12 14:18:42.448
+e84f020b-444b-423c-8efc-24f32d1a4d2f	6348c29a-41f8-1567-2ce8-0484d6d7cab2	efa57b70-3755-47bf-9f40-a9ddf4917cc5	gallery	0	2026-02-12 14:18:42.448	2026-02-12 14:18:42.448
+72298ca9-b383-43e3-9ede-dbefea19de8f	f3473f35-2d1d-4546-96e2-a65b1c9b0c0a	f6a86c41-36a8-4169-b06a-0fa1efa3d8cb	gallery	4	2026-02-12 14:21:40.176	2026-02-12 14:21:40.176
+64165847-70f8-4c91-9ae0-bfda4fd9d648	f3473f35-2d1d-4546-96e2-a65b1c9b0c0a	d7ab12c6-8e6b-4c2f-8c89-936f7c34b02	gallery	3	2026-02-12 14:21:40.176	2026-02-12 14:21:40.176
+84c54d7b-9663-4e25-8f82-acdcf49266ec	f3473f35-2d1d-4546-96e2-a65b1c9b0c0a	c2b93f7f-8764-4dc1-ae2f-1af0de2ff621	gallery	2	2026-02-12 14:21:40.176	2026-02-12 14:21:40.176
+45bef535-8d7e-40f3-ae90-6020dbfb6d05	f3473f35-2d1d-4546-96e2-a65b1c9b0c0a	8c7d7fcc-dc57-4b7a-9bd4-6a5b6d4b4ec3	gallery	1	2026-02-12 14:21:40.176	2026-02-12 14:21:40.176
+bcefebdc-9b25-46a2-aeb2-65424a71b89d	f3473f35-2d1d-4546-96e2-a65b1c9b0c0a	db8efc00-2ef6-42e7-bb15-f4ba88dfe85a	cover	0	2026-02-12 14:21:40.176	2026-02-12 14:21:40.176
+f69c7728-c12c-49e5-b23b-89b4069af473	e3cabbf6-46ca-ebe7-52c9-7dd9c0c9bf2c	3c04531c-e2a1-48e2-aff2-92119c582fdd	gallery	1	2026-02-12 14:21:59.546	2026-02-12 14:21:59.546
+fd926add-50bf-498f-8d2e-ce200eec480c	e3cabbf6-46ca-ebe7-52c9-7dd9c0c9bf2c	7f2dae56-7157-46bc-af55-b2ec08423b3d	gallery	0	2026-02-12 14:21:59.546	2026-02-12 14:21:59.546
+18149da5-2f9e-494e-8355-6cc48bb57e3e	007df7e6-512d-01ea-500d-bacabc612f59	d1baa377-3733-4769-b27a-e92201f78067	gallery	3	2026-02-12 14:22:32.193	2026-02-12 14:22:32.193
+cdc18307-d677-4d70-bc53-b991a8dcc06e	007df7e6-512d-01ea-500d-bacabc612f59	0ed3d70c-1318-4a6c-91f1-f0abbc59e830	gallery	2	2026-02-12 14:22:32.193	2026-02-12 14:22:32.193
+2a7e20b7-3326-41b1-aa73-1c2aef57337f	007df7e6-512d-01ea-500d-bacabc612f59	c997628c-4e1a-4b54-8d2b-728f98ce8909	gallery	1	2026-02-12 14:22:32.193	2026-02-12 14:22:32.193
+f6dbc789-728f-4e32-a51b-cf7e01aafb16	007df7e6-512d-01ea-500d-bacabc612f59	bfeea951-3d07-ac46-e0b7-571b63263619	cover	0	2026-02-12 14:22:32.193	2026-02-12 14:22:32.193
+04e548e3-39cf-4afc-89ba-d3d0dd1fa180	b997d961-b22b-6126-7a77-8dd648c02b76	4f698ae5-8a91-48a3-88a8-41980d2dcb96	gallery	4	2026-02-12 14:23:08.087	2026-02-12 14:23:08.087
+6ec0edd3-a7c8-49f0-9b4f-a63a8112fbe5	b997d961-b22b-6126-7a77-8dd648c02b76	02625e26-3dea-41f2-92fa-fc2af423fb46	gallery	3	2026-02-12 14:23:08.087	2026-02-12 14:23:08.087
+84c93e19-f963-4ac0-98b8-37baa467939e	b997d961-b22b-6126-7a77-8dd648c02b76	db1230d4-b644-4d05-8e00-17443ec45157	gallery	2	2026-02-12 14:23:08.087	2026-02-12 14:23:08.087
+00877afc-d8d8-43ec-b60c-8830af22fb47	b997d961-b22b-6126-7a77-8dd648c02b76	38485521-8469-49e6-b700-303beebb6cfc	gallery	1	2026-02-12 14:23:08.087	2026-02-12 14:23:08.087
+cb015807-57ea-4118-b0f3-23ea57bd25a1	b997d961-b22b-6126-7a77-8dd648c02b76	447ee35a-8d1e-4829-ac0e-dbe5378d588e	cover	0	2026-02-12 14:23:08.087	2026-02-12 14:23:08.087
+\.
+
+-- AvailabilityLog
+COPY public."AvailabilityLog" (id, "personId", status, "createdAt") FROM stdin;
+b7c4dce9-df5e-406e-8550-faef8ba52e9b	62cded6b-b881-d682-d8be-815775b7b164	unavailable	2026-02-09 12:35:11.508
+da368d1f-6d9f-4854-8e69-1d3c002dde1e	62cded6b-b881-d682-d8be-815775b7b164	available	2026-02-09 12:57:31.74
+\.
+
+-- RateLimit
+COPY public."RateLimit" (id, key, count, "expiresAt", "createdAt", "updatedAt") FROM stdin;
+6ec28464-126d-4e6e-a985-7fac5b21cef8	auth:88.180.132.92	1	2026-02-12 11:45:44.781	2026-02-12 11:44:44.791	2026-02-12 11:44:44.791
+\.
 
 COMMIT;
-
--- Statistiques: 4 articles, 8 projets, 8 tags, 32 médias, 1 log de disponibilité

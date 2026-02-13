@@ -48,6 +48,15 @@ export interface DashboardStats {
     draft: number;
     scheduled: number;
   };
+  tags: {
+    total: number;
+  };
+  persons: {
+    total: number;
+  };
+  assets: {
+    total: number;
+  };
 }
 
 export * from "./config.types";

@@ -1,17 +1,16 @@
+import path from "node:path";
+import { fileValidationSchema, uploadParamsSchema } from "@/lib/schemas/upload.schema";
+import { checkAuthAPI } from "@/lib/utils/auth";
+import { getAssetDirectoryFromType } from "@/lib/modules/assets/constants";
+import { ApiError } from "@/lib/http/errors";
+import { withApiErrorHandling } from "@/lib/http/with-api-error";
+import type { ApiResponse } from "@/web/types";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { writeFile, mkdir, unlink } from "fs/promises";
-import path from "path";
 import sharp from "sharp";
-import type { ApiResponse } from "@/web/types";
-import { checkAuthAPI } from "@/lib/utils/auth";
-import {
-  uploadParamsSchema,
-  fileValidationSchema,
-  deleteUploadSchema,
-  type ALLOWED_MIME_TYPES,
-} from "@/lib/schemas/upload.schema";
-import { ZodError } from "zod";
+import { uploadAssetAdmin } from "@/lib/modules/assets";
+import { prisma } from "@/lib/prisma";
+import { ensureMediaRecord } from "@/lib/utils/content-normalizers";
 
 /**
  * Génère un nom de fichier sécurisé
@@ -32,7 +31,8 @@ function generateFilename(
   const sanitized = baseName
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Retirer les accents
+    // Retirer les accents
+    .replace(/\p{Diacritic}/gu, "")
     .replace(/[^a-z0-9_-]/g, "-") // Remplacer caractères spéciaux par tirets
     .replace(/-+/g, "-") // Éviter tirets multiples
     .replace(/^-|-$/g, ""); // Retirer tirets début/fin
@@ -51,75 +51,60 @@ function generateFilename(
 /**
  * POST - Upload une image
  */
-export async function POST(request: NextRequest) {
-  try {
-    // Vérifier l'authentification
-    const isAuthenticated = await checkAuthAPI();
-    if (!isAuthenticated) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: "Non authentifié" },
-        { status: 401 },
-      );
-    }
+export const POST = withApiErrorHandling(async (request: NextRequest) => {
+  const isAuthenticated = await checkAuthAPI();
+  if (!isAuthenticated) {
+    throw new ApiError("Non authentifié", 401);
+  }
 
-    // Parser et valider le form-data avec Zod
-    const formData = await request.formData();
-    const file = formData.get("file") as File | null;
+  // Parser et valider le form-data avec Zod
+  const formData = await request.formData();
+  const file = formData.get("file") as File | null;
 
-    if (!file) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: "Aucun fichier fourni" },
-        { status: 400 },
-      );
-    }
+  if (!file) {
+    throw new ApiError("Aucun fichier fourni", 400);
+  }
 
-    // Valider les paramètres du formulaire
-    const params = uploadParamsSchema.parse({
-      type: formData.get("type"),
-      customName: formData.get("customName"),
-      includeTimestamp: formData.get("includeTimestamp"),
-      quality: formData.get("quality"),
-      previewOnly: formData.get("previewOnly"),
-    });
+  // Valider les paramètres du formulaire
+  const params = uploadParamsSchema.parse({
+    type: formData.get("type"),
+    customName: formData.get("customName"),
+    includeTimestamp: formData.get("includeTimestamp"),
+    quality: formData.get("quality"),
+    previewOnly: formData.get("previewOnly"),
+  });
 
-    // Valider le fichier (type MIME et taille)
-    fileValidationSchema.parse({
-      name: file.name,
-      type: file.type as (typeof ALLOWED_MIME_TYPES)[number],
-      size: file.size,
-    });
+  // Valider le fichier (type MIME et taille)
+  fileValidationSchema.parse({
+    name: file.name,
+    type: file.type,
+    size: file.size,
+  });
 
-    const { type, customName, includeTimestamp, quality, previewOnly } = params;
+  const { type, customName, includeTimestamp, quality, previewOnly } = params;
 
-    // Déterminer le sous-dossier selon le type
-    const subFolder = type === "project" ? "projects" : type === "post" ? "articles" : "avatars";
+  // Déterminer le sous-dossier selon le type
+  const subFolder = getAssetDirectoryFromType(type);
 
-    // Chemin de destination
-    const publicDir = path.join(process.cwd(), "public", "images", subFolder);
+  // Générer un nom de fichier (personnalisé ou auto-généré)
+  const filename = generateFilename(customName ?? null, file.name, includeTimestamp, ".webp");
 
-    // Créer le dossier s'il n'existe pas
-    await mkdir(publicDir, { recursive: true });
+  // Convertir le fichier en buffer (et éventuellement sauvegarder)
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+  const transformed = await sharp(buffer).webp({ quality }).toBuffer();
 
-    // Générer un nom de fichier (personnalisé ou auto-généré)
-    const filename = generateFilename(customName ?? null, file.name, includeTimestamp, ".avif");
-    const filepath = path.join(publicDir, filename);
+  // Retourner l'URL relative via le proxy (meilleure cohérence en prod après upload).
+  const imageUrl = `/api/assets/${subFolder}/${filename}`;
 
-    // Convertir le fichier en buffer (et éventuellement sauvegarder)
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const transformed = await sharp(buffer).avif({ quality }).toBuffer();
-    if (!previewOnly) {
-      await writeFile(filepath, transformed);
-    }
-
-    // Retourner l'URL relative
-    const imageUrl = `/images/${subFolder}/${filename}`;
-
+  // Preview only: ne persiste rien (ni fichier, ni DB).
+  if (previewOnly) {
     return NextResponse.json<ApiResponse>({
       success: true,
-      message: previewOnly ? "Prévisualisation générée" : "Image uploadée avec succès",
+      message: "Prévisualisation générée",
       data: {
-        url: previewOnly ? null : imageUrl,
+        mediaId: null,
+        url: null,
         filename,
         size: file.size,
         transformedSize: transformed.length,
@@ -127,74 +112,36 @@ export async function POST(request: NextRequest) {
         type: file.type,
       },
     });
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: "Données invalides" },
-        { status: 400 },
-      );
-    }
-    console.error("Erreur POST /api/admin/upload:", error);
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Erreur lors de l'upload" },
-      { status: 500 },
-    );
   }
-}
 
-export async function DELETE(request: NextRequest) {
-  try {
-    const isAuthenticated = await checkAuthAPI();
-    if (!isAuthenticated) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: "Non authentifié" },
-        { status: 401 },
-      );
-    }
+  // Persistance: le stockage passe par le module assets (1 seule pipeline).
+  // On réutilise ensuite l'URL canonique pour assurer une seule source de vérité en DB.
+  // `sharp().toBuffer()` returns a Node.js Buffer which is typed as `ArrayBufferLike`.
+  // Convert to a plain Uint8Array to satisfy the DOM `BlobPart` typing used by `File`.
+  const webpFile = new File([new Uint8Array(transformed)], filename, { type: "image/webp" });
 
-    // Parser et valider les paramètres avec Zod
-    const { searchParams } = new URL(request.url);
-    const validatedData = deleteUploadSchema.parse({
-      filename: searchParams.get("filename"),
-      type: searchParams.get("type"),
-    });
+  await uploadAssetAdmin({
+    directory: subFolder,
+    file: webpFile,
+    overwrite: false,
+  });
 
-    const { filename, type } = validatedData;
+  const media = await ensureMediaRecord(prisma, imageUrl, {
+    kind: "image",
+    storageProvider: "local",
+  });
 
-    // Sécurité: vérifier que le filename ne contient pas de path traversal
-    if (path.basename(filename) !== filename) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: "Nom de fichier invalide" },
-        { status: 400 },
-      );
-    }
-
-    const subFolder = type === "project" ? "projects" : type === "post" ? "articles" : "avatars";
-    const filePath = path.join(process.cwd(), "public", "images", subFolder, filename);
-
-    try {
-      await unlink(filePath);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-        throw error;
-      }
-    }
-
-    return NextResponse.json<ApiResponse>({
-      success: true,
-      message: "Image supprimée",
-    });
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: "Données invalides" },
-        { status: 400 },
-      );
-    }
-    console.error("Erreur DELETE /api/admin/upload:", error);
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Erreur lors de la suppression" },
-      { status: 500 },
-    );
-  }
-}
+  return NextResponse.json<ApiResponse>({
+    success: true,
+    message: "Image uploadée avec succès",
+    data: {
+      mediaId: media?.id ?? null,
+      url: imageUrl,
+      filename,
+      size: file.size,
+      transformedSize: transformed.length,
+      quality,
+      type: file.type,
+    },
+  });
+});

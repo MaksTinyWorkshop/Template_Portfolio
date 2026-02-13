@@ -7,10 +7,7 @@ import Link from "next/link";
 
 // Lazy load du composant ProjectsList pour améliorer les performances
 const ProjectsList = dynamicImport(
-  () =>
-    import("@/web/components/admin/ProjectsList").then(
-      (mod) => mod.ProjectsList,
-    ),
+  () => import("@/web/components/admin/ProjectsList").then((mod) => mod.ProjectsList),
   {
     loading: () => (
       <Flex direction="column" gap="16" fillWidth>

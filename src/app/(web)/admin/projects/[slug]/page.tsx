@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import type { ProjectMetadata } from "@/web/types";
 
 // Désactiver le prerendering pour cette page admin
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface EditProjectPageProps {
   params: Promise<{ slug: string }>;

@@ -12,7 +12,29 @@ describe("withApiErrorHandling helper", () => {
     const response = await handler(new NextRequest("http://localhost/api/test"));
     expect(response.status).toBe(422);
     const payload = await response.json();
-    expect(payload).toEqual({ error: "Champs requis", details: ["name"] });
+    expect(payload).toMatchObject({ success: false, error: "Champs requis" });
+    expect(payload.details).toBeUndefined();
+  });
+
+  it("expose details when EXPOSE_API_ERROR_DETAILS=1", async () => {
+    const previous = process.env.EXPOSE_API_ERROR_DETAILS;
+    process.env.EXPOSE_API_ERROR_DETAILS = "1";
+
+    const handler = withApiErrorHandling(async () => {
+      throw new ValidationError("Champs requis", ["name"]);
+    });
+
+    const response = await handler(new NextRequest("http://localhost/api/test"));
+    expect(response.status).toBe(422);
+    const payload = await response.json();
+    expect(payload).toMatchObject({
+      success: false,
+      error: "Champs requis",
+      details: ["name"],
+    });
+
+    if (previous === undefined) delete process.env.EXPOSE_API_ERROR_DETAILS;
+    else process.env.EXPOSE_API_ERROR_DETAILS = previous;
   });
 
   it("defaults to 500 for unknown errors", async () => {
@@ -23,7 +45,8 @@ describe("withApiErrorHandling helper", () => {
     const response = await handler(new NextRequest("http://localhost/api/test"));
     expect(response.status).toBe(500);
     const payload = await response.json();
-    expect(payload).toEqual({ error: "Impossible de traiter la requête" });
+    expect(payload).toMatchObject({ success: false, error: "Impossible de traiter la requête" });
+    expect(payload.details).toBeUndefined();
   });
 });
 
@@ -63,6 +86,36 @@ describe("GET /api/projects/[slug]", () => {
     expect(payload).toMatchObject({ project: { slug: "alpha" } });
   });
 
+  it("accepte un slug dynamique sous forme de tableau", async () => {
+    vi.doMock("@/lib/modules/projects", () => ({
+      getProjectBySlug: vi.fn(),
+    }));
+
+    const projects = await import("@/lib/modules/projects");
+    (projects.getProjectBySlug as ReturnType<typeof vi.fn>).mockResolvedValue({
+      slug: "nested/alpha",
+    });
+
+    const { GET } = await import("@/app/(api)/api/projects/[slug]/route");
+    const response = await GET(new NextRequest("http://localhost/api/projects/nested/alpha"), {
+      params: { slug: ["nested", "alpha"] },
+    } as Parameters<typeof GET>[1]);
+
+    expect(projects.getProjectBySlug).toHaveBeenCalledWith("nested/alpha");
+    expect(response.status).toBe(200);
+  });
+
+  it("renvoie une erreur structurée pour un slug vide après trim", async () => {
+    const { GET } = await import("@/app/(api)/api/projects/[slug]/route");
+    const response = await GET(new NextRequest("http://localhost/api/projects/%20"), {
+      params: { slug: "   " },
+    } as Parameters<typeof GET>[1]);
+
+    expect(response.status).toBe(400);
+    const payload = await response.json();
+    expect(payload.error).toBe("Slug manquant");
+  });
+
   it("renvoie 500 quand le service echoue", async () => {
     vi.doMock("@/lib/modules/projects", () => ({
       getProjectBySlug: vi.fn(),
@@ -78,22 +131,17 @@ describe("GET /api/projects/[slug]", () => {
 
     expect(response.status).toBe(500);
     const payload = await response.json();
-    expect(payload).toEqual({ error: "boom" });
+    expect(payload).toMatchObject({ success: false, error: "boom" });
+    expect(payload.details).toBeUndefined();
   });
 
-  it("renvoie 405 pour PATCH", async () => {
-    const { PATCH } = await import("@/app/(api)/api/projects/[slug]/route");
-    const response = await PATCH(new NextRequest("http://localhost/api/projects/alpha"), {
-      params: { slug: "alpha" },
-    } as Parameters<typeof PATCH>[1]);
-    expect(response.status).toBe(405);
+  it("n'expose pas de handler PATCH", async () => {
+    const routeModule = await import("@/app/(api)/api/projects/[slug]/route");
+    expect(routeModule).not.toHaveProperty("PATCH");
   });
 
-  it("renvoie 405 pour DELETE", async () => {
-    const { DELETE } = await import("@/app/(api)/api/projects/[slug]/route");
-    const response = await DELETE(new NextRequest("http://localhost/api/projects/alpha"), {
-      params: { slug: "alpha" },
-    } as Parameters<typeof DELETE>[1]);
-    expect(response.status).toBe(405);
+  it("n'expose pas de handler DELETE", async () => {
+    const routeModule = await import("@/app/(api)/api/projects/[slug]/route");
+    expect(routeModule).not.toHaveProperty("DELETE");
   });
 });

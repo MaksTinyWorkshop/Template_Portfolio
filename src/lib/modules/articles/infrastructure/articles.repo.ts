@@ -55,3 +55,10 @@ export const deleteArticleTx = (
   tx: Prisma.TransactionClient,
   where: Prisma.ArticleWhereUniqueInput,
 ) => tx.article.delete({ where });
+
+export const listArticleTags = () =>
+  prisma.tag.findMany({
+    where: { category: { in: ["article", "global"] } },
+    orderBy: { name: "asc" },
+    select: { name: true },
+  });

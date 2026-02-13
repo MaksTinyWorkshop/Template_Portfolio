@@ -3,3 +3,4 @@ export * from "./articles";
 export * from "./content";
 export * from "./api";
 export * from "./validations";
+export * from "./openapi";

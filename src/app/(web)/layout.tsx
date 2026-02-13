@@ -4,9 +4,9 @@ import "@once-ui-system/core/css/tokens.css";
 
 import classNames from "classnames";
 
-import { Footer, Header, Providers, RouteGuard } from "@/web/components";
+import type { PersonSiteData } from "@/lib/modules/person/domain/person.utils";
 import { getSitePersonData } from "@/lib/modules/person/services/person-site.service";
-import { type PersonSiteData } from "@/lib/modules/person/domain/person.utils";
+import { Footer, Header, Providers, RouteGuard } from "@/web/components";
 import { baseURL, dataStyle, effects, fonts, home, style } from "@/web/resources";
 import {
   Background,
@@ -20,16 +20,27 @@ import {
 
 // Force dynamic rendering for entire (web) route group - disable static generation during build
 // This prevents DB connection attempts during Docker build for all pages under this layout
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
-  return Meta.generate({
-    title: home.title,
+  const sitePerson: PersonSiteData = await getSitePersonData();
+  const baseTitle = `${sitePerson.name}`;
+
+  const meta = await Meta.generate({
+    title: baseTitle,
     description: home.description,
     baseURL: baseURL,
     path: home.path,
     image: home.image,
   });
+
+  return {
+    ...meta,
+    title: {
+      default: baseTitle,
+      template: `${baseTitle} | %s`,
+    },
+  };
 }
 
 export default async function RootLayout({
@@ -52,6 +63,8 @@ export default async function RootLayout({
       )}
     >
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="shortcut icon" href="/favicon.ico" />
         <script
           defer
           src="https://static.cloudflareinsights.com/beacon.min.js"
@@ -59,6 +72,7 @@ export default async function RootLayout({
         />
         <script
           id="theme-init"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: inline script is required for no-flash theme + config init.
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -125,7 +139,7 @@ export default async function RootLayout({
           padding="0"
           horizontal="center"
         >
-          <RevealFx fill position="absolute">
+          <RevealFx fill position="absolute" revealedByDefault speed={0}>
             <Background
               mask={{
                 x: effects.mask.x,
