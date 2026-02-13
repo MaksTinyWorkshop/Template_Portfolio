@@ -25,6 +25,7 @@ const routes: RoutesConfig = {
   "/blog": true,
   "/admin": true,
   "/legal": true,
+  "/openapi": true,
   "/gallery": false,
 };
 

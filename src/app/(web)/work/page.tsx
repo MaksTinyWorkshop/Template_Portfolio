@@ -6,7 +6,7 @@ import type { PersonSiteData } from "@/lib/modules/person/domain/person.utils";
 import { Column, Heading, Meta, Schema } from "@once-ui-system/core";
 
 // Force dynamic rendering - disable static generation during build
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   return Meta.generate({
@@ -28,13 +28,16 @@ export default async function Work() {
     return bDate - aDate;
   });
 
-  const tagsSet = new Set<string>();
+  // Collecter tous les tags uniques avec leurs couleurs
+  const tagsMap = new Map<string, { slug: string; name: string; color: string | null }>();
   for (const project of sortedProjects) {
     for (const tag of project.typeProjectTag) {
-      tagsSet.add(tag);
+      if (!tagsMap.has(tag.slug)) {
+        tagsMap.set(tag.slug, { slug: tag.slug, name: tag.name, color: tag.color });
+      }
     }
   }
-  const allTags = Array.from(tagsSet).sort();
+  const allTags = Array.from(tagsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <Column maxWidth="m" paddingTop="24">

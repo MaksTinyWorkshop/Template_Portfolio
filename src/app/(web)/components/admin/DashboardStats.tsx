@@ -1,7 +1,8 @@
 "use client";
 
-import { Flex, Text, Card, Heading } from "@once-ui-system/core";
+import { Card, Flex, Heading, Text } from "@once-ui-system/core";
 import Link from "next/link";
+import styles from "./DashboardStats.module.scss";
 
 interface StatsCardProps {
   icon: string;
@@ -12,6 +13,7 @@ interface StatsCardProps {
   scheduled: number;
   href: string;
   color: "accent" | "brand" | "success" | "warning";
+  minHeight?: number;
 }
 
 export function StatsCard({
@@ -23,6 +25,7 @@ export function StatsCard({
   scheduled,
   href,
   color,
+  minHeight,
 }: StatsCardProps) {
   const colorMap = {
     accent: {
@@ -55,13 +58,10 @@ export function StatsCard({
         padding="24"
         border="neutral-medium"
         background="surface"
+        className={styles.card}
         style={{
-          cursor: "pointer",
-          transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
           borderLeft: `4px solid ${colors.border}`,
-          borderRadius: "12px",
-          height: "100%",
-          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06)",
+          minHeight,
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "translateY(-4px)";
@@ -74,8 +74,8 @@ export function StatsCard({
           e.currentTarget.style.borderLeftWidth = "4px";
         }}
       >
-        <Flex direction="column" gap="20">
-          <Flex horizontal="between" vertical="center">
+        <Flex direction="column" gap="20" fillWidth>
+          <Flex horizontal="around" vertical="center">
             <Flex gap="12" vertical="center">
               <div
                 style={{
@@ -90,114 +90,62 @@ export function StatsCard({
               </Heading>
             </Flex>
 
-            <div
-              style={{
-                fontSize: "48px",
-                fontWeight: 700,
-                color: colors.text,
-                lineHeight: 1,
-              }}
-            >
-              {total}
-            </div>
-          </Flex>
-
-          <Flex direction="column" gap="8">
-            <Flex horizontal="between" vertical="center">
-              <Flex gap="8" vertical="center">
-                <div style={{ fontSize: "16px" }}>✅</div>
-                <Text variant="body-default-s" onBackground="neutral-weak">
-                  Publiés
-                </Text>
-              </Flex>
-              <Text variant="body-strong-s">{published}</Text>
-            </Flex>
-
-            <Flex horizontal="between" vertical="center">
-              <Flex gap="8" vertical="center">
-                <div style={{ fontSize: "16px" }}>📝</div>
-                <Text variant="body-default-s" onBackground="neutral-weak">
-                  Brouillons
-                </Text>
-              </Flex>
-              <Text variant="body-strong-s">{draft}</Text>
-            </Flex>
-
-            {scheduled > 0 && (
-              <Flex horizontal="between" vertical="center">
-                <Flex gap="8" vertical="center">
-                  <div style={{ fontSize: "16px" }}>⏰</div>
-                  <Text variant="body-default-s" onBackground="neutral-weak">
-                    Planifiés
-                  </Text>
-                </Flex>
-                <Text variant="body-strong-s">{scheduled}</Text>
-              </Flex>
+            {title !== "Assets" && (
+              <div
+                style={{
+                  fontSize: "48px",
+                  fontWeight: 700,
+                  paddingLeft: "12px",
+                  color: colors.text,
+                  lineHeight: 1,
+                }}
+              >
+                {total}
+              </div>
             )}
           </Flex>
-        </Flex>
-      </Card>
-    </Link>
-  );
-}
 
-interface QuickActionProps {
-  icon: string;
-  title: string;
-  description: string;
-  href: string;
-}
+          {title === "Projets" || title === "Articles" ? (
+            <Flex direction="row" gap="8" fillWidth horizontal="around">
+              <Flex horizontal="around" vertical="center">
+                <Flex gap="4" vertical="center">
+                  <div style={{ fontSize: "16px" }}>✅</div>
+                  <Text variant="body-default-s" onBackground="neutral-weak">
+                    Publiés
+                  </Text>
+                </Flex>
+                <Text variant="body-strong-s" paddingLeft="4">
+                  {published}
+                </Text>
+              </Flex>
 
-export function QuickAction({ icon, title, description, href }: QuickActionProps) {
-  return (
-    <Link href={href} style={{ textDecoration: "none", display: "block", width: "280px" }}>
-      <Card
-        padding="24"
-        border="neutral-medium"
-        background="neutral-weak"
-        style={{
-          cursor: "pointer",
-          transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-          height: "200px",
-          width: "280px",
-          borderRadius: "12px",
-          boxShadow: "0 2px 6px rgba(0, 0, 0, 0.04)",
-          display: "flex",
-          flexDirection: "column",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "translateY(-4px) scale(1.02)";
-          e.currentTarget.style.backgroundColor = "var(--accent-background-weak)";
-          e.currentTarget.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.1)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "translateY(0) scale(1)";
-          e.currentTarget.style.backgroundColor = "var(--neutral-background-weak)";
-          e.currentTarget.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.04)";
-        }}
-      >
-        <Flex direction="column" gap="16">
-          <div
-            style={{
-              fontSize: "48px",
-              lineHeight: 1,
-              transition: "transform 0.25s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "scale(1.1) rotate(5deg)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "scale(1) rotate(0deg)";
-            }}
-          >
-            {icon}
-          </div>
-          <Heading as="h4" variant="heading-strong-m">
-            {title}
-          </Heading>
-          <Text variant="body-default-s" onBackground="neutral-weak">
-            {description}
-          </Text>
+              <Flex horizontal="around" vertical="center">
+                <Flex gap="4" vertical="center">
+                  <div style={{ fontSize: "16px" }}>📝</div>
+                  <Text variant="body-default-s" onBackground="neutral-weak">
+                    Brouillons
+                  </Text>
+                </Flex>
+                <Text variant="body-strong-s" paddingLeft="4">
+                  {draft}
+                </Text>
+              </Flex>
+
+              {scheduled > 0 && (
+                <Flex horizontal="around" vertical="center">
+                  <Flex gap="4" vertical="center">
+                    <div style={{ fontSize: "16px" }}>⏰</div>
+                    <Text variant="body-default-s" onBackground="neutral-weak">
+                      Planifiés
+                    </Text>
+                  </Flex>
+                  <Text variant="body-strong-s" paddingLeft="4">
+                    {scheduled}
+                  </Text>
+                </Flex>
+              )}
+            </Flex>
+          ) : null}
         </Flex>
       </Card>
     </Link>

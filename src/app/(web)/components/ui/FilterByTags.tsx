@@ -1,21 +1,39 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { Tag } from "@/web/components/ui/Tag";
 import { Column, Flex, Text } from "@once-ui-system/core";
-import { ProjectTag } from "@/web/components/ui/ProjectTag";
+import { useMemo, useState } from "react";
 
-interface ProjectFilterProps {
-  allTags: string[];
-  onFilterChange: (selectedTags: string[]) => void;
+interface TagData {
+  slug: string;
+  name: string;
+  color?: string | null;
 }
 
-export const ProjectFilter: React.FC<ProjectFilterProps> = ({ allTags, onFilterChange }) => {
+interface FilterByTagsProps {
+  allTags: TagData[];
+  onFilterChange: (selectedTags: string[]) => void;
+  label?: string;
+  resetLabel?: string;
+}
+
+export const FilterByTags: React.FC<FilterByTagsProps> = ({
+  allTags,
+  onFilterChange,
+  label = "Filtrer par :",
+  resetLabel = "Tout réinitialiser",
+}) => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  const handleTagClick = (tag: string) => {
-    const newSelectedTags = selectedTags.includes(tag)
-      ? selectedTags.filter((t) => t !== tag)
-      : [...selectedTags, tag];
+  const sortedTags = useMemo(
+    () => [...allTags].sort((a, b) => a.name.localeCompare(b.name)),
+    [allTags],
+  );
+
+  const handleTagClick = (tagSlug: string) => {
+    const newSelectedTags = selectedTags.includes(tagSlug)
+      ? selectedTags.filter((t) => t !== tagSlug)
+      : [...selectedTags, tagSlug];
 
     setSelectedTags(newSelectedTags);
     onFilterChange(newSelectedTags);
@@ -26,30 +44,36 @@ export const ProjectFilter: React.FC<ProjectFilterProps> = ({ allTags, onFilterC
     onFilterChange([]);
   };
 
+  if (!sortedTags.length) {
+    return null;
+  }
+
   return (
     <Column gap="16" fillWidth paddingX="l" marginBottom="l" horizontal="center">
       <Flex gap="8" vertical="center" wrap horizontal="center">
         <Text variant="label-strong-m" onBackground="neutral-weak">
-          Filtrer par :
+          {label}
         </Text>
-        {allTags.map((tag) => (
+        {sortedTags.map((tag) => (
           <button
-            key={tag}
-            onClick={() => handleTagClick(tag)}
+            key={tag.slug}
+            type="button"
+            onClick={() => handleTagClick(tag.slug)}
             style={{
               border: "none",
               background: "transparent",
               padding: 0,
               cursor: "pointer",
-              opacity: selectedTags.length === 0 || selectedTags.includes(tag) ? 1 : 0.4,
+              opacity: selectedTags.length === 0 || selectedTags.includes(tag.slug) ? 1 : 0.4,
               transition: "opacity 0.2s ease",
             }}
           >
-            <ProjectTag tag={tag} />
+            <Tag name={tag.name} color={tag.color} />
           </button>
         ))}
         {selectedTags.length > 0 && (
           <button
+            type="button"
             onClick={handleClearFilters}
             style={{
               border: "none",
@@ -60,7 +84,7 @@ export const ProjectFilter: React.FC<ProjectFilterProps> = ({ allTags, onFilterC
             }}
           >
             <Text variant="label-default-s" onBackground="neutral-weak">
-              Tout réinitialiser
+              {resetLabel}
             </Text>
           </button>
         )}

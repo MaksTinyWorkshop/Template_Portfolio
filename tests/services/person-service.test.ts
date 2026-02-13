@@ -52,7 +52,7 @@ describe("ensurePerson service", () => {
     });
     expect(findPerson).toHaveBeenCalledWith(tx, "Super Person");
     expect(tx.media.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ url: "/images/super.png" }),
+      data: expect.objectContaining({ url: "/api/assets/super.png" }),
     });
     expect(updatePerson).not.toHaveBeenCalled();
   });

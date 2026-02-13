@@ -98,8 +98,7 @@ describe("contactSchema - HTML Sanitization", () => {
       const input = {
         name: "John Doe",
         email: "john@example.com",
-        message:
-          "Bonjour, voici mon message <script>fetch('evil.com')</script> important",
+        message: "Bonjour, voici mon message <script>fetch('evil.com')</script> important",
       };
 
       const result = contactSchema.parse(input);
@@ -142,11 +141,10 @@ describe("contactSchema - HTML Sanitization", () => {
   describe("Combinaisons XSS complexes", () => {
     it("gère plusieurs vecteurs XSS simultanés (supprime balises)", () => {
       const input = {
-        name: '<script></script><img src=x>John',
+        name: "<script></script><img src=x>John",
         email: "john@example.com",
         subject: "javascript:void(0) Test",
-        message:
-          '<iframe src="evil"></iframe>Message<script></script>',
+        message: '<iframe src="evil"></iframe>Message<script></script>',
       };
 
       const result = contactSchema.parse(input);
@@ -170,17 +168,14 @@ describe("contactSchema - HTML Sanitization", () => {
         name: "Jean-Marie O'Connor",
         email: "jean@example.com",
         subject: "Question sur le projet X",
-        message:
-          "Bonjour, j'aimerais discuter de votre offre. Merci d'avance !",
+        message: "Bonjour, j'aimerais discuter de votre offre. Merci d'avance !",
       };
 
       const result = contactSchema.parse(input);
 
       expect(result.name).toBe("Jean-Marie O'Connor");
       expect(result.subject).toBe("Question sur le projet X");
-      expect(result.message).toBe(
-        "Bonjour, j'aimerais discuter de votre offre. Merci d'avance !",
-      );
+      expect(result.message).toBe("Bonjour, j'aimerais discuter de votre offre. Merci d'avance !");
     });
 
     it("préserve les caractères spéciaux légitimes", () => {

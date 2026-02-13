@@ -22,15 +22,22 @@ export const articleAdminMetadataSchema = z.object({
 /**
  * Schema Zod pour la création/modification d'un article (admin)
  */
-export const articleAdminPayloadSchema = articleAdminMetadataSchema.extend({
-  slug: z.string().optional(),
+const articleAdminRequestBaseSchema = z.object({
+  metadata: articleAdminMetadataSchema,
   content: z.string().min(1, { message: "Le contenu est requis" }),
+});
+
+/**
+ * Schema Zod pour la création d'un article (admin)
+ */
+export const articleAdminRequestSchema = articleAdminRequestBaseSchema.extend({
+  slug: z.string().optional(),
 });
 
 /**
  * Schema Zod pour la mise à jour d'un article avec ancien slug
  */
-export const updateArticleSchema = articleAdminPayloadSchema.extend({
+export const updateArticleRequestSchema = articleAdminRequestSchema.extend({
   slug: z.string().min(1, { message: "Le slug est requis" }),
   oldSlug: z.string().optional(),
 });
@@ -47,6 +54,6 @@ export const deleteArticleSchema = z.object({
  */
 export type ArticleStatus = z.infer<typeof articleStatusSchema>;
 export type ArticleAdminMetadata = z.infer<typeof articleAdminMetadataSchema>;
-export type ArticleAdminPayload = z.infer<typeof articleAdminPayloadSchema>;
-export type UpdateArticle = z.infer<typeof updateArticleSchema>;
+export type CreateArticle = z.infer<typeof articleAdminRequestSchema>;
+export type UpdateArticle = z.infer<typeof updateArticleRequestSchema>;
 export type DeleteArticle = z.infer<typeof deleteArticleSchema>;

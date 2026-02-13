@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 // Charger le formulaire côté client uniquement pour éviter les erreurs SSR
 const ProjectForm = dynamic(
   () => import("@/web/components/admin/ProjectForm").then((mod) => ({ default: mod.ProjectForm })),
-  { ssr: false, loading: () => <div>Chargement du formulaire...</div> }
+  { ssr: false, loading: () => <div>Chargement du formulaire...</div> },
 );
 
 /**

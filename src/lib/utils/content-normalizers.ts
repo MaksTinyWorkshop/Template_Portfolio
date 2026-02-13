@@ -12,6 +12,29 @@ export const normalizeStringList = (values: Array<string | null | undefined>): s
     ),
   );
 
+const normalizeSlashPrefix = (value: string) => `/${value.replace(/^\/+/, "")}`;
+
+const normalizeAssetApiUrl = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  const normalized = normalizeSlashPrefix(trimmed).replace(/\/+/g, "/");
+  if (normalized === "/images") return "/api/assets";
+  if (normalized.startsWith("/images/")) {
+    return `/api/assets/${normalized.slice("/images/".length)}`;
+  }
+  if (normalized === "/api/assets" || normalized.startsWith("/api/assets/")) {
+    return normalized;
+  }
+  return trimmed;
+};
+
+export const normalizeMediaUrl = (url?: string | null): string | null => {
+  if (!url) return null;
+  const normalized = normalizeAssetApiUrl(url);
+  return normalized || null;
+};
+
 export const ensureTagForCategory = async (
   tx: Prisma.TransactionClient | PrismaClient,
   name: string,
@@ -22,11 +45,41 @@ export const ensureTagForCategory = async (
   if (!normalized) {
     throw new ValidationError(errorMessage);
   }
-  const slug = slugify(normalized);
-  return tx.tag.upsert({
-    where: { slug },
-    create: { slug, name: normalized, category },
-    update: { name: normalized },
+
+  // Prefer reusing an existing tag by name. This avoids accidental duplicates when a tag
+  // was created with a suffixed slug (e.g. "test-2") but the content forms only send the name.
+  // Also prevents "upsert by slug" from renaming an unrelated tag that happens to share a slug.
+  const eligibleCategories =
+    category === "article"
+      ? (["article", "global"] as const)
+      : category === "project"
+        ? (["project", "global"] as const)
+        : (["global"] as const);
+
+  const existing = await tx.tag.findFirst({
+    where: {
+      name: { equals: normalized, mode: "insensitive" },
+      category: { in: [...eligibleCategories] },
+    },
+  });
+  if (existing) {
+    return existing;
+  }
+
+  const baseSlug = slugify(normalized);
+  if (!baseSlug) {
+    throw new ValidationError(errorMessage);
+  }
+
+  let slug = baseSlug;
+  let counter = 2;
+  while (await tx.tag.findUnique({ where: { slug } })) {
+    slug = `${baseSlug}-${counter}`;
+    counter += 1;
+  }
+
+  return tx.tag.create({
+    data: { slug, name: normalized, category },
   });
 };
 
@@ -39,9 +92,7 @@ export const ensureMediaRecord = async (
     uploadedById?: string | null;
   },
 ) => {
-  if (!url) return null;
-
-  const normalized = url.toString().trim();
+  const normalized = normalizeMediaUrl(url);
   if (!normalized) return null;
 
   const existing = await tx.media.findFirst({ where: { url: normalized } });
@@ -53,7 +104,6 @@ export const ensureMediaRecord = async (
     data: {
       url: normalized,
       kind: options?.kind ?? "image",
-      storagePath: normalized,
       storageProvider: options?.storageProvider ?? "local",
       uploadedById: options?.uploadedById ?? null,
     },

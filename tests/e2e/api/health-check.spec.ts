@@ -16,9 +16,7 @@ const HEALTH_ENDPOINT = "/api/health";
 const MAX_RESPONSE_TIME_MS = 500;
 
 test.describe("Health Check API @p0 @smoke @api", () => {
-  test("should return 200 status with valid health response", async ({
-    request,
-  }) => {
+  test("should return 200 status with valid health response", async ({ request }) => {
     const startTime = Date.now();
 
     const response = await request.get(HEALTH_ENDPOINT);
@@ -95,9 +93,7 @@ test.describe("Health Check API @p0 @smoke @api", () => {
  * Tests négatifs - Vérifier la robustesse
  */
 test.describe("Health Check API - Negative Tests @p1 @api", () => {
-  test("should handle invalid query parameters gracefully", async ({
-    request,
-  }) => {
+  test("should handle invalid query parameters gracefully", async ({ request }) => {
     // Endpoint health ne devrait pas accepter de paramètres
     const response = await request.get(`${HEALTH_ENDPOINT}?invalid=param`);
 

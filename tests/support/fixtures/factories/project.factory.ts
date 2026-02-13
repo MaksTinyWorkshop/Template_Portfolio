@@ -1,7 +1,14 @@
 import { faker } from "@faker-js/faker";
 import type { ProjectSummary } from "@/lib/modules/projects";
 
-const defaultTags = ["Web", "Mobile", "SaaS", "Vitrine", "Métier", "E-commerce"];
+const defaultTags: ProjectSummary["typeProjectTag"] = [
+  { slug: "web", name: "Web", color: "#3B82F6" },
+  { slug: "mobile", name: "Mobile", color: "#14B8A6" },
+  { slug: "saas", name: "SaaS", color: "#7C3AED" },
+  { slug: "vitrine", name: "Vitrine", color: "#2563EB" },
+  { slug: "metier", name: "Metier", color: "#1D4ED8" },
+  { slug: "e-commerce", name: "E-commerce", color: "#DC2626" },
+];
 
 export const createProject = (overrides: Partial<ProjectSummary> = {}): ProjectSummary => {
   const slug = overrides.slug ?? faker.helpers.slugify(faker.lorem.words(3)).toLowerCase();
@@ -31,6 +38,7 @@ export const createProject = (overrides: Partial<ProjectSummary> = {}): ProjectS
         role: faker.name.jobTitle(),
         avatar: faker.image.avatar(),
         linkedIn: null,
+        socials: [],
       })),
   };
 };

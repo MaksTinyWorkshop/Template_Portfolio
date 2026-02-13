@@ -1,38 +1,37 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import type { ApiResponse } from "@/web/types";
 import { checkAuthAPI } from "@/lib/utils/auth";
-import { listPersons } from "@/lib/modules/person/infrastructure/person.repo";
+import { ApiError } from "@/lib/http/errors";
+import { withApiErrorHandling } from "@/lib/http/with-api-error";
+import { createPersonSchema } from "@/lib/schemas/person.schema";
+import { createPersonAdmin, listPersonsAdmin } from "@/lib/modules/person";
 
-export async function GET() {
+const requireAuth = async () => {
   const isAuthenticated = await checkAuthAPI();
   if (!isAuthenticated) {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Non authentifié" },
-      { status: 401 },
-    );
+    throw new ApiError("Non authentifié", 401);
   }
+};
 
-  try {
-    const persons = await listPersons();
-    const data = persons
-      .filter((person) => !person.siteOwner)
-      .map((person) => ({
-        id: person.id,
-        fullName: person.fullName,
-        firstName: person.firstName,
-        lastName: person.lastName,
-        pseudo: person.pseudo,
-        role: person.role,
-        avatar: person.avatarMedia?.url ?? person.avatarPath ?? null,
-        email: person.email,
-        profileData: person.profileData,
-      }));
-    return NextResponse.json<ApiResponse>({ success: true, data });
-  } catch (error) {
-    console.error("Erreur GET /api/admin/persons:", error);
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Impossible de charger les personnes" },
-      { status: 500 },
-    );
-  }
-}
+export const GET = withApiErrorHandling(async () => {
+  await requireAuth();
+  const data = await listPersonsAdmin();
+  return NextResponse.json<ApiResponse>({ success: true, data });
+});
+
+export const POST = withApiErrorHandling(async (request: NextRequest) => {
+  await requireAuth();
+  const body = await request.json();
+  const validatedData = createPersonSchema.parse(body);
+  const created = await createPersonAdmin(validatedData);
+
+  revalidatePath("/admin/persons");
+  revalidatePath("/admin");
+
+  return NextResponse.json<ApiResponse>({
+    success: true,
+    message: "Personne créée avec succès",
+    data: { id: created.id },
+  });
+});

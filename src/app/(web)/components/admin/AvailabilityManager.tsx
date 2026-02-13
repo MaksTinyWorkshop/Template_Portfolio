@@ -1,10 +1,10 @@
 "use client";
 
+import { useAvailability } from "@/web/components/utils/AvailabilityContext";
+import { useToastService } from "@/web/components/utils/ToastService";
 import type { AvailabilityStatus } from "@/web/types";
 import { Button, Card, Flex, Heading, Text } from "@once-ui-system/core";
 import { useState } from "react";
-import { useAvailability } from "@/web/components/utils/AvailabilityContext";
-import { useToastService } from "@/web/components/utils/ToastService";
 
 const STATUS_OPTIONS: Array<{
   value: AvailabilityStatus;
@@ -34,7 +34,7 @@ export function AvailabilityManager() {
         message: "Disponibilité mise à jour avec succès",
         variant: "success",
       });
-      setTimeout(() => setSuccess(false), 3000);
+      setTimeout(() => setSuccess(false), 2000);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Erreur lors de la mise à jour de la disponibilité";
@@ -134,34 +134,6 @@ export function AvailabilityManager() {
             />
           ))}
         </Flex>
-
-        {success && (
-          <Flex
-            padding="12"
-            radius="m"
-            background="brand-alpha-weak"
-            border="brand-alpha-medium"
-            horizontal="center"
-          >
-            <Text variant="body-default-s" onBackground="brand-strong">
-              ✅ Disponibilité mise à jour avec succès !
-            </Text>
-          </Flex>
-        )}
-
-        {(fetchError || updateError) && (
-          <Flex
-            padding="12"
-            radius="m"
-            background="danger-alpha-weak"
-            border="danger-alpha-medium"
-            horizontal="center"
-          >
-            <Text variant="body-default-s" onBackground="danger-strong">
-              ⚠️ {updateError ?? fetchError}
-            </Text>
-          </Flex>
-        )}
 
         <Flex
           padding="12"

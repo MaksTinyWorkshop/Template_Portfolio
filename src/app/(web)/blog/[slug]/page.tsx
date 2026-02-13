@@ -26,7 +26,7 @@ import { notFound } from "next/navigation";
 
 // Force dynamic rendering - disable static generation during build
 // This prevents DB connection attempts during Docker build
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const normalizeSlug = (slugParam?: string | string[]) =>
   Array.isArray(slugParam) ? slugParam.join("/") : (slugParam ?? "");

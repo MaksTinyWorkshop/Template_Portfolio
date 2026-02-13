@@ -118,6 +118,6 @@ describe("POST /api/contact", () => {
     const response = await postContact(request);
     expect(response.status).toBe(500);
     const payload = await response.json();
-    expect(payload).toEqual({ error: "mailer down" });
+    expect(payload).toMatchObject({ success: false, error: "mailer down" });
   });
 });

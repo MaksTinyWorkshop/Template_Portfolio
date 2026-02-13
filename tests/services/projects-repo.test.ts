@@ -66,14 +66,14 @@ describe("projects repo - prisma wrappers", () => {
     );
     await findProjectBySlugTx(tx as any, "alpha");
     expect(tx.project.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { slug: "alpha" } })
+      expect.objectContaining({ where: { slug: "alpha" } }),
     );
   });
 
   it("runProjectTransaction appelle prisma.$transaction", async () => {
-    const $transaction = vi.fn().mockImplementation(async (work: (tx: any) => any) =>
-      work({ tx: true }),
-    );
+    const $transaction = vi
+      .fn()
+      .mockImplementation(async (work: (tx: any) => any) => work({ tx: true }));
     vi.doMock("@/lib/prisma", () => ({
       prisma: {
         $transaction,
@@ -114,9 +114,7 @@ describe("projects repo - prisma wrappers", () => {
 
   it("deleteProjectTx appelle tx.project.delete", async () => {
     const tx = { project: { delete: vi.fn().mockResolvedValue(undefined) } };
-    const { deleteProjectTx } = await import(
-      "@/lib/modules/projects/infrastructure/projects.repo"
-    );
+    const { deleteProjectTx } = await import("@/lib/modules/projects/infrastructure/projects.repo");
     await deleteProjectTx(tx as any, { id: "p-1" } as any);
     expect(tx.project.delete).toHaveBeenCalledWith({ where: { id: "p-1" } });
   });
@@ -144,14 +142,12 @@ describe("projects repo - prisma wrappers", () => {
       },
     }));
 
-    const { deleteProject } = await import(
-      "@/lib/modules/projects/infrastructure/projects.repo"
-    );
+    const { deleteProject } = await import("@/lib/modules/projects/infrastructure/projects.repo");
     await deleteProject("alpha");
     expect(del).toHaveBeenCalledWith({ where: { slug: "alpha" } });
   });
 
-  it("listProjectTags filtre la categorie project", async () => {
+  it("listProjectTags filtre les categories project et global", async () => {
     const findMany = vi.fn().mockResolvedValue([]);
     vi.doMock("@/lib/prisma", () => ({
       prisma: {
@@ -159,13 +155,11 @@ describe("projects repo - prisma wrappers", () => {
       },
     }));
 
-    const { listProjectTags } = await import(
-      "@/lib/modules/projects/infrastructure/projects.repo"
-    );
+    const { listProjectTags } = await import("@/lib/modules/projects/infrastructure/projects.repo");
     await listProjectTags();
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { category: "project" },
+        where: { category: { in: ["project", "global"] } },
       }),
     );
   });

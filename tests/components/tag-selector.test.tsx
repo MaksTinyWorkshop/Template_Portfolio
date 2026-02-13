@@ -24,4 +24,26 @@ describe("TagSelector", () => {
     await user.click(screen.getByText("Tech"));
     expect(handleChange).toHaveBeenCalledWith(["Tech"]);
   });
+
+  it("closes suggestions when clicking outside", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <>
+        <TagSelector
+          selectedTags={[]}
+          availableTags={["Tech", "Design", "Dev"]}
+          onTagsChange={() => {}}
+          label="Tags"
+        />
+        <button type="button">Outside</button>
+      </>,
+    );
+
+    await user.click(screen.getByRole("button", { name: /voir tout/i }));
+    expect(screen.getByText("Tech")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Outside" }));
+    expect(screen.queryByText("Tech")).not.toBeInTheDocument();
+  });
 });

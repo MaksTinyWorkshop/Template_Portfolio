@@ -18,6 +18,7 @@ import {
   listArticles as fetchArticles,
   findArticleBySlug,
   findArticleBySlugTx,
+  listArticleTags,
   runArticleTransaction,
   updateArticle,
 } from "../infrastructure/articles.repo";
@@ -31,7 +32,11 @@ const toArticleSummary = (article: ArticleWithRelations) => ({
   subtitle: null,
   publishedAt: article.publishAt?.toISOString() ?? null,
   image: article.media?.url ?? null,
-  tags: article.tags.map((relation) => relation.tag.name),
+  tags: article.tags.map((relation) => ({
+    slug: relation.tag.slug,
+    name: relation.tag.name,
+    color: relation.tag.color ?? null,
+  })),
   content: article.content ?? null,
 });
 
@@ -142,7 +147,7 @@ export const createArticleAdmin = async (payload: ArticleAdminPayload) => {
         status: payload.status,
         publishAt: parseArticleDate(payload.publishedAt),
         media: media ? { connect: { id: media.id } } : undefined,
-        tags: tagEntries.length ? { create: tagEntries } : undefined,
+        tags: { create: tagEntries },
       },
     });
 
@@ -181,7 +186,7 @@ export const updateArticleAdmin = async (slug: string, payload: ArticleAdminPayl
         status: payload.status,
         publishAt: parseArticleDate(payload.publishedAt),
         media: media ? { connect: { id: media.id } } : { disconnect: true },
-        tags: tagEntries.length ? { create: tagEntries } : undefined,
+        tags: { create: tagEntries },
       },
     });
 
@@ -209,4 +214,9 @@ export const setArticleStatus = async (slug: string, status: ArticleStatus) => {
       data: { status },
     }),
   );
+};
+
+export const listArticleTagNames = async () => {
+  const rows = await listArticleTags();
+  return rows.map((tag) => tag.name);
 };

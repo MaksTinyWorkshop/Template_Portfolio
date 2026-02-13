@@ -21,7 +21,7 @@ export async function Projects({ range, exclude, filterTags, initialProjects }: 
 
   if (filterTags?.length) {
     candidateProjects = candidateProjects.filter((project) =>
-      filterTags.every((tag) => project.typeProjectTag.includes(tag)),
+      filterTags.every((tag) => project.typeProjectTag.some((entry) => entry.name === tag)),
     );
   }
 
@@ -38,23 +38,21 @@ export async function Projects({ range, exclude, filterTags, initialProjects }: 
   return (
     <Column fillWidth gap="xl" marginBottom="40" paddingX="l">
       {displayedProjects.map((project, index) => {
-        const avatars = project.team.reduce<Array<{ src: string }>>((acc, member) => {
-          if (member.avatar) {
-            acc.push({ src: member.avatar });
-          }
-          return acc;
-        }, []);
+        const contributors = project.team.map((member) => ({
+          name: member.name,
+          avatar: member.avatar,
+        }));
 
         return (
           <Fragment key={project.slug}>
             <ProjectCard
               priority={index < 2}
               href={`/work/${project.slug}`}
-              images={project.images}
+              images={project.gallery}
               title={project.title}
               description={project.summary ?? ""}
               content={project.content ?? ""}
-              avatars={avatars}
+              contributors={contributors}
               link={project.link ?? undefined}
               repository={project.repository ?? undefined}
               typeProjectTag={project.typeProjectTag}

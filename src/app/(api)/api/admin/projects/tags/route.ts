@@ -1,17 +1,21 @@
-import { NextResponse } from "next/server";
-import type { ApiResponse } from "@/web/types";
-import { checkAuthAPI } from "@/lib/utils/auth";
 import { listProjectTagNames } from "@/lib/modules/projects";
+import { checkAuthAPI } from "@/lib/utils/auth";
+import type { ApiResponse } from "@/web/types";
+import { NextResponse } from "next/server";
+import { withApiErrorHandling } from "@/lib/http/with-api-error";
+import { ApiError } from "@/lib/http/errors";
 
-export async function GET() {
+export const dynamic = "force-dynamic";
+
+export const GET = withApiErrorHandling(async () => {
   const isAuthenticated = await checkAuthAPI();
   if (!isAuthenticated) {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Non authentifié" },
-      { status: 401 },
-    );
+    throw new ApiError("Non authentifié", 401);
   }
 
   const tags = await listProjectTagNames();
-  return NextResponse.json<ApiResponse>({ success: true, data: tags });
-}
+  return NextResponse.json<ApiResponse>(
+    { success: true, data: tags },
+    { headers: { "Cache-Control": "no-store, max-age=0" } },
+  );
+});

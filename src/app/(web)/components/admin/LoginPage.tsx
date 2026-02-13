@@ -7,6 +7,8 @@ interface LoginPageProps {
   onSuccess: () => void;
 }
 
+const AUTH_HINT_KEY = "portfolio_admin_auth_hint";
+
 export function LoginPage({ onSuccess }: LoginPageProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | undefined>(undefined);
@@ -25,6 +27,11 @@ export function LoginPage({ onSuccess }: LoginPageProps) {
       });
 
       if (response.ok) {
+        try {
+          sessionStorage.setItem(AUTH_HINT_KEY, "1");
+        } catch {
+          // ignore
+        }
         onSuccess();
       } else {
         setError("Mot de passe incorrect");

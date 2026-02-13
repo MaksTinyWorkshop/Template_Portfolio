@@ -3,15 +3,13 @@ import { getSitePersonData } from "@/lib/modules/person/services/person-site.ser
 import type { ProjectSummary } from "@/lib/modules/projects";
 import { getProjectBySlug } from "@/lib/modules/projects";
 import { formatProjectDate } from "@/lib/utils/formatDate";
-import { CustomMDX, ProjectTag, ScrollToHash } from "@/web/components";
+import { CustomMDX, ScrollToHash, Tag } from "@/web/components";
 import { Projects } from "@/web/components/work/Projects";
+import { ProjectTeam } from "@/web/components/work/ProjectTeam";
 import { about, baseURL, work } from "@/web/resources";
 import {
-  Avatar,
-  AvatarGroup,
   Column,
   Heading,
-  Icon,
   Line,
   Media,
   Meta,
@@ -25,13 +23,12 @@ import { notFound } from "next/navigation";
 
 // Force dynamic rendering - disable static generation during build
 // This prevents DB connection attempts during Docker build
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const normalizeSlug = (slugParam?: string | string[]) =>
   Array.isArray(slugParam) ? slugParam.join("/") : (slugParam ?? "");
 
-const resolveProjectImage = (project: ProjectSummary) =>
-  project.heroImage ?? project.images[0];
+const resolveProjectImage = (project: ProjectSummary) => project.heroImage ?? project.images[0];
 
 export async function generateMetadata({
   params,
@@ -48,8 +45,7 @@ export async function generateMetadata({
   try {
     const project = await getProjectBySlug(slug);
     const image =
-      resolveProjectImage(project) ||
-      `/api/og/generate?title=${encodeURIComponent(project.title)}`;
+      resolveProjectImage(project) || `/api/og/generate?title=${encodeURIComponent(project.title)}`;
 
     return Meta.generate({
       title: project.title,
@@ -87,10 +83,6 @@ export default async function Project({
   }
 
   const featuredImage = resolveProjectImage(project);
-  const avatars = project.team
-    .filter((member) => Boolean(member.avatar))
-    .map((member) => ({ src: member.avatar! }));
-  const hasMultipleTeamMembers = project.team.length > 1;
 
   return (
     <Column as="section" maxWidth="m" horizontal="center" gap="l">
@@ -102,10 +94,7 @@ export default async function Project({
         description={project.summary ?? work.description}
         datePublished={project.publishedAt ?? undefined}
         dateModified={project.publishedAt ?? undefined}
-        image={
-          featuredImage ||
-          `/api/og/generate?title=${encodeURIComponent(project.title)}`
-        }
+        image={featuredImage || `/api/og/generate?title=${encodeURIComponent(project.title)}`}
         author={{
           name: sitePerson.name,
           url: `${baseURL}${about.path}`,
@@ -117,11 +106,7 @@ export default async function Project({
           <Text variant="label-strong-m">Projets</Text>
         </SmartLink>
         {project.publishedAt && (
-          <Text
-            variant="body-default-xs"
-            onBackground="neutral-weak"
-            marginBottom="12"
-          >
+          <Text variant="body-default-xs" onBackground="neutral-weak" marginBottom="12">
             {formatProjectDate(project.publishedAt)}
           </Text>
         )}
@@ -129,110 +114,14 @@ export default async function Project({
           {project.typeProjectTag.length > 0 && (
             <Row gap="8" wrap horizontal="center">
               {project.typeProjectTag.map((tag) => (
-                <ProjectTag key={tag} tag={tag} />
+                <Tag key={tag.slug} name={tag.name} color={tag.color} />
               ))}
             </Row>
           )}
           <Heading variant="display-strong-m">{project.title}</Heading>
         </Row>
       </Column>
-      <Row horizontal="center">
-        {hasMultipleTeamMembers ? (
-          <Row fillWidth gap="l" vertical="center">
-            <Text
-              variant="label-strong-m"
-              align="left"
-              onBackground="neutral-weak"
-            >
-              Équipe
-            </Text>
-            <Column gap="12">
-              {project.team.map((member) => {
-                const memberLink = member.linkedIn || ownerLinkedIn;
-                return (
-                  <Row key={member.name} gap="12" vertical="center">
-                    {member.avatar ? (
-                      <Avatar src={member.avatar} size="m" />
-                    ) : (
-                      <Icon
-                        name="person"
-                        size="l"
-                        onBackground="neutral-weak"
-                      />
-                    )}
-                    <Row gap="4" wrap vertical="center">
-                      {memberLink ? (
-                        <SmartLink
-                          href={memberLink}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                        >
-                          <Text variant="label-default-m">{member.name}</Text>
-                        </SmartLink>
-                      ) : (
-                        <Text variant="label-default-m">{member.name}</Text>
-                      )}
-                      {member.role && (
-                        <>
-                          <Text as="span" onBackground="neutral-weak">
-                            |
-                          </Text>
-                          <Text
-                            variant="body-default-xs"
-                            onBackground="neutral-weak"
-                          >
-                            {member.role}
-                          </Text>
-                        </>
-                      )}
-                    </Row>
-                  </Row>
-                );
-              })}
-            </Column>
-          </Row>
-        ) : (
-          <Row gap="16" vertical="center">
-            {avatars.length > 0 && <AvatarGroup avatars={avatars} size="s" />}
-            {project.team.length > 0 && (
-              <Text variant="label-default-m" onBackground="brand-weak">
-                {project.team.map((member, idx) => {
-                  const memberLink = member.linkedIn || ownerLinkedIn;
-                  return (
-                    <span key={`${member.name}-${idx}`}>
-                      {idx > 0 && (
-                        <Text as="span" onBackground="neutral-weak">
-                          ,{" "}
-                        </Text>
-                      )}
-                      {memberLink ? (
-                        <SmartLink
-                          href={memberLink}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                        >
-                          {member.name}
-                        </SmartLink>
-                      ) : (
-                        <Text as="span">{member.name}</Text>
-                      )}
-                      {!member.avatar && (
-                        <Icon
-                          name="person"
-                          paddingLeft="4"
-                          size="s"
-                          onBackground="neutral-weak"
-                          style={{ display: "inline-flex" }}
-                        />
-                      )}
-                    </span>
-                  );
-                })}
-              </Text>
-            )}
-          </Row>
-        )}
-      </Row>
+      <ProjectTeam team={project.team} ownerLinkedIn={ownerLinkedIn} />
       {(project.link || project.repository) && (
         <Row marginBottom="4" horizontal="center" gap="24" wrap>
           {project.link && (

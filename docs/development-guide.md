@@ -41,8 +41,15 @@ Note : `db` est le hostname Docker (résolvable uniquement dans le réseau Docke
 
 **Variables d'environnement requises** :
 ```env
+# Base de données
+DATABASE_URL=postgresql://postgres:postgres@db:5432/portfolio
+
 # Authentification Admin
-ADMIN_PASSWORD_HASH=<bcrypt_hash>
+ADMIN_PASSWORD=votre_mot_de_passe
+AUTH_SECRET=votre_secret_hmac
+
+# Cron (publication différée)
+CRON_SECRET=votre_cron_secret
 
 # Next.js (optionnel)
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
@@ -51,11 +58,6 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_MAILCHIMP_ACTION_URL=
 NEXT_PUBLIC_MAILCHIMP_USER_ID=
 NEXT_PUBLIC_MAILCHIMP_FORM_ID=
-```
-
-**Générer le hash du mot de passe admin** :
-```bash
-node -e "console.log(require('bcrypt').hashSync('votre-mot-de-passe', 10))"
 ```
 
 ---
@@ -348,10 +350,12 @@ Avant chaque déploiement, tester :
 
 | Variable | Description | Requis | Défaut |
 |----------|-------------|--------|--------|
-| `ADMIN_PASSWORD_HASH` | Hash bcrypt du mot de passe admin | Oui | - |
+| `DATABASE_URL` | URL PostgreSQL | Oui | - |
+| `ADMIN_PASSWORD` | Mot de passe admin | Oui | - |
+| `AUTH_SECRET` | Secret HMAC pour tokens | Oui | - |
+| `CRON_SECRET` | Secret cron (publication différée) | Oui (si cron activé) | - |
 | `NEXT_PUBLIC_SITE_URL` | URL publique du site | Non | `http://localhost:3000` |
 | `NEXT_PUBLIC_MAILCHIMP_ACTION_URL` | URL d'action Mailchimp | Non | - |
-| `JWT_SECRET` | Secret pour signer les JWT | Non (auto-généré) | - |
 
 **Note** : Les variables préfixées `NEXT_PUBLIC_` sont exposées au client
 

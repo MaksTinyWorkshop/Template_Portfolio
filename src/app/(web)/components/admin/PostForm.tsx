@@ -1,6 +1,7 @@
 "use client";
 
-import { postSchema, type PostFormData } from "@/lib/contracts/validations";
+import { type PostFormData, postSchema } from "@/lib/contracts/validations";
+import { useToastService } from "@/web/components/utils/ToastService";
 import type { PostMetadata } from "@/web/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -17,16 +18,15 @@ import {
 } from "@once-ui-system/core";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ImageUpload } from "./ImageUpload";
 import { TagSelector } from "./TagSelector";
-import { useToastService } from "@/web/components/utils/ToastService";
 
 // Import dynamique de l'éditeur MDX pour éviter les erreurs SSR
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
-const ARTICLE_TAG_SUGGESTIONS = [
+const DEFAULT_ARTICLE_TAG_SUGGESTIONS = [
   "Tech",
   "Design",
   "Dev",
@@ -36,6 +36,30 @@ const ARTICLE_TAG_SUGGESTIONS = [
   "Opinion",
   "News",
 ];
+
+function normalizePublishedDate(value: string) {
+  const trimmed = String(value ?? "").trim();
+  if (!trimmed) return trimmed;
+  if (trimmed.includes("T")) {
+    return trimmed;
+  }
+
+  const monthMatch = trimmed.match(/^(\d{4})-(\d{2})$/);
+  if (monthMatch) {
+    const [, yearStr, monthStr] = monthMatch;
+    const year = Number(yearStr);
+    const monthIndex = Number(monthStr) - 1;
+    const date = new Date(Date.UTC(year, monthIndex, 1));
+    return date.toISOString();
+  }
+
+  const parsed = new Date(trimmed);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.toISOString();
+  }
+
+  return trimmed;
+}
 
 interface PostFormProps {
   mode: "create" | "edit";
@@ -52,6 +76,7 @@ export function PostForm({ mode, initialData }: PostFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [date, setDate] = useState<Date>(() => new Date(initialPublishedAt));
   const [tags, setTags] = useState<string[]>(initialData?.tags ?? []);
+  const [availableTags, setAvailableTags] = useState<string[]>(DEFAULT_ARTICLE_TAG_SUGGESTIONS);
 
   const defaultValues = useMemo<PostFormData>(() => {
     return {
@@ -89,6 +114,27 @@ export function PostForm({ mode, initialData }: PostFormProps) {
     setTags(initialData?.tags ?? []);
   }, [initialData?.tags]);
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/posts/tags", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        const json = await res.json();
+        if (!cancelled && json?.success && Array.isArray(json.data)) {
+          setAvailableTags(json.data);
+        }
+      } catch (err) {
+        console.error("Impossible de récupérer les tags articles", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const currentImage = watch("image") || "";
   const currentStatus = watch("status", initialStatus);
 
@@ -121,11 +167,13 @@ export function PostForm({ mode, initialData }: PostFormProps) {
       const endpoint = "/api/admin/posts";
       const method = mode === "create" ? "POST" : "PUT";
 
+      const normalizedPublishedAt = normalizePublishedDate(data.publishedAt);
+
       const body = {
         metadata: {
           title: data.title,
           summary: data.summary,
-          publishedAt: data.publishedAt,
+          publishedAt: normalizedPublishedAt,
           status: data.status,
           image: data.image,
           tags: data.tags,
@@ -140,6 +188,7 @@ export function PostForm({ mode, initialData }: PostFormProps) {
       const response = await fetch(endpoint, {
         method,
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(body),
       });
 
@@ -263,7 +312,7 @@ export function PostForm({ mode, initialData }: PostFormProps) {
             <Flex direction="column" gap="4">
               <TagSelector
                 selectedTags={tags}
-                availableTags={ARTICLE_TAG_SUGGESTIONS}
+                availableTags={availableTags}
                 onTagsChange={(newTags) => {
                   setTags(newTags);
                   setValue("tags", newTags, {

@@ -7,6 +7,10 @@ import {
 } from "@/lib/utils/content-normalizers";
 
 describe("content normalizers", () => {
+  it("returns empty slug when both inputs are missing", () => {
+    expect(normalizeSlugInput(undefined, undefined)).toBe("");
+  });
+
   it("trims and slugifies inputs consistently", () => {
     const slug = normalizeSlugInput(" custom-slug ", "fallback");
     expect(slug).toBe("custom-slug");
@@ -33,17 +37,143 @@ describe("content normalizers", () => {
     const created = { id: "tag-1" };
     const tx = {
       tag: {
-        upsert: vi.fn().mockResolvedValue(created),
+        findFirst: vi.fn().mockResolvedValue(null),
+        findUnique: vi.fn().mockResolvedValue(null),
+        create: vi.fn().mockResolvedValue(created),
       },
     };
 
     const tag = await ensureTagForCategory(tx as any, "My Tag", "project");
     expect(tag).toBe(created);
-    expect(tx.tag.upsert).toHaveBeenCalledWith({
-      where: { slug: "my-tag" },
-      create: { slug: "my-tag", name: "My Tag", category: "project" },
-      update: { name: "My Tag" },
+    expect(tx.tag.findFirst).toHaveBeenCalled();
+    expect(tx.tag.create).toHaveBeenCalledWith({
+      data: { slug: "my-tag", name: "My Tag", category: "project" },
     });
+  });
+
+  it("returns existing tag when findFirst matches (case-insensitive)", async () => {
+    const existing = { id: "tag-existing" };
+    const tx = {
+      tag: {
+        findFirst: vi.fn().mockResolvedValue(existing),
+        findUnique: vi.fn(),
+        create: vi.fn(),
+      },
+    };
+
+    const tag = await ensureTagForCategory(tx as any, " My Tag ", "project");
+    expect(tag).toBe(existing);
+    expect(tx.tag.create).not.toHaveBeenCalled();
+  });
+
+  it("queries eligible categories for article/global/project", async () => {
+    const tx = {
+      tag: {
+        findFirst: vi.fn().mockResolvedValue(null),
+        findUnique: vi.fn().mockResolvedValue(null),
+        create: vi.fn().mockResolvedValue({ id: "tag-1" }),
+      },
+    };
+
+    await ensureTagForCategory(tx as any, "My Tag", "article");
+    expect(tx.tag.findFirst).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          category: { in: ["article", "global"] },
+        }),
+      }),
+    );
+
+    await ensureTagForCategory(tx as any, "My Tag", "project");
+    expect(tx.tag.findFirst).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          category: { in: ["project", "global"] },
+        }),
+      }),
+    );
+
+    await ensureTagForCategory(tx as any, "My Tag", "global");
+    expect(tx.tag.findFirst).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          category: { in: ["global"] },
+        }),
+      }),
+    );
+  });
+
+  it("handles slug collisions by suffixing the slug", async () => {
+    const created = { id: "tag-2" };
+    const tx = {
+      tag: {
+        findFirst: vi.fn().mockResolvedValue(null),
+        findUnique: vi.fn().mockResolvedValueOnce({ id: "collision" }).mockResolvedValueOnce(null),
+        create: vi.fn().mockResolvedValue(created),
+      },
+    };
+
+    const tag = await ensureTagForCategory(tx as any, "My Tag", "project");
+    expect(tag).toBe(created);
+    expect(tx.tag.create).toHaveBeenCalledWith({
+      data: { slug: "my-tag-2", name: "My Tag", category: "project" },
+    });
+  });
+
+  it("rejects when slugify returns empty", async () => {
+    const tx = {
+      tag: {
+        findFirst: vi.fn().mockResolvedValue(null),
+        findUnique: vi.fn(),
+        create: vi.fn(),
+      },
+    };
+    await expect(ensureTagForCategory(tx as any, "!!!", "project")).rejects.toMatchObject({
+      statusCode: 422,
+    });
+  });
+
+  it("normalizes /images and /api/assets urls consistently", async () => {
+    const tx = {
+      media: {
+        findFirst: vi.fn().mockResolvedValue(null),
+        create: vi.fn().mockResolvedValue({ id: "m-1" }),
+      },
+    };
+
+    // /images -> /api/assets
+    await ensureMediaRecord(tx as any, "/images");
+    expect(tx.media.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ url: "/api/assets" }),
+      }),
+    );
+
+    // /api/assets path stays unchanged
+    tx.media.findFirst.mockResolvedValueOnce(null);
+    tx.media.create.mockResolvedValueOnce({ id: "m-2" });
+    await ensureMediaRecord(tx as any, "/api/assets/foo.png");
+    expect(tx.media.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ url: "/api/assets/foo.png" }),
+      }),
+    );
+  });
+
+  it("keeps unrelated absolute urls unchanged", async () => {
+    const tx = {
+      media: {
+        findFirst: vi.fn().mockResolvedValue(null),
+        create: vi.fn().mockResolvedValue({ id: "m-3" }),
+      },
+    };
+
+    await ensureMediaRecord(tx as any, " https://cdn.example.com/x.png ");
+    expect(tx.media.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ url: "https://cdn.example.com/x.png" }),
+      }),
+    );
   });
 
   it("returns existing media when found", async () => {
@@ -80,9 +210,8 @@ describe("content normalizers", () => {
     expect(media).toBe(created);
     expect(tx.media.create).toHaveBeenCalledWith({
       data: {
-        url: "/images/bar.png",
+        url: "/api/assets/bar.png",
         kind: "image",
-        storagePath: "/images/bar.png",
         storageProvider: "local",
         uploadedById: null,
       },

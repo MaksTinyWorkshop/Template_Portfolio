@@ -3,7 +3,7 @@ import { baseURL, blog, person } from "@/web/resources";
 import { NextResponse } from "next/server";
 
 // Force dynamic rendering - disable static generation during build
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const posts = await listArticles();
@@ -33,12 +33,8 @@ export async function GET() {
     </image>
     ${sortedPosts
       .map((post) => {
-        const published = new Date(
-          post.publishedAt ?? new Date().toISOString(),
-        ).toUTCString();
-        const tags = post.tags
-          .map((tag) => `<category>${tag}</category>`)
-          .join("");
+        const published = new Date(post.publishedAt ?? new Date().toISOString()).toUTCString();
+        const tags = post.tags.map((tag) => `<category>${tag}</category>`).join("");
         const imageMarkup = post.image
           ? `<enclosure url="${baseURL}${post.image}" type="image/jpeg" />`
           : "";
@@ -61,8 +57,7 @@ export async function GET() {
   return new NextResponse(rssXml, {
     headers: {
       "Content-Type": "application/xml",
-      "Cache-Control":
-        "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
+      "Cache-Control": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
     },
   });
 }

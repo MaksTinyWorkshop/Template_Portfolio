@@ -12,7 +12,10 @@ portfolio/
 │   │   │   ├── admin/
 │   │   │   │   ├── page.tsx
 │   │   │   │   ├── blog/
-│   │   │   │   └── projects/
+│   │   │   │   ├── projects/
+│   │   │   │   ├── tags/
+│   │   │   │   ├── persons/
+│   │   │   │   └── assets/
 │   │   │   ├── blog/
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── posts/
@@ -38,6 +41,9 @@ portfolio/
 │   │           ├── admin/
 │   │           │   ├── posts/
 │   │           │   ├── projects/
+│   │           │   ├── tags/
+│   │           │   ├── persons/
+│   │           │   ├── assets/
 │   │           │   ├── publish/
 │   │           │   └── upload/
 │   │           ├── authenticate/
@@ -48,14 +54,15 @@ portfolio/
 │   │           ├── og/
 │   │           │   ├── proxy/
 │   │           │   └── fetch/
-│   │           ├── analytics/
 │   │           ├── contact/
 │   │           ├── person/
 │   │           ├── health/
+│   │           ├── admin/
+│   │           │   └── openapi/
 │   │           └── projects/
 │   │
 │   ├── lib/                      # Modules backend (services/prisma)
-│   └── middleware.ts             # JWT + protection admin/api
+│   └── proxy.ts                  # Protection pages /admin/*
 │
 ├── data/                         # Présent uniquement pour alimenter la DB,
 │   ├── persons/                  # peut être supprimé après
@@ -124,9 +131,10 @@ portfolio/
 **Rôle** : Endpoints Node.js (Next API Routes)
 **Structure** :
 
-- `/admin/*` : Routes protégées (JWT) pour posts/projects/publish/upload
+- `/admin/*` : Routes protégées (JWT) pour posts/projects/tags/persons/assets/publish/upload
 - `/authenticate`, `/check-auth`, `/refresh-token` : Auth flow
-- `/availability`, `/rss`, `/og/*`, `/analytics`, `/contact`, `/person`, `/health`, `/projects` : services publics
+- `/availability`, `/rss`, `/og/*`, `/contact`, `/person`, `/health`, `/projects` : services publics
+- `/admin/openapi*` : documentation OpenAPI protégée (auth admin)
   **Pattern** : Each folder = route + `route.ts`, middleware (`withApiErrorHandling`, `respondError`)
 
 ### `/src/app/(web)/resources/` - Contenu et configuration
@@ -223,7 +231,7 @@ La vitrine publique recherche d’abord les données dynamiques via `src/lib/mod
 
 **Fichiers MDX** (`data/posts/*.mdx`, `data/projects/*.mdx`)
 ↓
-**Utils** (`getBlogPosts.ts`, `getProjects.ts`, `mdx.ts`)
+**Seed + modules** (`scripts/seed-data.ts`, `src/lib/modules/articles/*`, `src/lib/modules/projects/*`, `src/app/(web)/components/ui/mdx.tsx`)
 ↓
 **Components** (Post, Projects)
 ↓
@@ -252,9 +260,9 @@ La vitrine publique recherche d’abord les données dynamiques via `src/lib/mod
 ## Statistiques
 
 - **Total fichiers source** : ~100
-- **Composants React** : 33
-- **API Routes** : 11
+- **Composants React** : 42
+- **API Routes** : 24
 - **Pages publiques** : 5 (Home, About, Blog, Work, Gallery)
-- **Pages admin** : 3+ (Dashboard, Posts, Projects)
+- **Pages admin** : 14 (Dashboard + CRUD blog/projects/tags/persons/assets)
 - **Fichiers de types** : 5
 - **Utilitaires** : 7

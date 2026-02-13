@@ -30,6 +30,23 @@ describe("contact mailer - sendContactNotification", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  it("utilise le sujet par defaut si subject est absent", async () => {
+    const fetchSpy = vi.fn();
+    // @ts-expect-error - override for test
+    globalThis.fetch = fetchSpy;
+    const debugSpy = vi.spyOn(console, "debug").mockImplementation(() => {});
+
+    const { sendContactNotification } = await import("@/lib/modules/person/infrastructure/mailer");
+    await sendContactNotification({
+      name: "Test Contact",
+      email: "test@example.com",
+      message: "Un message avec suffisamment de caractères.",
+    } as any);
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(debugSpy).toHaveBeenCalledWith(expect.stringContaining("Sujet : non renseigné"));
+  });
+
   it("poste un webhook quand CONTACT_WEBHOOK_URL est defini", async () => {
     process.env.CONTACT_WEBHOOK_URL = "https://example.com/webhook";
     process.env.CONTACT_EMAIL_RECIPIENT = "dest@example.com";
@@ -67,4 +84,3 @@ describe("contact mailer - sendContactNotification", () => {
     });
   });
 });
-

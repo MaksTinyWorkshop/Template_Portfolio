@@ -6,7 +6,9 @@ describe("contact service - handleContactRequest", () => {
   });
 
   it("rejette les payloads invalides avec ValidationError", async () => {
-    const { handleContactRequest } = await import("@/lib/modules/person/application/contact.service");
+    const { handleContactRequest } = await import(
+      "@/lib/modules/person/application/contact.service"
+    );
     const { ValidationError } = await import("@/lib/http/errors");
 
     await expect(handleContactRequest({ email: "missing@fields.com" })).rejects.toBeInstanceOf(
@@ -20,7 +22,9 @@ describe("contact service - handleContactRequest", () => {
       sendContactNotification,
     }));
 
-    const { handleContactRequest } = await import("@/lib/modules/person/application/contact.service");
+    const { handleContactRequest } = await import(
+      "@/lib/modules/person/application/contact.service"
+    );
     const payload = {
       name: "Test Contact",
       email: "test@example.com",
@@ -33,4 +37,3 @@ describe("contact service - handleContactRequest", () => {
     expect(sendContactNotification).toHaveBeenCalledWith(result);
   });
 });
-

@@ -10,6 +10,8 @@ import type { PersonSiteData } from "@/lib/modules/person/domain/person.utils";
 import styles from "./Header.module.scss";
 import { ThemeToggle } from "./ThemeToggle";
 
+const AUTH_HINT_KEY = "portfolio_admin_auth_hint";
+
 type TimeDisplayProps = {
   timeZone: string;
   locale?: string;
@@ -67,6 +69,11 @@ export const Header = ({ sitePerson }: HeaderProps) => {
     await fetch("/api/authenticate", {
       method: "DELETE",
     });
+    try {
+      sessionStorage.removeItem(AUTH_HINT_KEY);
+    } catch {
+      // ignore
+    }
     router.push("/");
     router.refresh();
   };

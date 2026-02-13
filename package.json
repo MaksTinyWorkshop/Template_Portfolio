@@ -8,6 +8,7 @@
     "dev": "NEXT_TELEMETRY_DISABLED=1 next dev --turbo",
     "dev:clean": "rm -rf .next && NEXT_TELEMETRY_DISABLED=1 next dev --turbo",
     "dev:fast": "NEXT_TELEMETRY_DISABLED=1 next dev --turbo --experimental-https",
+    "dev:local": "NODE_ENV=development DATABASE_URL=postgresql://Max:max@localhost:5432/portfolio NEXT_TELEMETRY_DISABLED=1 next dev --turbo",
     "export": "next export",
     "build": "next build",
     "build:analyze": "ANALYZE=true next build",
@@ -16,8 +17,7 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
-    "lighthouse": "lighthouse http://localhost:3000 --output html --output-path ./test-results/lighthouse/lighthouse-report.html"
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -65,6 +65,7 @@
     "prisma": "^7.3.0",
     "tsx": "^4.21.0",
     "typescript": "^5.8.3",
+    "vite": "^7.3.1",
     "tzdata": "^1.0.44",
     "vite-tsconfig-paths": "^4.0.4",
     "vitest": "^4.0.18"

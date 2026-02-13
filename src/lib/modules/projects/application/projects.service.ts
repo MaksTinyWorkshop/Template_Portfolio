@@ -1,39 +1,51 @@
-import type { Prisma, MediaPurpose } from "@prisma/client";
 import { ValidationError } from "@/lib/http/errors";
+import { ensurePerson } from "@/lib/modules/person";
+import { findSiteOwnerTx } from "@/lib/modules/person/infrastructure/person.repo";
 import {
   ensureMediaRecord,
   ensureTagForCategory,
   normalizeSlugInput,
   normalizeStringList,
 } from "@/lib/utils/content-normalizers";
+import type { MediaPurpose, Prisma } from "@prisma/client";
+import type { ProjectStatus } from "../domain/project";
 import { ProjectNotFoundError } from "../domain/project.errors";
 import {
   type ProjectWithRelations,
-  findProjectBySlug,
-  findProjectBySlugTx,
-  listProjects as fetchProjects,
-  listProjectTags,
-  runProjectTransaction,
-  projectSlugExists,
   clearProjectRelations,
   createProject,
-  updateProject,
   deleteProjectTx,
+  listProjects as fetchProjects,
+  findProjectBySlug,
+  findProjectBySlugTx,
+  listProjectTags,
+  projectSlugExists,
+  runProjectTransaction,
+  updateProject,
 } from "../infrastructure/projects.repo";
-import { projectListSchema, projectSummarySchema } from "./projects.dto";
 import type {
   ProjectAdminDetail,
   ProjectAdminListItem,
   ProjectAdminPayload,
   TeamMemberInput,
 } from "../types";
-import type { ProjectStatus } from "../domain/project";
-import { ensurePerson } from "@/lib/modules/person";
-import { findSiteOwnerTx } from "@/lib/modules/person/infrastructure/person.repo";
+import { projectListSchema, projectSummarySchema } from "./projects.dto";
 
 const unique = (items: Array<string | null | undefined>) => [
   ...new Set(items.filter(Boolean) as string[]),
 ];
+
+const normalizeHttpUrlOrNull = (value: string | null | undefined) => {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === "http:" || parsed.protocol === "https:" ? trimmed : null;
+  } catch {
+    return null;
+  }
+};
 
 const extractLinkedIn = (profileData: Prisma.JsonValue | null) => {
   if (!profileData || typeof profileData !== "object") {
@@ -43,8 +55,9 @@ const extractLinkedIn = (profileData: Prisma.JsonValue | null) => {
   const profile = profileData as Record<string, unknown>;
   const contacts = profile.contacts as Record<string, unknown> | undefined;
 
-  if (contacts && typeof contacts["linkedin"] === "string") {
-    return contacts["linkedin"] as string;
+  const linkedIn = (contacts as { linkedin?: unknown } | undefined)?.linkedin;
+  if (typeof linkedIn === "string") {
+    return linkedIn;
   }
 
   return null;
@@ -98,24 +111,42 @@ const buildMemberContacts = (member: TeamMemberInput) => {
 
 const normalizeGallery = (gallery: ProjectWithRelations["gallery"]) =>
   [...gallery]
+    .filter((entry) => entry.purpose === "gallery")
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     .map((entry) => entry.media?.url)
     .filter(Boolean) as string[];
 
 const selectHeroImage = (project: ProjectWithRelations) => {
-  const cover = project.gallery.find((entry) => entry.purpose === "cover");
-  if (cover?.media?.url) {
-    return cover.media.url;
-  }
   const orderedGallery = normalizeGallery(project.gallery);
   return orderedGallery.length ? orderedGallery[0] : null;
 };
 
+const selectExplicitCover = (project: ProjectWithRelations) => {
+  const cover = project.gallery.find((entry) => entry.purpose === "cover");
+  return cover?.media?.url ?? null;
+};
+
 const toProjectSummary = (project: ProjectWithRelations) => {
-  const heroImage = selectHeroImage(project);
-  const gallery = normalizeGallery(project.gallery);
+  const explicitCover = selectExplicitCover(project);
+  const heroImage = explicitCover ?? selectHeroImage(project);
+  const rawGallery = normalizeGallery(project.gallery);
+  const gallery = explicitCover
+    ? rawGallery.filter((source) => source !== explicitCover)
+    : rawGallery;
   const images = heroImage ? [heroImage, ...gallery.filter((src) => src !== heroImage)] : gallery;
-  const typeProjectTag = unique(project.tags.map((relation) => relation.tag.name));
+
+  // Extract unique tags with their colors
+  const tagMap = new Map<string, { slug: string; name: string; color: string | null }>();
+  for (const relation of project.tags) {
+    if (!tagMap.has(relation.tag.slug)) {
+      tagMap.set(relation.tag.slug, {
+        slug: relation.tag.slug,
+        name: relation.tag.name,
+        color: relation.tag.color ?? null,
+      });
+    }
+  }
+  const typeProjectTag = Array.from(tagMap.values());
 
   const team = project.persons
     .map((relation) => {
@@ -126,7 +157,7 @@ const toProjectSummary = (project: ProjectWithRelations) => {
         name: person.pseudo ?? person.fullName,
         role: relation.role ?? person.role ?? null,
         avatar: person.avatarMedia?.url ?? null,
-        linkedIn: contacts.linkedin ?? extractLinkedIn(person.profileData),
+        linkedIn: normalizeHttpUrlOrNull(contacts.linkedin ?? extractLinkedIn(person.profileData)),
         socials: mapContactsToSocials(contacts),
         isSiteOwner: Boolean(person.siteOwner),
         personId: person.id,
@@ -163,8 +194,7 @@ const parseProjectDate = (value?: string) => {
 
 const buildGalleryEntries = async (tx: Prisma.TransactionClient, payload: ProjectAdminPayload) => {
   const collectedImages = normalizeStringList(payload.images);
-  const coverUrl =
-    payload.featuredImage?.trim() || (collectedImages.length ? collectedImages[0] : null);
+  const coverUrl = payload.featuredImage?.trim() || null;
   const remainingImages = collectedImages.filter((url) => url !== coverUrl);
   const entries: Array<{
     media: { connect: { id: string } };
@@ -282,7 +312,7 @@ const mapProjectToAdminDetail = (project: ProjectWithRelations): ProjectAdminDet
     publishedAt: project.publishedAt?.toISOString() ?? "",
     status: project.status,
     typeProjectTag: unique(project.tags.map((relation) => relation.tag.name)),
-    featuredImage: selectHeroImage(project) ?? undefined,
+    featuredImage: selectExplicitCover(project) ?? undefined,
     images: normalizeGallery(project.gallery),
     team: project.persons
       .map((relation) => {
@@ -292,8 +322,10 @@ const mapProjectToAdminDetail = (project: ProjectWithRelations): ProjectAdminDet
         return {
           name: person.fullName,
           role: relation.role ?? person.role ?? "",
-          avatar: person.avatarPath ?? person.avatarMedia?.url ?? "",
-          linkedIn: contacts.linkedin ?? extractLinkedIn(person.profileData) ?? undefined,
+          avatar: person.avatarMedia?.url ?? "",
+          linkedIn:
+            normalizeHttpUrlOrNull(contacts.linkedin ?? extractLinkedIn(person.profileData)) ??
+            undefined,
           socials: mapContactsToSocials(contacts),
           isSiteOwner: Boolean(person.siteOwner),
           personId: person.id,

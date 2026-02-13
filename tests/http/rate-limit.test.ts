@@ -106,7 +106,7 @@ describe("Rate limiting headers (routes)", () => {
 
     const payload = await response.json();
     expect(payload).toMatchObject({
-      message: expect.stringContaining("Trop de tentatives"),
+      error: expect.stringContaining("Trop de tentatives"),
       retryAfter: 15,
     });
   });

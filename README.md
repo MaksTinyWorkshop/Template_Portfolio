@@ -8,8 +8,6 @@
 
 Portfolio professionnel moderne avec système d'administration complet, construit sur Next.js 16, TypeScript, PostgreSQL et Once UI. Template open source prêt à déployer pour créer votre portfolio personnel en quelques minutes.
 
-> **Note:** Ceci est la branche `variante_BDD` avec PostgreSQL et Docker. Pour la version statique (fichiers MDX), consultez la branche `main`.
-
 Basé sur [Magic Portfolio](https://github.com/once-ui-system/magic-portfolio) par Once UI, enrichi avec une architecture backend complète et des fonctionnalités professionnelles.
 
 > **📌 Note** : Cette branche `variante_BDD` utilise **PostgreSQL + Prisma** pour la persistance des données. La branche `main` conserve l'architecture file-based originale (MDX + JSON, sans base de données).
@@ -34,6 +32,7 @@ Basé sur [Magic Portfolio](https://github.com/once-ui-system/magic-portfolio) p
 - **Éditeur WYSIWYG** : Création et édition de posts/projets en Markdown enrichi
 - **Gestion de Médias** : Upload d'images, organisation des fichiers
 - **Publication** : Publication/dépublication en un clic avec prévisualisation
+- **Publication différée** : contenus planifiés publiés automatiquement via un cron Docker (prod)
 - **Authentification** : Système sécurisé JWT avec cookies HTTP-only
 - **Gestion des Tags** : Organisation du contenu par catégories
 - **Statut Disponibilité** : Indicateur de disponibilité freelance personnalisable
@@ -96,7 +95,7 @@ Consultez le guide complet : **[docs/installation.md](docs/installation.md)**
 - **[Architecture](docs/architecture.md)** - Architecture technique détaillée
 - **[Guide de Développement](docs/development-guide.md)** - Workflow et bonnes pratiques
 - **[Composants UI](docs/ui-components-portfolio.md)** - Inventaire des 33 composants
-- **[API Contracts](docs/api-contracts-portfolio.md)** - Documentation des endpoints
+- **API Docs (Swagger)** - `/admin/api-docs` (UI) et `/api/admin/openapi` (JSON)
 - **[Structure du Projet](docs/source-tree-analysis.md)** - Organisation du code
 
 ---
@@ -106,6 +105,7 @@ Consultez le guide complet : **[docs/installation.md](docs/installation.md)**
 **Stack complète avec versions** : Voir [docs/project-overview.md - Stack Technologique](docs/project-overview.md#stack-technologique)
 
 **Résumé** :
+
 - **Frontend** : Next.js 16 + React 19.2 + TypeScript 5.8 + Once UI 1.5
 - **Backend** : PostgreSQL 16 + Prisma 7 + API Routes + JWT
 - **Contenu** : MDX 3.1 + next-mdx-remote
@@ -207,6 +207,7 @@ Le projet inclut une configuration Docker complète avec :
 
 - ✅ Multi-stage build optimisé
 - ✅ Initialisation automatique de la DB (migrations + seed)
+- ✅ Publication différée (cron interne) pour les contenus `scheduled`
 - ✅ Support Traefik pour SSL automatique
 - ✅ Healthchecks intégrés
 

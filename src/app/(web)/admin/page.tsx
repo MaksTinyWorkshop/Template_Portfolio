@@ -1,12 +1,17 @@
-import { QuickAction, StatsCard } from "@/web/components/admin/DashboardStats";
-import { AvailabilityManager } from "@/web/components/admin/AvailabilityManager";
-import type { DashboardStats } from "@/web/types";
 import { listArticlesAdmin } from "@/lib/modules/articles";
+import { listAssetsAdmin } from "@/lib/modules/assets";
+import { listPersonsAdmin } from "@/lib/modules/person";
 import { listProjectsAdmin } from "@/lib/modules/projects";
+import { listTagsAdmin } from "@/lib/modules/tags";
+import { AvailabilityManager } from "@/web/components/admin/AvailabilityManager";
+import { StatsCard } from "@/web/components/admin/DashboardStats";
+import type { DashboardStats } from "@/web/types";
 import { Card, Flex, Heading, Text } from "@once-ui-system/core";
+import Link from "next/link";
+import styles from "./AdminDashboard.module.scss";
 
 // Force dynamic rendering - disable static generation during build
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 /**
  * Calcule les statistiques pour le dashboard
@@ -14,6 +19,9 @@ export const dynamic = 'force-dynamic';
 async function getStats(): Promise<DashboardStats> {
   const projects = await listProjectsAdmin();
   const posts = await listArticlesAdmin();
+  const tags = await listTagsAdmin();
+  const persons = await listPersonsAdmin();
+  const assets = await listAssetsAdmin();
 
   return {
     projects: {
@@ -27,6 +35,15 @@ async function getStats(): Promise<DashboardStats> {
       published: posts.filter((p) => p.status === "published").length,
       draft: posts.filter((p) => p.status === "draft").length,
       scheduled: posts.filter((p) => p.status === "scheduled").length,
+    },
+    tags: {
+      total: tags.length,
+    },
+    persons: {
+      total: persons.length,
+    },
+    assets: {
+      total: assets.items.length,
     },
   };
 }
@@ -42,70 +59,75 @@ export default async function AdminDashboard() {
       {/* En-tête centré */}
       <Flex direction="column" gap="12" horizontal="center">
         <Heading as="h1" variant="display-strong-xl" align="center">
-          👋 Bienvenue !
+          👋 Ton Dashboard
         </Heading>
-        <Text variant="body-default-l" onBackground="neutral-weak" align="center">
-          Gérez vos projets et articles depuis votre panel d'administration.
-        </Text>
       </Flex>
 
-      <Flex direction="column" gap="32">
-        {/* Statistiques */}
-        <Flex direction="row" gap="16" horizontal="center">
-          <StatsCard
-            icon="📁"
-            title="Projets"
-            total={stats.projects.total}
-            published={stats.projects.published}
-            draft={stats.projects.draft}
-            scheduled={stats.projects.scheduled}
-            href="/admin/projects"
-            color="accent"
-          />
-          <StatsCard
-            icon="📰"
-            title="Articles"
-            total={stats.posts.total}
-            published={stats.posts.published}
-            draft={stats.posts.draft}
-            scheduled={stats.posts.scheduled}
-            href="/admin/blog"
-            color="brand"
-          />
-        </Flex>
+      {/* Panel Statistiques Articles & Projets */}
+      <Flex direction="column" gap="20" className={styles.panel}>
+        <StatsCard
+          icon="📁"
+          title="Projets"
+          total={stats.projects.total}
+          published={stats.projects.published}
+          draft={stats.projects.draft}
+          scheduled={stats.projects.scheduled}
+          href="/admin/projects"
+          color="accent"
+        />
+        <StatsCard
+          icon="📰"
+          title="Articles"
+          total={stats.posts.total}
+          published={stats.posts.published}
+          draft={stats.posts.draft}
+          scheduled={stats.posts.scheduled}
+          href="/admin/blog"
+          color="brand"
+        />
+      </Flex>
 
-        {/* Actions rapides */}
-        <Flex
-          fillWidth
-          horizontal="center"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 280px))",
-            gap: "16px",
-            justifyContent: "center",
-            width: "100%",
-          }}
-        >
-          <QuickAction
-            icon="✨"
-            title="Nouveau projet"
-            description="Projet portfolio"
-            href="/admin/projects/new"
-          />
-          <QuickAction
-            icon="✍️"
-            title="Nouvel article"
-            description="Article de blog"
-            href="/admin/blog/new"
-          />
-        </Flex>
+      {/* Panel Gestion Tags & Teams */}
+      <Flex direction="column" gap="20" className={`${styles.panel} ${styles.panelGestion}`}>
+        <StatsCard
+          icon="🏷️"
+          title="Tags"
+          published={0}
+          draft={0}
+          scheduled={0}
+          total={stats.tags.total}
+          href="/admin/tags"
+          color="success"
+          minHeight={100}
+        />
+        <StatsCard
+          icon="👥"
+          title="Personnes"
+          published={0}
+          draft={0}
+          scheduled={0}
+          total={stats.persons.total}
+          href="/admin/persons"
+          color="warning"
+          minHeight={100}
+        />
+        <StatsCard
+          icon="🗂️"
+          title="Assets"
+          published={0}
+          draft={0}
+          scheduled={0}
+          total={stats.assets.total}
+          href="/admin/assets"
+          color="accent"
+          minHeight={100}
+        />
       </Flex>
 
       {/* Gestion de la disponibilité freelance */}
       <AvailabilityManager />
 
       {/* Informations système */}
-
       <Card
         padding="24"
         border="neutral-medium"
@@ -128,6 +150,14 @@ export default async function AdminDashboard() {
 
           <Flex direction="column" gap="12">
             <Flex gap="12" vertical="start">
+              <div style={{ fontSize: "25px", marginTop: "2px" }}>📘</div>
+              <Link href="/admin/api-docs">
+                <Text variant="body-default-s" onBackground="neutral-weak">
+                  API Docs (Swagger)
+                </Text>
+              </Link>
+            </Flex>
+            <Flex gap="12" vertical="start">
               <div style={{ fontSize: "18px", marginTop: "2px" }}>📝</div>
               <Text variant="body-default-s" onBackground="neutral-weak">
                 Les contenus en <strong>brouillon</strong> ne sont pas visibles sur le site public
@@ -138,13 +168,6 @@ export default async function AdminDashboard() {
               <Text variant="body-default-s" onBackground="neutral-weak">
                 Les contenus <strong>planifiés</strong> seront publiés automatiquement à la date
                 définie
-              </Text>
-            </Flex>
-            <Flex gap="12" vertical="start">
-              <div style={{ fontSize: "18px", marginTop: "2px" }}>🔄</div>
-              <Text variant="body-default-s" onBackground="neutral-weak">
-                La publication crée automatiquement un <strong>commit Git</strong> avec rollback en
-                cas d'échec
               </Text>
             </Flex>
             <Flex gap="12" vertical="start">

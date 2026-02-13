@@ -17,8 +17,7 @@ describe("verifyAuthToken() - Conditional Logging (NODE_ENV)", () => {
     consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     // Setup valid secret
-    process.env.AUTH_SECRET =
-      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+    process.env.AUTH_SECRET = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
   });
 
   afterEach(() => {
@@ -33,8 +32,7 @@ describe("verifyAuthToken() - Conditional Logging (NODE_ENV)", () => {
     });
 
     it("ne log PAS de warn si signature invalide", async () => {
-      const invalidToken =
-        "1234567890.abcdef0123456789.invalidsignaturehex000000000000";
+      const invalidToken = "1234567890.abcdef0123456789.invalidsignaturehex000000000000";
 
       const result = await verifyAuthToken(invalidToken);
 
@@ -77,8 +75,7 @@ describe("verifyAuthToken() - Conditional Logging (NODE_ENV)", () => {
     });
 
     it("log un warn si signature invalide", async () => {
-      const invalidToken =
-        "1234567890.abcdef0123456789.invalidsignaturehex000000000000";
+      const invalidToken = "1234567890.abcdef0123456789.invalidsignaturehex000000000000";
 
       const result = await verifyAuthToken(invalidToken);
 
@@ -168,13 +165,7 @@ describe("verifyAuthToken() - Conditional Logging (NODE_ENV)", () => {
   });
 
   describe("Compatibilité avec tous les environnements", () => {
-    const testEnvs = [
-      "production",
-      "development",
-      "test",
-      "staging",
-      undefined,
-    ];
+    const testEnvs = ["production", "development", "test", "staging", undefined];
 
     for (const env of testEnvs) {
       it(`gère correctement NODE_ENV="${env}"`, async () => {

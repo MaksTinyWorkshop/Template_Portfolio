@@ -60,9 +60,7 @@ describe("generateAuthToken() - Secret Validation", () => {
       it("throw avec suggestion openssl", async () => {
         process.env.AUTH_SECRET = "weak";
 
-        await expect(generateAuthToken()).rejects.toThrow(
-          /openssl rand -hex 32/,
-        );
+        await expect(generateAuthToken()).rejects.toThrow(/openssl rand -hex 32/);
       });
     });
 
@@ -136,8 +134,7 @@ describe("generateAuthToken() - Secret Validation", () => {
 
     it("génère un token sans warn en production avec secret valide", async () => {
       process.env.NODE_ENV = "production";
-      process.env.AUTH_SECRET =
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"; // 64 chars
+      process.env.AUTH_SECRET = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"; // 64 chars
       vi.spyOn(console, "warn").mockImplementation(() => {});
 
       const token = await generateAuthToken();

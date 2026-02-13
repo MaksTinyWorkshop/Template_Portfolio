@@ -1,0 +1,123 @@
+.form {
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.card {
+  width: 100%;
+}
+
+.twoCols {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.networkGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.networkButton {
+  border: none;
+  border-radius: 8px;
+  padding: 6px 4px;
+  background: transparent;
+  color: var(--neutral-on-background-strong);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.networkButton:focus-visible {
+  outline: 2px solid var(--brand-border-medium);
+  outline-offset: 2px;
+}
+
+.networkButton[data-selected="true"] {
+  transform: translateY(-1px);
+}
+
+.networkIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.networkButton[data-active="true"] .networkIcon {
+  border-color: var(--brand-border-medium);
+  background: color-mix(in oklab, var(--brand-background-weak) 70%, transparent);
+  color: var(--brand-text-strong);
+}
+
+.networkButton:not([data-active="true"]) .networkIcon {
+  color: var(--neutral-on-background-weak);
+}
+
+.networkButton[data-selected="true"] .networkIcon {
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--brand-border-medium) 45%, transparent);
+}
+
+.networkButton:focus-visible .networkIcon {
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--brand-border-medium) 45%, transparent);
+}
+
+.networkEditor {
+  border: 1px solid var(--neutral-border-medium);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.networkSummary {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bioTextarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--neutral-border-medium);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  background-color: var(--neutral-background-weak);
+  color: var(--neutral-on-background-strong);
+  min-height: 120px;
+}
+
+.actions {
+  margin-top: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 768px) {
+  .twoCols {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .networkGrid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .networkGrid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}

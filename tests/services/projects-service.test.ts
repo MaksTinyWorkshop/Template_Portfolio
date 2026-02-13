@@ -151,7 +151,11 @@ describe("projects service - createProjectAdmin", () => {
       ...payload,
       publishedAt: undefined,
       typeProjectTag: ["Web"],
-      images: ["https://example.com/cover.png", "https://example.com/missing.png", "https://example.com/2.png"],
+      images: [
+        "https://example.com/cover.png",
+        "https://example.com/missing.png",
+        "https://example.com/2.png",
+      ],
       featuredImage: "https://example.com/cover.png",
       team: [{ name: "Alice", role: "Dev", avatar: null, personId: "person-1" }],
       content: "Contenu",
@@ -213,6 +217,7 @@ describe("projects service - createProjectAdmin", () => {
           avatar: null,
           linkedIn: "   ",
           socials: [
+            { name: "   ", url: "https://example.com" },
             { name: "", url: "https://example.com" },
             { name: "GitHub", url: "" },
             { name: " GitHub ", url: " https://github.com/alice " },
@@ -230,6 +235,202 @@ describe("projects service - createProjectAdmin", () => {
         profileData: { contacts: { github: "https://github.com/alice" } },
       }),
     );
+  });
+
+  it("inclut linkedIn dans profileData quand il est present", async () => {
+    const mockRepo = buildRepo();
+    const tx = createTx();
+    mockRepo.projectSlugExists.mockResolvedValue(false);
+    mockRepo.createProject.mockResolvedValue(createdProject);
+    mockRepo.runProjectTransaction.mockImplementation((work) => work(tx));
+
+    const ensurePerson = vi.fn().mockResolvedValue({ id: "person-2" });
+    vi.doMock("@/lib/modules/person", () => ({
+      ensurePerson,
+    }));
+
+    vi.doMock("@/lib/modules/person/infrastructure/person.repo", () => ({
+      findSiteOwnerTx: vi.fn().mockResolvedValue(null),
+    }));
+
+    vi.doMock("@/lib/utils/content-normalizers", async () => {
+      const actual = await vi.importActual<any>("@/lib/utils/content-normalizers");
+      return {
+        ...actual,
+        ensureMediaRecord: vi.fn().mockResolvedValue(null),
+        ensureTagForCategory: vi.fn().mockResolvedValue({ id: "tag-1" }),
+      };
+    });
+
+    vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => mockRepo);
+
+    const { createProjectAdmin } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
+
+    await createProjectAdmin({
+      ...payload,
+      typeProjectTag: ["Web"],
+      images: [],
+      team: [
+        {
+          name: "Alice",
+          role: "Dev",
+          avatar: null,
+          linkedIn: " https://linkedin.com/in/alice ",
+        },
+      ],
+    } as any);
+
+    expect(ensurePerson).toHaveBeenCalledWith(
+      tx,
+      expect.objectContaining({
+        profileData: { contacts: { linkedin: "https://linkedin.com/in/alice" } },
+      }),
+    );
+  });
+
+  it("ne cherche pas de site owner par defaut si un membre est deja marque isSiteOwner", async () => {
+    const mockRepo = buildRepo();
+    const tx = createTx();
+    mockRepo.projectSlugExists.mockResolvedValue(false);
+    mockRepo.createProject.mockResolvedValue(createdProject);
+    mockRepo.runProjectTransaction.mockImplementation((work) => work(tx));
+
+    const ensurePerson = vi.fn().mockResolvedValue({ id: "person-owner" });
+    vi.doMock("@/lib/modules/person", () => ({
+      ensurePerson,
+    }));
+
+    const findSiteOwnerTx = vi.fn(() => {
+      throw new Error("should not be called");
+    });
+    vi.doMock("@/lib/modules/person/infrastructure/person.repo", () => ({
+      findSiteOwnerTx,
+    }));
+
+    vi.doMock("@/lib/utils/content-normalizers", async () => {
+      const actual = await vi.importActual<any>("@/lib/utils/content-normalizers");
+      return {
+        ...actual,
+        ensureMediaRecord: vi.fn().mockResolvedValue(null),
+        ensureTagForCategory: vi.fn().mockResolvedValue({ id: "tag-1" }),
+      };
+    });
+
+    vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => mockRepo);
+
+    const { createProjectAdmin } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
+
+    await createProjectAdmin({
+      ...payload,
+      typeProjectTag: ["Web"],
+      team: [{ name: "Owner", role: "", avatar: null, isSiteOwner: true }],
+      images: [],
+      content: "Contenu",
+      link: "",
+      repository: "",
+    } as any);
+
+    expect(findSiteOwnerTx).not.toHaveBeenCalled();
+    expect(ensurePerson).toHaveBeenCalledWith(
+      tx,
+      expect.objectContaining({
+        role: null,
+      }),
+    );
+  });
+
+  it("cree un projet meme si featuredImage n'a pas de media et publishedAt est invalide", async () => {
+    const mockRepo = buildRepo();
+    const tx = createTx();
+    mockRepo.projectSlugExists.mockResolvedValue(false);
+    mockRepo.createProject.mockResolvedValue(createdProject);
+    mockRepo.runProjectTransaction.mockImplementation((work) => work(tx));
+
+    const ensurePerson = vi.fn().mockResolvedValue({ id: "person-2" });
+    vi.doMock("@/lib/modules/person", () => ({
+      ensurePerson,
+    }));
+
+    vi.doMock("@/lib/modules/person/infrastructure/person.repo", () => ({
+      findSiteOwnerTx: vi.fn().mockResolvedValue({ id: "owner-1", role: undefined }),
+    }));
+
+    vi.doMock("@/lib/utils/content-normalizers", async () => {
+      const actual = await vi.importActual<any>("@/lib/utils/content-normalizers");
+      return {
+        ...actual,
+        ensureMediaRecord: vi.fn().mockResolvedValue(null),
+        ensureTagForCategory: vi.fn().mockResolvedValue({ id: "tag-1" }),
+      };
+    });
+
+    vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => mockRepo);
+
+    const { createProjectAdmin } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
+
+    await createProjectAdmin({
+      ...payload,
+      publishedAt: "not-a-date",
+      featuredImage: "https://example.com/cover.png",
+      images: [],
+      typeProjectTag: ["Web"],
+      team: [
+        { name: "Alice", role: "", avatar: "", personId: "person-1" },
+        { name: "Bob", role: "", avatar: null },
+      ],
+      content: "Contenu",
+      link: "",
+      repository: "",
+    } as any);
+
+    expect(mockRepo.createProject).toHaveBeenCalledWith(
+      tx,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          publishedAt: null,
+          gallery: undefined,
+          persons: { create: expect.arrayContaining([expect.objectContaining({ role: null })]) },
+        }),
+      }),
+    );
+    expect(ensurePerson).toHaveBeenCalledWith(
+      tx,
+      expect.objectContaining({ role: null, avatar: null }),
+    );
+  });
+
+  it("couvre mapSlug(title ?? '') quand title est absent", async () => {
+    const mockRepo = buildRepo();
+    const tx = createTx();
+    mockRepo.projectSlugExists.mockResolvedValue(false);
+    mockRepo.createProject.mockResolvedValue(createdProject);
+    mockRepo.runProjectTransaction.mockImplementation((work) => work(tx));
+
+    vi.doMock("@/lib/modules/person/infrastructure/person.repo", () => ({
+      findSiteOwnerTx: vi.fn().mockResolvedValue(null),
+    }));
+    vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => mockRepo);
+
+    const { createProjectAdmin } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
+
+    await createProjectAdmin({
+      ...payload,
+      title: undefined,
+      slug: "custom",
+      typeProjectTag: ["Web"],
+      images: [],
+      team: [],
+    } as any);
+
+    expect(mockRepo.projectSlugExists).toHaveBeenCalledWith(tx, "custom");
   });
 
   it("rejette quand le slug existe déjà", async () => {
@@ -379,6 +580,59 @@ describe("projects service - update/delete/status", () => {
       }),
     );
     expect(result.slug).toBe("super-project");
+  });
+
+  it("updateProjectAdmin envoie gallery/persons/tags quand fournis", async () => {
+    const mockRepo = buildRepo();
+    mockRepo.runProjectTransaction.mockImplementation((work) => work(tx));
+    mockRepo.findProjectBySlugTx.mockResolvedValue({
+      id: "p-1",
+      slug: "super-project",
+    });
+    mockRepo.projectSlugExists.mockResolvedValue(false);
+    mockRepo.updateProject.mockResolvedValue({
+      ...createdProject,
+      slug: "super-project",
+      title: "New Title",
+    });
+
+    vi.doMock("@/lib/utils/content-normalizers", async () => {
+      const actual = await vi.importActual<any>("@/lib/utils/content-normalizers");
+      return {
+        ...actual,
+        ensureMediaRecord: vi.fn().mockResolvedValue({ id: "media-1" }),
+        ensureTagForCategory: vi.fn().mockResolvedValue({ id: "tag-1" }),
+      };
+    });
+
+    vi.doMock("@/lib/modules/person/infrastructure/person.repo", () => ({
+      findSiteOwnerTx: vi.fn().mockResolvedValue(null),
+    }));
+
+    vi.doMock("@/lib/modules/projects/infrastructure/projects.repo", () => mockRepo);
+
+    const { updateProjectAdmin } = await import(
+      "@/lib/modules/projects/application/projects.service"
+    );
+
+    await updateProjectAdmin("super-project", {
+      ...basePayload,
+      typeProjectTag: ["Web"],
+      featuredImage: "https://example.com/cover.png",
+      images: ["https://example.com/cover.png", "https://example.com/2.png"],
+      team: [{ name: "Alice", role: "Dev", avatar: null, personId: "person-1" }],
+    } as any);
+
+    expect(mockRepo.updateProject).toHaveBeenCalledWith(
+      tx,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          gallery: { create: expect.any(Array) },
+          persons: { create: expect.any(Array) },
+          tags: { create: expect.any(Array) },
+        }),
+      }),
+    );
   });
 
   it("ne verifie pas le conflit de slug si le slug ne change pas", async () => {

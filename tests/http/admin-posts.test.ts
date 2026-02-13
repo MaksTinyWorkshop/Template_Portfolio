@@ -2,8 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
 process.env.NODE_ENV ??= "test";
-process.env.DATABASE_URL ??=
-  "postgresql://test:test@localhost:5432/portfolio_test";
+process.env.DATABASE_URL ??= "postgresql://test:test@localhost:5432/portfolio_test";
 
 const metadata = {
   title: "Titre",
@@ -45,23 +44,17 @@ describe("API admin/posts route", () => {
   });
 
   it("refuse POST sans authentification", async () => {
-    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<
-      typeof vi.fn
-    >;
+    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(false);
 
     const { POST } = await import("@/app/(api)/api/admin/posts/route");
-    const response = await POST(
-      buildJsonRequest("POST", { metadata, content: "foo" }),
-    );
+    const response = await POST(buildJsonRequest("POST", { metadata, content: "foo" }));
     expect(response.status).toBe(401);
-    expect(await response.json()).toMatchObject({ success: false });
+    expect(await response.json()).toMatchObject({ success: false, error: "Non authentifié" });
   });
 
   it("refuse GET sans authentification", async () => {
-    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<
-      typeof vi.fn
-    >;
+    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(false);
 
     const { GET } = await import("@/app/(api)/api/admin/posts/route");
@@ -70,14 +63,10 @@ describe("API admin/posts route", () => {
   });
 
   it("retourne la liste quand authentifié", async () => {
-    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<
-      typeof vi.fn
-    >;
+    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(true);
     const articles = await import("@/lib/modules/articles");
-    (articles.listArticlesAdmin as ReturnType<typeof vi.fn>).mockResolvedValue([
-      { slug: "foo" },
-    ]);
+    (articles.listArticlesAdmin as ReturnType<typeof vi.fn>).mockResolvedValue([{ slug: "foo" }]);
 
     const { GET } = await import("@/app/(api)/api/admin/posts/route");
     const response = await GET({} as NextRequest);
@@ -87,9 +76,7 @@ describe("API admin/posts route", () => {
   });
 
   it("retourne 500 si la liste des articles echoue", async () => {
-    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<
-      typeof vi.fn
-    >;
+    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(true);
     const articles = await import("@/lib/modules/articles");
     (articles.listArticlesAdmin as ReturnType<typeof vi.fn>).mockRejectedValue(
@@ -100,23 +87,19 @@ describe("API admin/posts route", () => {
     const response = await GET({} as NextRequest);
     expect(response.status).toBe(500);
     const payload = await response.json();
-    expect(payload).toMatchObject({ success: false, error: "Erreur serveur" });
+    expect(payload).toMatchObject({ success: false, error: "db down" });
   });
 
   it("crée un article et revalide les chemins", async () => {
-    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<
-      typeof vi.fn
-    >;
+    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(true);
     const articles = await import("@/lib/modules/articles");
-    (articles.createArticleAdmin as ReturnType<typeof vi.fn>).mockResolvedValue(
-      { slug: "super" },
-    );
+    (articles.createArticleAdmin as ReturnType<typeof vi.fn>).mockResolvedValue({ slug: "super" });
 
     const { POST } = await import("@/app/(api)/api/admin/posts/route");
     const response = await POST(
       buildJsonRequest("POST", {
-        ...metadata,
+        metadata,
         content: "Contenu complet",
       }),
     );
@@ -133,39 +116,33 @@ describe("API admin/posts route", () => {
   });
 
   it("retourne 500 si la creation echoue", async () => {
-    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<
-      typeof vi.fn
-    >;
+    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(true);
     const articles = await import("@/lib/modules/articles");
-    (articles.createArticleAdmin as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error("boom"),
-    );
+    (articles.createArticleAdmin as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("boom"));
 
     const { POST } = await import("@/app/(api)/api/admin/posts/route");
     const response = await POST(
       buildJsonRequest("POST", {
-        ...metadata,
+        metadata,
         content: "Contenu complet",
       }),
     );
 
     expect(response.status).toBe(500);
     const payload = await response.json();
-    expect(payload).toMatchObject({ success: false, error: "Erreur serveur" });
+    expect(payload).toMatchObject({ success: false, error: "boom" });
   });
 
   it("refuse PUT sans authentification", async () => {
-    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<
-      typeof vi.fn
-    >;
+    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(false);
 
     const { PUT } = await import("@/app/(api)/api/admin/posts/route");
     const response = await PUT(
       buildJsonRequest("PUT", {
         slug: "super",
-        ...metadata,
+        metadata,
         content: "Toe",
       }),
     );
@@ -173,20 +150,16 @@ describe("API admin/posts route", () => {
   });
 
   it("met à jour un article via PUT", async () => {
-    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<
-      typeof vi.fn
-    >;
+    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(true);
     const articles = await import("@/lib/modules/articles");
-    (articles.updateArticleAdmin as ReturnType<typeof vi.fn>).mockResolvedValue(
-      { slug: "super" },
-    );
+    (articles.updateArticleAdmin as ReturnType<typeof vi.fn>).mockResolvedValue({ slug: "super" });
 
     const { PUT } = await import("@/app/(api)/api/admin/posts/route");
     const response = await PUT(
       buildJsonRequest("PUT", {
         slug: "super",
-        ...metadata,
+        metadata,
         content: "Toe",
       }),
     );
@@ -205,45 +178,39 @@ describe("API admin/posts route", () => {
   });
 
   it("retourne 500 si la mise a jour echoue", async () => {
-    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<
-      typeof vi.fn
-    >;
+    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(true);
     const articles = await import("@/lib/modules/articles");
-    (articles.updateArticleAdmin as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error("boom"),
-    );
+    (articles.updateArticleAdmin as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("boom"));
 
     const { PUT } = await import("@/app/(api)/api/admin/posts/route");
     const response = await PUT(
       buildJsonRequest("PUT", {
         slug: "super",
-        ...metadata,
+        metadata,
         content: "Toe",
       }),
     );
 
     expect(response.status).toBe(500);
     const payload = await response.json();
-    expect(payload).toMatchObject({ success: false, error: "Erreur serveur" });
+    expect(payload).toMatchObject({ success: false, error: "boom" });
   });
 
   it("revalide l'ancien slug quand le slug change", async () => {
-    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<
-      typeof vi.fn
-    >;
+    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(true);
     const articles = await import("@/lib/modules/articles");
-    (articles.updateArticleAdmin as ReturnType<typeof vi.fn>).mockResolvedValue(
-      { slug: "nouveau" },
-    );
+    (articles.updateArticleAdmin as ReturnType<typeof vi.fn>).mockResolvedValue({
+      slug: "nouveau",
+    });
 
     const { PUT } = await import("@/app/(api)/api/admin/posts/route");
     const response = await PUT(
       buildJsonRequest("PUT", {
         slug: "nouveau",
         oldSlug: "ancien",
-        ...metadata,
+        metadata,
         content: "Toe",
       }),
     );
@@ -259,9 +226,7 @@ describe("API admin/posts route", () => {
   });
 
   it("retourne une erreur 400 quand le payload est invalide", async () => {
-    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<
-      typeof vi.fn
-    >;
+    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(true);
 
     const { POST, PUT } = await import("@/app/(api)/api/admin/posts/route");
@@ -277,9 +242,7 @@ describe("API admin/posts route", () => {
   });
 
   it("refuse DELETE sans authentification", async () => {
-    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<
-      typeof vi.fn
-    >;
+    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(false);
 
     const { DELETE } = await import("@/app/(api)/api/admin/posts/route");
@@ -288,14 +251,10 @@ describe("API admin/posts route", () => {
   });
 
   it("supprime un article via DELETE et revalide les chemins", async () => {
-    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<
-      typeof vi.fn
-    >;
+    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(true);
     const articles = await import("@/lib/modules/articles");
-    (articles.deleteArticleAdmin as ReturnType<typeof vi.fn>).mockResolvedValue(
-      undefined,
-    );
+    (articles.deleteArticleAdmin as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
 
     const { DELETE } = await import("@/app/(api)/api/admin/posts/route");
     const response = await DELETE(buildDeleteRequest("super"));
@@ -312,9 +271,7 @@ describe("API admin/posts route", () => {
   });
 
   it("retourne 400 sur DELETE quand le slug est manquant", async () => {
-    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<
-      typeof vi.fn
-    >;
+    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(true);
 
     const { DELETE } = await import("@/app/(api)/api/admin/posts/route");
@@ -323,19 +280,15 @@ describe("API admin/posts route", () => {
   });
 
   it("retourne 500 si la suppression echoue", async () => {
-    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<
-      typeof vi.fn
-    >;
+    const auth = (await import("@/lib/utils/auth")).checkAuthAPI as ReturnType<typeof vi.fn>;
     auth.mockResolvedValue(true);
     const articles = await import("@/lib/modules/articles");
-    (articles.deleteArticleAdmin as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error("boom"),
-    );
+    (articles.deleteArticleAdmin as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("boom"));
 
     const { DELETE } = await import("@/app/(api)/api/admin/posts/route");
     const response = await DELETE(buildDeleteRequest("super"));
     expect(response.status).toBe(500);
     const payload = await response.json();
-    expect(payload).toMatchObject({ success: false, error: "Erreur serveur" });
+    expect(payload).toMatchObject({ success: false, error: "boom" });
   });
 });

@@ -1,17 +1,15 @@
 "use client";
 
 import type React from "react";
-import {
-  AvatarGroup,
-  Carousel,
-  Column,
-  Flex,
-  Heading,
-  SmartLink,
-  Text,
-} from "@once-ui-system/core";
+import { Carousel, Column, Flex, Heading, SmartLink, Text } from "@once-ui-system/core";
 import styles from "./ProjectCard.module.scss";
-import { ProjectTag } from "./ProjectTag";
+import { Tag } from "./Tag";
+
+interface TagData {
+  slug: string;
+  name: string;
+  color?: string | null;
+}
 
 interface ProjectCardProps {
   href: string;
@@ -20,10 +18,13 @@ interface ProjectCardProps {
   title: string;
   content: string;
   description: string;
-  avatars: { src: string }[];
+  contributors?: Array<{
+    name: string;
+    avatar?: string | null;
+  }>;
   link?: string;
   repository?: string;
-  typeProjectTag?: string[];
+  typeProjectTag?: TagData[];
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -33,11 +34,14 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   title,
   content,
   description,
-  avatars,
+  contributors = [],
   link,
   repository,
   typeProjectTag = [],
 }) => {
+  const visibleContributors = contributors.slice(0, 5);
+  const hiddenContributorsCount = Math.max(0, contributors.length - visibleContributors.length);
+
   return (
     <Column fillWidth gap="m">
       <div className={styles.carouselWrapper}>
@@ -45,6 +49,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           aspectRatio="4 / 3"
           sizes="(max-width: 640px) 95vw, (max-width: 768px) 85vw, (max-width: 1024px) 45vw, 400px"
           priority={priority}
+          revealedByDefault
           items={images.map((image) => ({
             slide: image,
             alt: title,
@@ -64,7 +69,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             {typeProjectTag && typeProjectTag.length > 0 && (
               <Flex gap="8" wrap>
                 {typeProjectTag.map((tag) => (
-                  <ProjectTag key={tag} tag={tag} />
+                  <Tag key={tag.slug} name={tag.name} color={tag.color} />
                 ))}
               </Flex>
             )}
@@ -73,9 +78,43 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             </Heading>
           </Flex>
         )}
-        {(avatars?.length > 0 || description?.trim() || content?.trim()) && (
+        {(contributors.length > 0 || description?.trim() || content?.trim()) && (
           <Column flex={7} gap="16">
-            {avatars?.length > 0 && <AvatarGroup avatars={avatars} size="m" reverse />}
+            {contributors.length > 0 && (
+              <Flex gap="8" vertical="center" wrap>
+                <div className={styles.contributorGroup} aria-label="Contributeurs du projet">
+                  {visibleContributors.map((contributor, index) => (
+                    <div
+                      key={`${contributor.name}-${index}`}
+                      className={styles.contributorBubble}
+                      style={{ zIndex: visibleContributors.length - index }}
+                      title={contributor.name}
+                      aria-label={contributor.name}
+                    >
+                      {contributor.avatar ? (
+                        <img
+                          src={contributor.avatar}
+                          alt={contributor.name}
+                          className={styles.contributorImage}
+                        />
+                      ) : (
+                        <span className={styles.contributorInitial}>
+                          {contributor.name.trim().charAt(0).toUpperCase() || "?"}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                  {hiddenContributorsCount > 0 && (
+                    <div
+                      className={styles.contributorMore}
+                      title={`${hiddenContributorsCount} contributeur(s) supplémentaire(s)`}
+                    >
+                      +{hiddenContributorsCount}
+                    </div>
+                  )}
+                </div>
+              </Flex>
+            )}
             {description?.trim() && (
               <Text wrap="balance" variant="body-default-s" onBackground="neutral-weak">
                 {description}

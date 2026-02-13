@@ -14,6 +14,32 @@ export const listPersons = () =>
     include: includeRelations,
   });
 
+const includeAdminRelations = {
+  avatarMedia: true,
+  _count: {
+    select: {
+      articles: true,
+      projects: true,
+    },
+  },
+} as const;
+
+export type PersonAdminWithRelations = Prisma.PersonGetPayload<{
+  include: typeof includeAdminRelations;
+}>;
+
+export const listPersonsForAdmin = () =>
+  prisma.person.findMany({
+    include: includeAdminRelations,
+    orderBy: [{ siteOwner: "desc" }, { fullName: "asc" }],
+  });
+
+export const findPersonByIdForAdmin = (id: string) =>
+  prisma.person.findUnique({
+    where: { id },
+    include: includeAdminRelations,
+  });
+
 export const findPersonByFullName = (fullName: string) =>
   prisma.person.findFirst({
     where: { fullName },
@@ -58,3 +84,25 @@ export const updatePerson = (tx: Prisma.TransactionClient, args: Prisma.PersonUp
 
 export const deletePersonById = (tx: Prisma.TransactionClient, id: string) =>
   tx.person.delete({ where: { id } });
+
+export const createPersonForAdmin = (data: Prisma.PersonCreateInput) =>
+  prisma.person.create({
+    data,
+    include: includeAdminRelations,
+  });
+
+export const updatePersonForAdmin = (id: string, data: Prisma.PersonUpdateInput) =>
+  prisma.person.update({
+    where: { id },
+    data,
+    include: includeAdminRelations,
+  });
+
+export const deletePersonForAdmin = (id: string) =>
+  prisma.$transaction(async (tx) => {
+    await tx.articlePerson.deleteMany({ where: { personId: id } });
+    await tx.projectPerson.deleteMany({ where: { personId: id } });
+    await tx.media.updateMany({ where: { uploadedById: id }, data: { uploadedById: null } });
+    await tx.availabilityLog.deleteMany({ where: { personId: id } });
+    await tx.person.delete({ where: { id } });
+  });

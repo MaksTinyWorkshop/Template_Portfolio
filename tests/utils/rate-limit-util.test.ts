@@ -112,5 +112,93 @@ describe("checkRateLimit util", () => {
       resetAt: expiresAt.getTime(),
     });
   });
-});
 
+  it("fail-open si updateMany=1 mais findUnique retourne null", async () => {
+    updateMany.mockResolvedValueOnce({ count: 1 });
+    findUnique.mockResolvedValueOnce(null);
+
+    const { checkRateLimit } = await import("@/lib/utils/rate-limit");
+    const result = await checkRateLimit({
+      key: "auth:1.1.1.1",
+      maxRequests: 5,
+      windowSeconds: 60,
+    });
+
+    expect(result.allowed).toBe(true);
+    expect(result.remaining).toBe(5);
+  });
+
+  it("fail-open si create echoue avec une erreur non P2002", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    updateMany.mockResolvedValueOnce({ count: 0 });
+    findUnique.mockResolvedValueOnce(null);
+    create.mockRejectedValueOnce(new Error("db unavailable"));
+
+    const { checkRateLimit } = await import("@/lib/utils/rate-limit");
+    const result = await checkRateLimit({
+      key: "auth:2.2.2.2",
+      maxRequests: 5,
+      windowSeconds: 60,
+    });
+
+    expect(result.allowed).toBe(true);
+    expect(result.remaining).toBe(5);
+    expect(errorSpy).toHaveBeenCalled();
+  });
+
+  it("cleanupExpiredRateLimits retourne 0 en cas d'erreur", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    deleteMany.mockRejectedValueOnce(new Error("cleanup failed"));
+
+    const { cleanupExpiredRateLimits } = await import("@/lib/utils/rate-limit");
+    const count = await cleanupExpiredRateLimits();
+
+    expect(count).toBe(0);
+    expect(errorSpy).toHaveBeenCalled();
+  });
+
+  it("cleanupExpiredRateLimits retourne le nombre d'entrees supprimees", async () => {
+    deleteMany.mockResolvedValueOnce({ count: 7 });
+    const { cleanupExpiredRateLimits } = await import("@/lib/utils/rate-limit");
+    const count = await cleanupExpiredRateLimits();
+    expect(count).toBe(7);
+  });
+
+  it("fail-open sur fallback si les 2 tentatives create rencontrent P2002", async () => {
+    updateMany.mockResolvedValueOnce({ count: 0 });
+    findUnique.mockResolvedValueOnce(null);
+    create.mockRejectedValueOnce({ code: "P2002" });
+
+    updateMany.mockResolvedValueOnce({ count: 0 });
+    findUnique.mockResolvedValueOnce(null);
+    create.mockRejectedValueOnce({ code: "P2002" });
+
+    const { checkRateLimit } = await import("@/lib/utils/rate-limit");
+    const result = await checkRateLimit({
+      key: "auth:5.5.5.5",
+      maxRequests: 5,
+      windowSeconds: 60,
+    });
+
+    expect(result.allowed).toBe(true);
+    expect(result.remaining).toBe(5);
+  });
+
+  it("resetRateLimit log les erreurs hors P2025", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    del.mockRejectedValueOnce({ code: "P2003" });
+
+    const { resetRateLimit } = await import("@/lib/utils/rate-limit");
+    await expect(resetRateLimit("auth:3.3.3.3")).resolves.toBeUndefined();
+    expect(errorSpy).toHaveBeenCalled();
+  });
+
+  it("resetRateLimit ignore l'erreur P2025", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    del.mockRejectedValueOnce({ code: "P2025" });
+
+    const { resetRateLimit } = await import("@/lib/utils/rate-limit");
+    await expect(resetRateLimit("auth:4.4.4.4")).resolves.toBeUndefined();
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+});

@@ -1,6 +1,7 @@
 "use client";
 
-import { projectSchema, type ProjectFormData } from "@/lib/contracts/validations";
+import { type ProjectFormData, projectSchema } from "@/lib/contracts/validations";
+import { useToastService } from "@/web/components/utils/ToastService";
 import type { ProjectMetadata, ProjectTeamMember } from "@/web/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -17,11 +18,10 @@ import {
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, useFieldArray, useForm, type FieldPath } from "react-hook-form";
+import { Controller, type FieldPath, useFieldArray, useForm } from "react-hook-form";
 import { ImageUpload } from "./ImageUpload";
-import { TagSelector } from "./TagSelector";
-import { useToastService } from "@/web/components/utils/ToastService";
 import { KnownTeamMemberField } from "./KnownTeamMemberField";
+import { TagSelector } from "./TagSelector";
 
 type AvailablePerson = {
   id: string;
@@ -52,6 +52,24 @@ const contactsToSocials = (contacts?: Record<string, string>) => {
       url: value,
     }));
 };
+
+const sanitizeProjectTeam = (team: ProjectFormData["team"]) =>
+  team.map((member) => {
+    const trimmedLinkedIn = member.linkedIn?.trim() ?? "";
+    const socials =
+      member.socials
+        ?.map((social) => ({
+          name: social.name?.trim() ?? "",
+          url: social.url?.trim() ?? "",
+        }))
+        .filter((social) => social.name && social.url) ?? [];
+
+    return {
+      ...member,
+      linkedIn: trimmedLinkedIn || undefined,
+      socials,
+    };
+  });
 
 function normalizePublishedDate(value: string) {
   const trimmed = String(value ?? "").trim();
@@ -86,7 +104,6 @@ interface ProjectFormProps {
 }
 
 export function ProjectForm({ mode, initialData }: ProjectFormProps) {
-  console.log("ProjectForm render:", { mode, initialData });
   const router = useRouter();
   const todayIso = useMemo(() => new Date().toISOString().split("T")[0], []);
   const initialPublishedAt = initialData?.publishedAt ?? todayIso;
@@ -98,24 +115,33 @@ export function ProjectForm({ mode, initialData }: ProjectFormProps) {
   const [availablePeople, setAvailablePeople] = useState<AvailablePerson[]>([]);
   const [selectedPersonId, setSelectedPersonId] = useState("");
 
+  const normalizeSelectValue = (value: unknown) => {
+    if (typeof value === "string") return value.trim();
+    if (value && typeof value === "object" && "value" in value) {
+      const nested = (value as { value?: unknown }).value;
+      return typeof nested === "string" ? nested.trim() : "";
+    }
+    return "";
+  };
+
   // Valeurs par défaut - Inclure Max automatiquement dans l'équipe pour les nouveaux projets
   const defaultValues = useMemo<ProjectFormData>(() => {
     const initialTeam =
       initialData?.team
         ?.filter((member: ProjectTeamMember) => !member.isSiteOwner)
-          ?.map((member: ProjectTeamMember) => ({
-            ...member,
-            linkedIn: member.linkedIn || "",
-            firstName: member.firstName ?? "",
-            lastName: member.lastName ?? "",
-            pseudo: member.pseudo ?? "",
-            email: member.email ?? "",
-            socials: (member.socials ?? []).map((social) => ({
-              name: social.name,
-              url: social.url ?? "",
-            })),
-            avatar: member.avatar ?? "",
-          })) ?? [];
+        ?.map((member: ProjectTeamMember) => ({
+          ...member,
+          linkedIn: member.linkedIn || "",
+          firstName: member.firstName ?? "",
+          lastName: member.lastName ?? "",
+          pseudo: member.pseudo ?? "",
+          email: member.email ?? "",
+          socials: (member.socials ?? []).map((social) => ({
+            name: social.name,
+            url: social.url ?? "",
+          })),
+          avatar: member.avatar ?? "",
+        })) ?? [];
 
     return {
       title: initialData?.title || "",
@@ -140,6 +166,7 @@ export function ProjectForm({ mode, initialData }: ProjectFormProps) {
     watch,
     setValue,
     reset,
+    getValues,
   } = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
     defaultValues,
@@ -156,7 +183,10 @@ export function ProjectForm({ mode, initialData }: ProjectFormProps) {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/admin/projects/tags");
+        const res = await fetch("/api/admin/projects/tags", {
+          credentials: "include",
+          cache: "no-store",
+        });
         const json = await res.json();
         if (!cancelled && json?.success && Array.isArray(json.data)) {
           setAvailableTags(json.data);
@@ -216,16 +246,31 @@ export function ProjectForm({ mode, initialData }: ProjectFormProps) {
 
   const personLookup = useMemo(() => {
     const map: Record<string, AvailablePerson> = {};
-    availablePeople.forEach((person) => {
+    for (const person of availablePeople) {
       map[person.id] = person;
-    });
+    }
     return map;
   }, [availablePeople]);
 
-  const handleAddExistingMember = () => {
-    if (!selectedPersonId) return;
-    const person = availablePeople.find((entry) => entry.id === selectedPersonId);
-    if (!person) return;
+  const appendExistingMemberById = (rawPersonId: unknown) => {
+    const normalizedPersonId = normalizeSelectValue(rawPersonId);
+    if (!normalizedPersonId) return;
+    const person = availablePeople.find((entry) => entry.id === normalizedPersonId);
+    if (!person) {
+      notify({
+        message: "Membre introuvable dans la liste. Re-sélectionne la personne puis réessaie.",
+        variant: "danger",
+      });
+      return;
+    }
+    if (selectedPersonIds.has(normalizedPersonId)) {
+      notify({
+        message: "Ce membre est déjà dans l'équipe du projet.",
+        variant: "danger",
+      });
+      setSelectedPersonId("");
+      return;
+    }
 
     const socials = contactsToSocials(person.profileData?.contacts);
     const linkedIn = getLinkedInFromContacts(person.profileData?.contacts);
@@ -244,6 +289,10 @@ export function ProjectForm({ mode, initialData }: ProjectFormProps) {
       isSiteOwner: false,
     });
     setSelectedPersonId("");
+  };
+
+  const handleAddExistingMember = () => {
+    appendExistingMemberById(selectedPersonId);
   };
 
   // Handlers stabilisés pour mobile
@@ -270,14 +319,14 @@ export function ProjectForm({ mode, initialData }: ProjectFormProps) {
   const onSubmit = async (data: ProjectFormData) => {
     setLoading(true);
     setError(null);
-    console.log("Données soumises:", data);
 
     try {
-      console.log("Données soumises:", data);
       const endpoint = "/api/admin/projects";
       const method = mode === "create" ? "POST" : "PUT";
 
       const normalizedPublishedAt = normalizePublishedDate(data.publishedAt);
+
+      const submittedTeam = sanitizeProjectTeam(getValues("team") ?? data.team ?? []);
 
       const body = {
         metadata: {
@@ -288,7 +337,7 @@ export function ProjectForm({ mode, initialData }: ProjectFormProps) {
           typeProjectTag: data.typeProjectTag,
           featuredImage: data.featuredImage,
           images: data.images,
-          team: data.team,
+          team: submittedTeam,
           link: data.link,
           repository: data.repository,
         },
@@ -564,7 +613,11 @@ export function ProjectForm({ mode, initialData }: ProjectFormProps) {
                   }`,
                   value: person.id,
                 }))}
-                onSelect={(value) => setSelectedPersonId(value)}
+                onSelect={(value) => {
+                  const normalized = normalizeSelectValue(value);
+                  setSelectedPersonId(normalized);
+                  appendExistingMemberById(normalized);
+                }}
               />
               <Button
                 type="button"

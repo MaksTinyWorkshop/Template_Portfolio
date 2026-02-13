@@ -1,12 +1,14 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { checkRateLimit, cleanupExpiredRateLimits, resetRateLimit } from "@/lib/utils/rate-limit";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, cleanupExpiredRateLimits, resetRateLimit } from "@/lib/utils/rate-limit";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 /**
  * Tests d'intégration rate limiting avec vraie BDD
  * Valide le comportement réel avec PostgreSQL
  */
-describe("Rate Limiting - Intégration DB", () => {
+const shouldRunDbIntegration = process.env.RUN_DB_INTEGRATION === "true";
+
+describe.skipIf(!shouldRunDbIntegration)("Rate Limiting - Intégration DB", () => {
   const testKeyPrefix = "test-integration";
 
   beforeEach(async () => {
@@ -200,9 +202,7 @@ describe("Rate Limiting - Intégration DB", () => {
       const config = { key, maxRequests: 5, windowSeconds: 60 };
 
       // Lancer 10 requêtes en parallèle
-      const results = await Promise.all(
-        Array.from({ length: 10 }, () => checkRateLimit(config)),
-      );
+      const results = await Promise.all(Array.from({ length: 10 }, () => checkRateLimit(config)));
 
       // Les 5 premières devraient passer
       const allowed = results.filter((r) => r.allowed);

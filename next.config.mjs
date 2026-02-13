@@ -52,6 +52,19 @@ const nextConfig = {
           }
         : false,
   },
+
+  async rewrites() {
+    return {
+      beforeFiles: [
+        // Keep backward compatibility for existing DB/media URLs under /images/*
+        // and serve them through the runtime assets route.
+        {
+          source: "/images/:path*",
+          destination: "/api/assets/:path*",
+        },
+      ],
+    };
+  },
 };
 
 export default withMDX(nextConfig);

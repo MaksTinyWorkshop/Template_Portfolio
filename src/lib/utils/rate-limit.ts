@@ -132,7 +132,6 @@ export async function checkRateLimit(config: RateLimitConfig): Promise<RateLimit
 
     // Fallback: fail-open
     return { allowed: true, remaining: maxRequests, resetAt: expiresAt.getTime() };
-
   } catch (error) {
     console.error("Erreur lors de la vérification du rate limit:", error);
 
@@ -141,7 +140,7 @@ export async function checkRateLimit(config: RateLimitConfig): Promise<RateLimit
     return {
       allowed: true,
       remaining: maxRequests,
-      resetAt: expiresAt.getTime()
+      resetAt: expiresAt.getTime(),
     };
   }
 }
@@ -154,8 +153,8 @@ export async function cleanupExpiredRateLimits(): Promise<number> {
   try {
     const result = await prisma.rateLimit.deleteMany({
       where: {
-        expiresAt: { lt: new Date() }
-      }
+        expiresAt: { lt: new Date() },
+      },
     });
 
     return result.count;
@@ -172,11 +171,11 @@ export async function cleanupExpiredRateLimits(): Promise<number> {
 export async function resetRateLimit(key: string): Promise<void> {
   try {
     await prisma.rateLimit.delete({
-      where: { key }
+      where: { key },
     });
   } catch (error) {
     // Ignorer si la clé n'existe pas
-    if ((error as { code?: string }).code !== 'P2025') {
+    if ((error as { code?: string }).code !== "P2025") {
       console.error("Erreur lors de la réinitialisation du rate limit:", error);
     }
   }

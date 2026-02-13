@@ -7,6 +7,7 @@ const envSchema = z.object({
   CONTACT_EMAIL_RECIPIENT: z.string().email().optional(),
   CONTACT_EMAIL_SENDER: z.string().email().optional(),
   CONTACT_WEBHOOK_URL: z.string().url().optional(),
+  CRON_SECRET: z.string().min(16).optional(),
 });
 
 export const env = envSchema.parse(process.env);

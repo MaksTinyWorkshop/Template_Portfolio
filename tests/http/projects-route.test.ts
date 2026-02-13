@@ -29,7 +29,7 @@ describe("GET /api/projects", () => {
     const response = await getProjects(buildRequest());
     expect(response.status).toBe(503);
     const payload = await response.json();
-    expect(payload).toEqual({ error: "Service indisponible" });
+    expect(payload).toMatchObject({ success: false, error: "Service indisponible" });
   });
 
   it("retourne la liste des projets quand le service fonctionne", async () => {

@@ -96,7 +96,7 @@ describe("articles service - create/update/delete", () => {
       publishAt: new Date(basePayload.publishedAt),
       status: basePayload.status,
       media: { url: basePayload.image },
-      tags: [{ tag: { name: "Tech" } }],
+      tags: [{ tag: { slug: "tech", name: "Tech", color: null } }],
       content: basePayload.content,
     });
     mockRepo.findArticleBySlug.mockResolvedValue({
@@ -106,7 +106,7 @@ describe("articles service - create/update/delete", () => {
       publishAt: new Date(basePayload.publishedAt),
       status: basePayload.status,
       media: { url: basePayload.image },
-      tags: [{ tag: { name: "Tech" } }],
+      tags: [{ tag: { slug: "tech", name: "Tech", color: null } }],
       content: basePayload.content,
     });
     mockRepo.runArticleTransaction.mockImplementation((work) => work(tx));
@@ -128,6 +128,51 @@ describe("articles service - create/update/delete", () => {
       }),
     );
     expect(result.slug).toBe("super-article");
+  });
+
+  it("crée un article sans media quand ensureMediaRecord retourne null (et couvre title ?? '')", async () => {
+    await mockContentNormalizers({
+      ensureMediaRecord: vi.fn().mockResolvedValue(null),
+    });
+
+    const mockRepo = buildRepo();
+    const tx = createTx();
+    mockRepo.articleSlugExists.mockResolvedValue(false);
+    mockRepo.createArticle.mockResolvedValue({
+      slug: "custom",
+      title: "Fallback",
+      summary: basePayload.summary,
+      publishAt: new Date(basePayload.publishedAt),
+      status: basePayload.status,
+      media: null,
+      tags: [{ tag: { slug: "tech", name: "Tech", color: null } }],
+      content: basePayload.content,
+    });
+    mockRepo.runArticleTransaction.mockImplementation((work) => work(tx));
+
+    vi.doMock("@/lib/modules/articles/infrastructure/articles.repo", () => mockRepo);
+
+    const { createArticleAdmin } = await import(
+      "@/lib/modules/articles/application/articles.service"
+    );
+
+    await createArticleAdmin({
+      ...basePayload,
+      title: undefined,
+      slug: "custom",
+      image: null,
+    } as any);
+
+    expect(mockRepo.createArticle).toHaveBeenCalledWith(
+      tx,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          slug: "custom",
+          media: undefined,
+          tags: { create: expect.any(Array) },
+        }),
+      }),
+    );
   });
 
   it("rejette la création quand ensureTagForCategory échoue", async () => {
@@ -207,7 +252,7 @@ describe("articles service - create/update/delete", () => {
       publishAt: new Date(basePayload.publishedAt),
       status: basePayload.status,
       media: { url: basePayload.image },
-      tags: [{ tag: { name: "Tech" } }],
+      tags: [{ tag: { slug: "tech", name: "Tech", color: null } }],
       content: basePayload.content,
     });
     mockRepo.runArticleTransaction.mockImplementation((work) => work(tx));
@@ -228,6 +273,44 @@ describe("articles service - create/update/delete", () => {
       }),
     );
     expect(result.slug).toBe("super-article");
+  });
+
+  it("met a jour l'article en deconnectant le media si aucun media n'est trouve", async () => {
+    await mockContentNormalizers({
+      ensureMediaRecord: vi.fn().mockResolvedValue(null),
+    });
+
+    const mockRepo = buildRepo();
+    const tx = createTx();
+    mockRepo.findArticleBySlugTx.mockResolvedValue({ id: "a-1", slug: "super-article" });
+    mockRepo.articleSlugExists.mockResolvedValue(false);
+    mockRepo.updateArticle.mockResolvedValue({
+      slug: "super-article",
+      title: basePayload.title,
+      summary: basePayload.summary,
+      publishAt: new Date(basePayload.publishedAt),
+      status: basePayload.status,
+      media: null,
+      tags: [{ tag: { slug: "tech", name: "Tech", color: null } }],
+      content: basePayload.content,
+    });
+    mockRepo.runArticleTransaction.mockImplementation((work) => work(tx));
+
+    vi.doMock("@/lib/modules/articles/infrastructure/articles.repo", () => mockRepo);
+
+    const { updateArticleAdmin } = await import(
+      "@/lib/modules/articles/application/articles.service"
+    );
+
+    await updateArticleAdmin("super-article", basePayload as any);
+    expect(mockRepo.updateArticle).toHaveBeenCalledWith(
+      tx,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          media: { disconnect: true },
+        }),
+      }),
+    );
   });
 
   it("rejette la creation quand aucun tag n'est fourni", async () => {
@@ -263,7 +346,7 @@ describe("articles service - create/update/delete", () => {
       publishAt: new Date(basePayload.publishedAt),
       status: basePayload.status,
       media: null,
-      tags: [{ tag: { name: "Tech" } }],
+      tags: [{ tag: { slug: "tech", name: "Tech", color: null } }],
       content: basePayload.content,
     });
     mockRepo.runArticleTransaction.mockImplementation((work) => work(tx));
@@ -296,7 +379,7 @@ describe("articles service - create/update/delete", () => {
       publishAt: null,
       status: basePayload.status,
       media: { url: basePayload.image },
-      tags: [{ tag: { name: "Tech" } }],
+      tags: [{ tag: { slug: "tech", name: "Tech", color: null } }],
       content: basePayload.content,
     });
     mockRepo.runArticleTransaction.mockImplementation((work) => work(tx));
@@ -349,7 +432,7 @@ describe("articles service - create/update/delete", () => {
       publishAt: null,
       status: basePayload.status,
       media: { url: basePayload.image },
-      tags: [{ tag: { name: "Tech" } }],
+      tags: [{ tag: { slug: "tech", name: "Tech", color: null } }],
       content: basePayload.content,
     });
     mockRepo.runArticleTransaction.mockImplementation((work) => work(tx));
@@ -386,7 +469,7 @@ describe("articles service - create/update/delete", () => {
       publishAt: new Date(basePayload.publishedAt),
       status: basePayload.status,
       media: { url: basePayload.image },
-      tags: [{ tag: { name: "Tech" } }],
+      tags: [{ tag: { slug: "tech", name: "Tech", color: null } }],
       content: basePayload.content,
     });
     mockRepo.runArticleTransaction.mockImplementation((work) => work(tx));

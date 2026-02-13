@@ -7,6 +7,25 @@ export const projectStatusSchema = z.enum(["draft", "scheduled", "published"], {
   message: "Le statut doit être 'draft', 'scheduled' ou 'published'",
 });
 
+const optionalUrlAllowEmpty = (message: string) =>
+  z
+    .string()
+    .trim()
+    .refine(
+      (value) => {
+        if (!value) return true;
+        try {
+          new URL(value);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      { message },
+    )
+    .optional()
+    .nullable();
+
 /**
  * Schema Zod pour un membre d'équipe
  */
@@ -14,17 +33,19 @@ export const teamMemberInputSchema = z.object({
   name: z.string().min(1, { message: "Le nom est requis" }),
   role: z.string().min(1, { message: "Le rôle est requis" }),
   avatar: z.string().nullable().optional(),
-  linkedIn: z.string().url({ message: "URL LinkedIn invalide" }).nullable().optional(),
+  linkedIn: optionalUrlAllowEmpty("URL LinkedIn invalide"),
   email: z.string().email({ message: "Email invalide" }).nullable().optional(),
   firstName: z.string().nullable().optional(),
   lastName: z.string().nullable().optional(),
   pseudo: z.string().nullable().optional(),
-  socials: z.array(
-    z.object({
-      name: z.string().min(1, { message: "Le nom du réseau social est requis" }),
-      url: z.string().url({ message: "URL invalide" }).nullable().optional(),
-    })
-  ).optional(),
+  socials: z
+    .array(
+      z.object({
+        name: z.string().min(1, { message: "Le nom du réseau social est requis" }),
+        url: optionalUrlAllowEmpty("URL invalide"),
+      }),
+    )
+    .optional(),
   personId: z.string().uuid({ message: "L'ID de la personne doit être un UUID valide" }).optional(),
   isSiteOwner: z.boolean().optional(),
 });
@@ -42,7 +63,11 @@ export const projectAdminMetadataSchema = z.object({
   images: z.array(z.string()).default([]),
   team: z.array(teamMemberInputSchema).default([]),
   link: z.string().url({ message: "URL du lien invalide" }).optional().or(z.literal("")),
-  repository: z.string().url({ message: "URL du repository invalide" }).optional().or(z.literal("")),
+  repository: z
+    .string()
+    .url({ message: "URL du repository invalide" })
+    .optional()
+    .or(z.literal("")),
 });
 
 /**
